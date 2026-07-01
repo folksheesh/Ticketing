@@ -3,63 +3,46 @@ import { ROUTES } from '../constants/routes';
 import { MainLayout } from '../components/layouts/MainLayout';
 import { LandingPage } from '../features/landing/LandingPage';
 import { RegistrationPage } from '../features/registration/RegistrationPage';
+import { AdminLayout, DashboardTab, EmployeeListTab, ScannerTab } from '../features/admin';
 
-// Placeholder components for routing structure
 function PlaceholderPage({ title }: { title: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
+    <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">{title}</h1>
-        <p className="text-gray-500">This page is under construction (Next Phase).</p>
+        <h1 className="text-3xl font-bold text-denso-slate">{title}</h1>
+        <p className="text-denso-slate-light">Halaman ini sedang dalam pengembangan.</p>
       </div>
     </div>
   );
 }
 
 export const router = createBrowserRouter([
+  // ── Public routes ──────────────────────────────────────────────
   {
     path: '/',
     element: <MainLayout />,
     children: [
-      {
-        path: ROUTES.HOME,
-        element: <LandingPage />,
-      },
-      {
-        path: ROUTES.REGISTER,
-        element: <RegistrationPage />,
-      },
-      {
-        path: ROUTES.AUTH.LOGIN,
-        element: <PlaceholderPage title="Login" />,
-      },
+      { path: ROUTES.HOME,         element: <LandingPage /> },
+      { path: ROUTES.REGISTER,     element: <RegistrationPage /> },
+      { path: ROUTES.AUTH.LOGIN,   element: <PlaceholderPage title="Login" /> },
     ],
   },
-  // Protected Routes (Dashboard)
+
+  // ── Dashboard ──────────────────────────────────────────────────
   {
     path: ROUTES.DASHBOARD.ROOT,
-    element: <PlaceholderPage title="Dashboard Layout" />,
-    children: [
-      {
-        index: true,
-        element: <PlaceholderPage title="Dashboard Summary" />,
-      },
-      {
-        path: ROUTES.DASHBOARD.TICKET,
-        element: <PlaceholderPage title="My Tickets" />,
-      },
-    ],
+    element: <PlaceholderPage title="Dashboard" />,
   },
-  // Admin Routes
+
+  // ── Admin routes ───────────────────────────────────────────────
   {
     path: ROUTES.ADMIN.ROOT,
-    element: <PlaceholderPage title="Admin Layout" />,
+    element: <AdminLayout />,
     children: [
-      {
-        index: true,
-        element: <PlaceholderPage title="Admin Overview" />,
-      },
+      { index: true,                            element: <DashboardTab /> },
+      { path: ROUTES.ADMIN.PARTICIPANTS,        element: <EmployeeListTab /> },
+      { path: ROUTES.ADMIN.SCANNER,             element: <ScannerTab /> },
+      { path: ROUTES.ADMIN.SETTINGS,            element: <PlaceholderPage title="Pengaturan" /> },
     ],
   },
 ]);
-

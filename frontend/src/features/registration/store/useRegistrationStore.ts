@@ -14,6 +14,7 @@ const initialPersonalData = {
 const initialFamilyData = {
   hasSpouse: false,
   spouseName: '',
+  spouseTshirtSize: '' as const,
   hasChildren: false,
   children: [],
 };

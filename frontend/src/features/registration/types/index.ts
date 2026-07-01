@@ -22,6 +22,7 @@ export interface PersonalData {
 export interface FamilyData {
   hasSpouse: boolean;
   spouseName?: string;
+  spouseTshirtSize?: TShirtSize | '';
   hasChildren: boolean;
   children: ChildData[];
 }

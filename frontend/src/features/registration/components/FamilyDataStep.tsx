@@ -1,7 +1,7 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Users, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { User, Users, Plus, Trash2, ArrowRight, ArrowLeft, Download } from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { RippleButton } from '../../../components/atoms/RippleButton';
 import { cn } from '../../../lib/cn';
@@ -9,11 +9,13 @@ import { cn } from '../../../lib/cn';
 const familyDataSchema = z.object({
   hasSpouse: z.boolean(),
   spouseName: z.string().optional(),
+  spouseTshirtSize: z.enum(['S','M','L','XL','XXL','3XL']).optional(),
   hasChildren: z.boolean(),
   children: z.array(z.object({
     id: z.string(),
     name: z.string().min(2, "Nama anak harus diisi"),
     age: z.coerce.number().min(0, "Umur tidak valid").max(50, "Umur tidak valid"),
+    tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'], { errorMap: () => ({ message: "Pilih ukuran baju" }) }).optional(),
   })),
 }).superRefine((data, ctx) => {
   if (data.hasSpouse && (!data.spouseName || data.spouseName.length < 2)) {
@@ -35,6 +37,7 @@ export function FamilyDataStep() {
     defaultValues: {
       hasSpouse: familyData.hasSpouse,
       spouseName: familyData.spouseName,
+      spouseTshirtSize: (familyData.spouseTshirtSize as any) || undefined,
       hasChildren: familyData.hasChildren,
       children: familyData.children,
     },
@@ -49,10 +52,10 @@ export function FamilyDataStep() {
   const watchHasChildren = watch('hasChildren');
 
   const onSubmit = (data: FamilyDataForm) => {
-    // If user unchecked hasChildren, clear the children array
     const cleanData = {
       ...data,
       spouseName: data.hasSpouse ? data.spouseName : '',
+      spouseTshirtSize: data.hasSpouse ? data.spouseTshirtSize : undefined,
       children: data.hasChildren ? data.children : []
     };
     
@@ -84,24 +87,48 @@ export function FamilyDataStep() {
           </div>
 
           {watchHasSpouse && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-1.5 pl-2">
-              <label className="block text-sm font-semibold text-denso-slate">Nama Pasangan</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-denso-gray-400" />
+            <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 pl-2">
+              {/* Spouse Name */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-denso-slate">Nama Pasangan</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-denso-gray-400" />
+                  </div>
+                  <input 
+                    className={cn(
+                      "w-full pl-12 pr-4 py-3 bg-white border border-denso-gray-200 rounded-xl",
+                      "focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
+                      "transition-all duration-300 font-sans text-denso-slate placeholder:text-denso-gray-400",
+                      errors.spouseName && "border-denso-error focus:ring-denso-error/30 focus:border-denso-error"
+                    )}
+                    placeholder="Ketik nama pasangan..."
+                    {...register('spouseName')}
+                  />
                 </div>
-                <input 
-                  className={cn(
-                    "w-full pl-12 pr-4 py-3 bg-white border border-denso-gray-200 rounded-xl",
-                    "focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
-                    "transition-all duration-300 font-sans text-denso-slate placeholder:text-denso-gray-400",
-                    errors.spouseName && "border-denso-error focus:ring-denso-error/30 focus:border-denso-error"
-                  )}
-                  placeholder="Ketik nama pasangan..."
-                  {...register('spouseName')}
-                />
+                {errors.spouseName && <p className="text-xs text-denso-error font-medium pl-1">{errors.spouseName.message}</p>}
               </div>
-              {errors.spouseName && <p className="text-xs text-denso-error font-medium pl-1">{errors.spouseName.message}</p>}
+
+              {/* Spouse T-Shirt Size */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold text-denso-slate">Ukuran Baju Pasangan</label>
+                <select
+                  className={cn(
+                    "w-full md:w-48 px-4 py-3 bg-white border border-denso-gray-200 rounded-xl",
+                    "focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
+                    "transition-all duration-300 font-sans text-denso-slate"
+                  )}
+                  {...register('spouseTshirtSize')}
+                >
+                  <option value="">Pilih Ukuran</option>
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="XXL">XXL</option>
+                  <option value="3XL">3XL</option>
+                </select>
+              </div>
             </div>
           )}
         </div>
@@ -194,7 +221,7 @@ export function FamilyDataStep() {
 
               <button
                 type="button"
-                onClick={() => append({ id: crypto.randomUUID(), name: '', age: 0, tshirtSize: '' })}
+                onClick={() => append({ id: crypto.randomUUID(), name: '', age: 0, tshirtSize: 'S' })}
                 className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-denso-gray-300 rounded-2xl text-denso-slate-light font-semibold hover:border-denso-amber hover:text-denso-amber hover:bg-denso-amber/5 transition-colors"
               >
                 <Plus className="w-5 h-5" />
