@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import {
   QrCode, Download, Mail, MessageCircle, CheckCircle2, Eye,
-  Ticket, Coffee, UtensilsCrossed, IceCream2, type LucideIcon,
+  Ticket, Coffee, UtensilsCrossed, IceCream2, Gift, Package, type LucideIcon,
 } from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { useAdminStore } from '../../admin/store/useAdminStore';
@@ -28,6 +28,7 @@ interface TicketInfo {
   color: string;
   icon: LucideIcon;
   ownerName?: string;
+  capacity?: number; // for group tickets (entry, snack, lunch)
 }
 
 // ─── PDF HTML Builder ─────────────────────────────────────────────────────────
@@ -38,11 +39,18 @@ interface TicketInfo {
 function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
+  souvenirTicket: TicketInfo | null,
+  goodieBagTickets: TicketInfo[],
   personal: PersonalData,
   family: FamilyData,
   qrMap: Record<string, string>,  // ticketId → data URI
 ) {
-  const allTickets = [...tickets, ...iceCreamTickets];
+  const allTickets = [
+    ...tickets,
+    ...(souvenirTicket ? [souvenirTicket] : []),
+    ...iceCreamTickets,
+    ...goodieBagTickets,
+  ];
   const PW = 794; // A4 width px @ 96dpi
   const PAD = 36; // page padding
 
@@ -50,7 +58,9 @@ function buildPDFHtml(
     if (t.icon === Ticket)          return 'Tiket Registrasi';
     if (t.icon === Coffee)          return 'Kupon Snack Pagi';
     if (t.icon === UtensilsCrossed) return 'Kupon Makan Siang';
+    if (t.icon === Package)         return 'Souvenir Karyawan';
     if (t.icon === IceCream2)       return 'Kupon Es Krim';
+    if (t.icon === Gift)            return 'Goodie Bag Anak';
     return 'Tiket';
   };
 
@@ -58,7 +68,9 @@ function buildPDFHtml(
     if (t.icon === Ticket)          return 'TIKET REGISTRASI';
     if (t.icon === Coffee)          return 'FOOD & BEVERAGE';
     if (t.icon === UtensilsCrossed) return 'FOOD & BEVERAGE';
+    if (t.icon === Package)         return 'SOUVENIR';
     if (t.icon === IceCream2)       return 'KIDS SPECIAL';
+    if (t.icon === Gift)            return 'GOODIE BAG';
     return 'TIKET';
   };
 
@@ -260,6 +272,7 @@ function buildPDFHtml(
           ${row('Divisi', personal.division)}
           ${row('Tanggal', '13 September 2026', '#F8F9FB')}
           ${row('Lokasi', 'Lapangan DENSO Fajar Plant')}
+          ${t.capacity ? row('Berlaku untuk', `${t.capacity} orang`, '#F8F9FB') : ''}
         </table>
       </td>
 
@@ -350,27 +363,82 @@ export function TicketResultStep() {
   const [isGenerating, setIsGenerating] = useState(true);
   const [tickets, setTickets] = useState<TicketInfo[]>([]);
   const [iceCreamTickets, setIceCreamTickets] = useState<TicketInfo[]>([]);
+  const [souvenirTicket, setSouvenirTicket] = useState<TicketInfo | null>(null);
+  const [goodieBagTickets, setGoodieBagTickets] = useState<TicketInfo[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const ticketRef = useRef<HTMLDivElement>(null);
   const registerEmployee = useAdminStore(s => s.registerEmployee);
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      // Calculate total people
+      let totalPeople = 1;
+      if (personalData.maritalStatus === 'Family') {
+        if (familyData.hasSpouse) totalPeople++;
+        if (familyData.hasChildren) totalPeople += familyData.children.length;
+      }
+
       const mainTickets: TicketInfo[] = [
-        { title: 'Tiket Registrasi',  id: generateMockTicketId('REG'), color: '#DC0032', icon: Ticket },
-        { title: 'Kupon Snack Pagi',  id: generateMockTicketId('SNK'), color: '#B45309', icon: Coffee },
-        { title: 'Kupon Makan Siang', id: generateMockTicketId('LNC'), color: '#C2410C', icon: UtensilsCrossed },
+        { 
+          title: 'Tiket Registrasi',  
+          id: generateMockTicketId('REG'), 
+          color: '#DC0032', 
+          icon: Ticket,
+          capacity: totalPeople,
+        },
+        { 
+          title: 'Kupon Snack Pagi',  
+          id: generateMockTicketId('SNK'), 
+          color: '#B45309', 
+          icon: Coffee,
+        },
+        { 
+          title: 'Kupon Makan Siang', 
+          id: generateMockTicketId('LNC'), 
+          color: '#C2410C', 
+          icon: UtensilsCrossed,
+          capacity: totalPeople,
+        },
       ];
+
+      // Souvenir - 1 per karyawan
+      const souvenirT: TicketInfo = {
+        title: 'Souvenir Karyawan',
+        id: generateMockTicketId('SOU'),
+        color: '#0077CC',
+        icon: Package,
+      };
+
+      // Ice Cream - untuk anak <=12, gunakan nama karyawan
       let iceTickets: TicketInfo[] = [];
       if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
         const kids = familyData.children.filter(c => c.age <= 12);
-        iceTickets = kids.map(kid => ({
-          title: 'Kupon Es Krim', id: generateMockTicketId('ICE'),
-          color: '#9D174D', icon: IceCream2, ownerName: kid.name,
+        iceTickets = kids.map(() => ({
+          title: 'Kupon Es Krim', 
+          id: generateMockTicketId('ICE'),
+          color: '#9D174D', 
+          icon: IceCream2, 
+          ownerName: personalData.fullName, // gunakan nama karyawan
         }));
       }
+
+      // Goodie Bag - untuk setiap anak, gunakan nama karyawan
+      let goodieBagT: TicketInfo[] = [];
+      if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
+        goodieBagT = familyData.children.map(() => ({
+          title: 'Goodie Bag Anak',
+          id: generateMockTicketId('GOD'),
+          color: '#7C3AED',
+          icon: Gift,
+          ownerName: personalData.fullName, // gunakan nama karyawan
+        }));
+      }
+
       setTickets(mainTickets);
+      setSouvenirTicket(souvenirT);
       setIceCreamTickets(iceTickets);
+      setGoodieBagTickets(goodieBagT);
+
       registerEmployee({
         fullName: personalData.fullName, nik: personalData.nik,
         division: personalData.division, email: personalData.email,
@@ -391,11 +459,16 @@ export function TicketResultStep() {
       setIsGenerating(false);
     }, 1800);
     return () => clearTimeout(timer);
-  }, [personalData, familyData]);
+  }, [personalData, familyData, registerEmployee]);
 
   // ── Pre-generate all QR codes as data URIs ──
   const buildQRMap = async (): Promise<Record<string, string>> => {
-    const allTickets = [...tickets, ...iceCreamTickets];
+    const allTickets = [
+      ...tickets, 
+      ...(souvenirTicket ? [souvenirTicket] : []),
+      ...iceCreamTickets,
+      ...goodieBagTickets,
+    ];
     const entries = await Promise.all(
       allTickets.map(async t => {
         const uri = await generateQRDataURI(t.id);
@@ -408,7 +481,7 @@ export function TicketResultStep() {
   // ── Preview: open in new window, content centered ──
   const handlePreview = async () => {
     const qrMap = await buildQRMap();
-    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrMap);
+    const html = buildPDFHtml(tickets, iceCreamTickets, souvenirTicket, goodieBagTickets, personalData, familyData, qrMap);
 
     const pw = window.open('', '_blank');
     if (!pw) return;
@@ -471,7 +544,7 @@ export function TicketResultStep() {
       const qrMap = await buildQRMap();
 
       // 2. Build HTML
-      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrMap);
+      const html = buildPDFHtml(tickets, iceCreamTickets, souvenirTicket, goodieBagTickets, personalData, familyData, qrMap);
 
       // 3. Load libraries
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
@@ -578,7 +651,12 @@ export function TicketResultStep() {
     );
   }
 
-  const allTickets = [...tickets, ...iceCreamTickets];
+  const allTickets = [
+    ...tickets, 
+    ...(souvenirTicket ? [souvenirTicket] : []), 
+    ...iceCreamTickets, 
+    ...goodieBagTickets
+  ];
 
   return (
     <div className="flex flex-col" ref={ticketRef}>
