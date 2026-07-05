@@ -154,7 +154,100 @@ function buildPDFHtml(
   return `<!DOCTYPE html>
 <html lang="id"><head>
 <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
 <title>E-Ticket — ${personal.fullName}</title>
+<style>
+@media screen {
+  /* Mobile responsive adjustments for preview */
+  @media (max-width: 768px) {
+    html, body { width: 100% !important; }
+    .page { 
+      width: 100% !important; 
+      padding: 16px !important;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+    .hdr { 
+      flex-direction: column; 
+      gap: 12px; 
+      text-align: center;
+      padding: 14px 16px !important;
+    }
+    .hdr-event, .hdr-date, .hdr-badge { text-align: center; }
+    .icard-body { 
+      flex-direction: column !important; 
+      gap: 16px !important;
+    }
+    .section + .section { 
+      border-left: none !important; 
+      border-top: 1px solid #EBEDF0;
+      padding-left: 0 !important;
+      padding-top: 16px;
+    }
+    .ticket-wrap {
+      flex-direction: column !important;
+      height: auto !important;
+    }
+    .ticket-left {
+      width: 100% !important;
+      padding: 16px !important;
+    }
+    .tl-num { 
+      position: static !important;
+      text-align: right;
+      margin-top: 8px;
+    }
+    .ticket-mid {
+      width: 100% !important;
+      padding: 16px !important;
+    }
+    .ticket-tear {
+      width: 100% !important;
+      height: 0 !important;
+      border-left: none !important;
+      border-top: 2px dashed !important;
+      margin: 0 !important;
+    }
+    .ticket-right {
+      width: 100% !important;
+      padding: 20px !important;
+    }
+    .tr-qr {
+      width: 120px !important;
+      height: 120px !important;
+    }
+    .footer {
+      flex-direction: column !important;
+      gap: 8px;
+      text-align: center !important;
+    }
+    .ft { text-align: center !important; }
+  }
+}
+
+/* Print styles - maintain original A4 layout */
+@media print {
+  html, body { width: ${A4_W}px !important; }
+  .page { width: ${A4_W}px !important; padding: 28px 36px 32px !important; }
+  .ticket-wrap { 
+    flex-direction: row !important; 
+    height: 112px !important;
+  }
+  .ticket-left { width: 196px !important; }
+  .ticket-mid { flex: 1 !important; }
+  .ticket-right { width: 122px !important; }
+  .icard-body { 
+    flex-direction: row !important; 
+    gap: 24px !important;
+  }
+  .section + .section { 
+    border-left: 1px solid #EBEDF0 !important;
+    border-top: none !important;
+    padding-left: 24px !important;
+    padding-top: 0 !important;
+  }
+}
+</style>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:${A4_W}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
