@@ -43,7 +43,7 @@ function buildPDFHtml(
   const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
 
   const ticketLabel = (t: TicketInfo) => {
-    if (t.icon === Ticket)          return 'Tiket Masuk & Souvenir';
+    if (t.icon === Ticket)          return 'Tiket Registrasi';
     if (t.icon === Coffee)          return 'Kupon Snack Pagi';
     if (t.icon === UtensilsCrossed) return 'Kupon Makan Siang';
     if (t.icon === IceCream2)       return 'Kupon Es Krim';
@@ -51,7 +51,7 @@ function buildPDFHtml(
   };
 
   const ticketCatLabel = (t: TicketInfo) => {
-    if (t.icon === Ticket)          return 'TIKET MASUK';
+    if (t.icon === Ticket)          return 'TIKET REGISTRASI';
     if (t.icon === Coffee)          return 'FOOD &amp; BEVERAGE';
     if (t.icon === UtensilsCrossed) return 'FOOD &amp; BEVERAGE';
     if (t.icon === IceCream2)       return 'KIDS SPECIAL';
@@ -109,41 +109,41 @@ function buildPDFHtml(
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #F0F2F5;">
         <div style="width:44px;height:44px;background:linear-gradient(135deg,#DC0032,#A8001E);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👤</div>
         <div style="min-width:0;flex:1;">
-          <div style="font-size:10px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Data Karyawan</div>
-          <div style="font-size:16px;font-weight:800;color:#1A2233;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${personal.fullName}</div>
+          <div style="font-size:10px;color:#8896A8 !important;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Data Karyawan</div>
+          <div style="font-size:15px;font-weight:800;color:#1A2233 !important;line-height:1.3;word-wrap:break-word;overflow-wrap:break-word;">${personal.fullName}</div>
         </div>
       </div>
       <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;width:80px;vertical-align:top;">NIK</td>
-          <td style="padding:8px 0;color:#CDD4D8;vertical-align:top;width:8px;">:</td>
-          <td style="padding:8px 0;font-size:11px;color:#1A2233;font-weight:700;vertical-align:top;">${personal.nik}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;width:80px;vertical-align:top;">NIK</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;vertical-align:top;width:8px;">:</td>
+          <td style="padding:8px 0;font-size:11px;color:#1A2233 !important;font-weight:700;vertical-align:top;word-wrap:break-word;">${personal.nik}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">Divisi</td>
-          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:8px 6px;font-size:11px;color:#1A2233;font-weight:700;">${personal.division}</td>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8 !important;font-weight:600;">Divisi</td>
+          <td style="padding:8px 4px;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 6px;font-size:11px;color:#1A2233 !important;font-weight:700;word-wrap:break-word;">${personal.division}</td>
         </tr>
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Email</td>
-          <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:10px;color:#1A2233;font-weight:600;word-break:break-all;">${personal.email}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Email</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 0;font-size:10px;color:#1A2233 !important;font-weight:600;word-break:break-all;overflow-wrap:break-word;">${personal.email}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">No. HP</td>
-          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:8px 6px;font-size:11px;color:#1A2233;font-weight:700;">${personal.phone}</td>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8 !important;font-weight:600;">No. HP</td>
+          <td style="padding:8px 4px;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 6px;font-size:11px;color:#1A2233 !important;font-weight:700;">${personal.phone}</td>
         </tr>
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
-          <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:11px;color:#1A2233;font-weight:700;">${personal.tshirtSize || '-'}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Kaos</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 0;font-size:11px;color:#1A2233 !important;font-weight:700;">${personal.tshirtSize || '-'}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">Status</td>
-          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8 !important;font-weight:600;">Status</td>
+          <td style="padding:8px 4px;color:#CDD4D8 !important;">:</td>
           <td style="padding:8px 6px;">
-            <span style="display:inline-block;background:${personal.maritalStatus === 'Family' ? '#DBEAFE' : '#F3F4F6'};color:${personal.maritalStatus === 'Family' ? '#1E40AF' : '#4B5563'};font-size:9px;font-weight:700;padding:4px 10px;border-radius:12px;">${personal.maritalStatus === 'Family' ? '👨‍👩‍👧 Keluarga' : '👤 Sendiri'}</span>
+            <span style="display:inline-block;background:${personal.maritalStatus === 'Family' ? '#DBEAFE' : '#F3F4F6'};color:${personal.maritalStatus === 'Family' ? '#1E40AF' : '#4B5563'} !important;font-size:9px;font-weight:700;padding:4px 10px;border-radius:12px;">${personal.maritalStatus === 'Family' ? '👨‍👩‍👧 Keluarga' : '👤 Sendiri'}</span>
           </td>
         </tr>
       </table>
@@ -262,24 +262,24 @@ function buildPDFHtml(
       
       <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;width:80px;">Nama</td>
-          <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">${t.ownerName ?? personal.fullName}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;width:80px;">Nama</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;word-wrap:break-word;overflow-wrap:break-word;">${t.ownerName ?? personal.fullName}</td>
         </tr>
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">NIK</td>
-          <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">${personal.nik}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">NIK</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;">${personal.nik}</td>
         </tr>
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Divisi</td>
-          <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">${personal.division}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Divisi</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;word-wrap:break-word;">${personal.division}</td>
         </tr>
         <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Tanggal</td>
-          <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">13 September 2026</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Tanggal</td>
+          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;">13 September 2026</td>
         </tr>
       </table>
     </div>
@@ -392,7 +392,7 @@ export function TicketResultStep() {
   useEffect(() => {
     const timer = setTimeout(() => {
       const mainTickets: TicketInfo[] = [
-        { title: 'Tiket Masuk & Souvenir', id: generateMockTicketId('REG'), color: '#DC0032', icon: Ticket },
+        { title: 'Tiket Registrasi', id: generateMockTicketId('REG'), color: '#DC0032', icon: Ticket },
         { title: 'Kupon Snack Pagi',        id: generateMockTicketId('SNK'), color: '#B45309', icon: Coffee },
         { title: 'Kupon Makan Siang',        id: generateMockTicketId('LNC'), color: '#C2410C', icon: UtensilsCrossed },
       ];
@@ -508,14 +508,14 @@ export function TicketResultStep() {
       iframeDoc.close();
 
       // Wait for content to load
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Wait for all images (QR codes) to load
+      // Wait for all images (QR codes) to load with longer timeout
       await new Promise<void>(resolve => {
         const imgs = iframeDoc.querySelectorAll('img');
         
         if (!imgs.length) { 
-          setTimeout(resolve, 300); 
+          setTimeout(resolve, 500); 
           return; 
         }
         
@@ -525,7 +525,7 @@ export function TicketResultStep() {
         const checkComplete = () => {
           loaded++;
           if (loaded >= total) {
-            setTimeout(resolve, 500); // Extra settle time
+            setTimeout(resolve, 1000); // Extra settle time for QR rendering
           }
         };
         
@@ -535,7 +535,7 @@ export function TicketResultStep() {
           if (el.complete && el.naturalHeight > 0) {
             checkComplete();
           } else {
-            const timeout = setTimeout(() => checkComplete(), 5000);
+            const timeout = setTimeout(() => checkComplete(), 8000); // Longer timeout
             el.onload = () => { 
               clearTimeout(timeout); 
               checkComplete(); 
@@ -560,13 +560,15 @@ export function TicketResultStep() {
         await new Promise(resolve => setTimeout(resolve, 200));
 
         const canvas = await html2canvas(pageEl, {
-          scale: 2,
+          scale: 2.5,
           useCORS: true,
-          allowTaint: false,
+          allowTaint: true,
           backgroundColor: '#F0F2F5',
           width: pageWidth,
           windowWidth: pageWidth,
-          logging: false,
+          logging: true,
+          imageTimeout: 15000,
+          removeContainer: false,
         });
 
         if (i > 0) pdf.addPage();
