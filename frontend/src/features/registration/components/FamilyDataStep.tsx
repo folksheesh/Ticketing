@@ -15,7 +15,7 @@ const schema = z.object({
   children: z.array(z.object({
     id:         z.string(),
     name:       z.string().min(2, 'Nama anak harus diisi'),
-    age:        z.coerce.number().min(0).max(50, 'Umur tidak valid'),
+    age:        z.preprocess(val => Number(val), z.number().min(0).max(50, 'Umur tidak valid')),
     tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'] as const).optional(),
   })),
 }).superRefine((data, ctx) => {
@@ -23,7 +23,20 @@ const schema = z.object({
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Nama pasangan harus diisi', path: ['spouseName'] });
   }
 });
-type Form = z.infer<typeof schema>;
+
+// Explicit output type to match ChildData (age is number)
+type Form = {
+  hasSpouse: boolean;
+  spouseName?: string;
+  spouseTshirtSize?: 'S'|'M'|'L'|'XL'|'XXL'|'3XL';
+  hasChildren: boolean;
+  children: {
+    id: string;
+    name: string;
+    age: number;
+    tshirtSize?: 'S'|'M'|'L'|'XL'|'XXL'|'3XL';
+  }[];
+};
 
 const SIZES = ['S','M','L','XL','XXL','3XL'] as const;
 
@@ -189,7 +202,7 @@ export function FamilyDataStep() {
   const { familyData, setFamilyData, nextStep, prevStep } = useRegistrationStore();
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<Form>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as import('react-hook-form').Resolver<Form>,
     defaultValues: {
       hasSpouse:        familyData.hasSpouse,
       spouseName:       familyData.spouseName,
@@ -211,7 +224,12 @@ export function FamilyDataStep() {
       ...data,
       spouseName:       data.hasSpouse   ? data.spouseName   : '',
       spouseTshirtSize: data.hasSpouse   ? data.spouseTshirtSize : undefined,
-      children:         data.hasChildren ? data.children     : [],
+      children:         data.hasChildren ? data.children.map(c => ({
+        id: c.id,
+        name: c.name,
+        age: c.age,
+        tshirtSize: (c.tshirtSize ?? 'S') as import('../types').TShirtSize,
+      })) : [],
     });
     nextStep();
   };

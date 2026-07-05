@@ -283,92 +283,83 @@ export function TicketResultStep() {
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'), import('html2canvas'),
       ]);
-      
+
       const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
-      const container = document.createElement('div');
-      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:600px;background:#F5F7F8;padding:0;z-index:-9999;opacity:1;';
-      container.innerHTML = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-      document.body.appendChild(container);
-      
-      // Wait significantly longer for all images, including QR codes from external API
+
+      // Use an isolated iframe to avoid global CSS interference
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:620px;height:1px;border:none;visibility:hidden;';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) throw new Error('Cannot access iframe document');
+
+      iframeDoc.open();
+      iframeDoc.write(html.replace(/<script[\s\S]*?<\/script>/gi, ''));
+      iframeDoc.close();
+
+      // Resize iframe to full content height
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const scrollH = iframeDoc.body.scrollHeight || 1200;
+      iframe.style.height = scrollH + 'px';
+
+      // Wait for all QR images to load
       await new Promise<void>(resolve => {
-        const imgs = container.querySelectorAll('img');
-        if (!imgs.length) { 
-          setTimeout(resolve, 500);
-          return; 
-        }
-        let loaded = 0;
-        let failed = 0;
+        const imgs = iframeDoc.querySelectorAll('img');
+        if (!imgs.length) { setTimeout(resolve, 200); return; }
+        let done = 0;
         const total = imgs.length;
-        
-        imgs.forEach((img) => {
-          const imageElement = img as HTMLImageElement;
-          const done = () => { 
-            loaded++;
-            if (loaded + failed >= total) resolve(); 
-          };
-          
-          if (imageElement.complete && imageElement.naturalHeight > 0) {
-            done();
+        imgs.forEach(img => {
+          const el = img as HTMLImageElement;
+          const finish = () => { if (++done >= total) resolve(); };
+          if (el.complete && el.naturalHeight > 0) {
+            finish();
           } else {
-            const timeout = setTimeout(done, 5000); // 5s timeout per image
-            imageElement.onload = () => {
-              clearTimeout(timeout);
-              done();
-            };
-            imageElement.onerror = () => {
-              clearTimeout(timeout);
-              failed++;
-              done();
-            };
+            const t = setTimeout(finish, 6000);
+            el.onload = () => { clearTimeout(t); finish(); };
+            el.onerror = () => { clearTimeout(t); finish(); };
           }
         });
       });
-      
-      // Add delay for rendering
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const canvas = await html2canvas(container, { 
-        scale: 1.5, 
-        useCORS: true, 
+
+      // Extra settle time
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const canvas = await html2canvas(iframeDoc.body, {
+        scale: 2,
+        useCORS: true,
         allowTaint: true,
-        backgroundColor: '#F5F7F8', 
+        backgroundColor: '#FFFFFF',
         width: 600,
+        windowWidth: 620,
         logging: false,
         imageTimeout: 10000,
       });
-      
-      document.body.removeChild(container);
-      
-      const pdf = new jsPDF({ 
-        orientation: 'portrait', 
-        unit: 'mm', 
-        format: 'a4',
-        compress: true,
-      });
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+
+      document.body.removeChild(iframe);
+
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const imgW = pageW;
       const imgH = (canvas.height * pageW) / canvas.width;
-      
-      let yPos = 0;
+
+      let yOffset = 0;
       let page = 0;
       let remaining = imgH;
-      
+
       while (remaining > 0) {
         if (page > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, -yPos, imgW, imgH);
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, -yOffset, imgW, imgH);
         remaining -= pageH;
-        yPos += pageH;
+        yOffset += pageH;
         page++;
       }
-      
+
       pdf.save(`E-Ticket_${personalData.fullName.replace(/\s+/g, '_')}.pdf`);
     } catch (err) {
       console.error('PDF Error:', err);
-      alert('Gagal membuat PDF. Coba Preview lalu simpan manual.');
+      alert('Gagal membuat PDF. Coba gunakan tombol Preview lalu simpan manual.');
     } finally {
       setIsDownloading(false);
     }
