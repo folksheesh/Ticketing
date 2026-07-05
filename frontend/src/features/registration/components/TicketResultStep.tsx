@@ -12,7 +12,7 @@ const generateMockTicketId = (prefix: string) =>
   `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
 
 const getQRUrl = (data: string, size = 200) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=002060&bgcolor=ffffff&qzone=2`;
+  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=2`;
 
 interface TicketInfo {
   title: string;
@@ -22,7 +22,7 @@ interface TicketInfo {
   ownerName?: string;
 }
 
-// ─── PDF ticket HTML template ────────────────────────────────────────────────
+// ─── PDF Template ─────────────────────────────────────────────────────────────
 function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
@@ -31,150 +31,173 @@ function buildPDFHtml(
 ) {
   const allTickets = [...tickets, ...iceCreamTickets];
 
-  // Map icon to a simple text symbol for the PDF (no SVG renderer)
-  const iconSymbol = (t: TicketInfo) => {
-    if (t.icon === Ticket)          return '◉';
-    if (t.icon === Coffee)          return '◈';
-    if (t.icon === UtensilsCrossed) return '◆';
-    if (t.icon === IceCream2)       return '◇';
-    return '▪';
+  const ticketLabel = (t: TicketInfo) => {
+    if (t.icon === Ticket)          return 'TIKET MASUK';
+    if (t.icon === Coffee)          return 'SNACK PAGI';
+    if (t.icon === UtensilsCrossed) return 'MAKAN SIANG';
+    if (t.icon === IceCream2)       return 'ES KRIM';
+    return 'TIKET';
   };
 
-  const cards = allTickets
-    .map(
-      t => `
-    <div class="ticket">
-      <div class="ticket-top" style="background:${t.color}">
-        <span class="emoji">${iconSymbol(t)}</span>
-        <div>
-          <div class="sub">DENSO Family Gathering 2026</div>
-          <div class="title">${t.title}</div>
+  const cards = allTickets.map(t => `
+    <div class="ticket" style="break-inside:avoid;">
+      <div class="ticket-head" style="background:${t.color};">
+        <div class="ticket-head-left">
+          <div class="event-label">DENSO Family Gathering 2026</div>
+          <div class="ticket-type">${ticketLabel(t)}</div>
+          <div class="ticket-title">${t.title}</div>
+        </div>
+        <div class="ticket-head-right">
+          <div class="denso-mark">D</div>
         </div>
       </div>
-      <div class="owner-bar">
-        <span class="label">Atas Nama</span><span class="val">${t.ownerName ?? personal.fullName}</span>
-        <span class="dot">·</span>
-        <span class="label">NIK</span><span class="val">${personal.nik}</span>
-        <span class="dot">·</span>
-        <span class="label">Divisi</span><span class="val">${personal.division}</span>
+      <div class="ticket-body">
+        <div class="ticket-body-left">
+          <div class="info-row">
+            <span class="info-label">Nama</span>
+            <span class="info-val">${t.ownerName ?? personal.fullName}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">NIK</span>
+            <span class="info-val">${personal.nik}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Divisi</span>
+            <span class="info-val">${personal.division}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Tanggal</span>
+            <span class="info-val">15 September 2026</span>
+          </div>
+          <div class="ticket-id-block">
+            <div class="ticket-id-label">ID TIKET</div>
+            <div class="ticket-id-val" style="color:${t.color}">${t.id}</div>
+          </div>
+        </div>
+        <div class="ticket-divider">
+          <div class="notch top"></div>
+          <div class="dashed-line"></div>
+          <div class="notch bot"></div>
+        </div>
+        <div class="ticket-body-right">
+          <img src="${getQRUrl(t.id, 400)}" class="qr-img" alt="QR Code" />
+          <div class="qr-hint">Scan untuk verifikasi</div>
+        </div>
       </div>
-      <div class="qr-area">
-        <img src="${getQRUrl(t.id, 600)}" class="qr" alt="QR"/>
-        <p class="scan-hint">Scan QR Code untuk verifikasi</p>
-      </div>
-      <div class="punch">
-        <div class="circle l"></div>
-        <div class="dash"></div>
-        <div class="circle r"></div>
-      </div>
-      <div class="footer">
-        <span class="id-label">ID TIKET</span>
-        <span class="id-val" style="color:${t.color}">${t.id}</span>
-      </div>
-    </div>`
-    )
-    .join('');
+    </div>`).join('');
+
+  const childRows = (family.hasChildren && family.children.length > 0)
+    ? family.children.map(c => `<tr><td>${c.name}</td><td>${c.age} thn</td><td>${c.tshirtSize || '-'}</td></tr>`).join('')
+    : '';
 
   return `<!DOCTYPE html><html lang="id"><head>
 <meta charset="UTF-8"/>
-<title>E-Ticket · ${personal.fullName}</title>
+<title>E-Ticket – ${personal.fullName} · DENSO Family Gathering 2026</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',sans-serif;background:#f1f5f9;padding:28px 16px 48px;color:#0f172a}
-  h1{text-align:center;font-size:17px;font-weight:800;color:#002060;margin-bottom:4px}
-  .sub-head{text-align:center;font-size:12px;color:#64748b;margin-bottom:28px}
-  .ticket{background:white;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,32,96,.12);max-width:460px;margin:0 auto 32px}
-  .ticket-top{padding:18px 22px;display:flex;align-items:center;gap:14px;color:white}
-  .emoji{font-size:30px;line-height:1}
-  .sub{font-size:9px;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.8px}
-  .title{font-size:18px;font-weight:800;letter-spacing:-.3px;margin-top:2px}
-  .owner-bar{background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:9px 22px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:11px}
-  .label{color:#94a3b8;font-weight:600;text-transform:uppercase;font-size:9.5px;letter-spacing:.5px}
-  .val{color:#1e293b;font-weight:700}
-  .dot{color:#cbd5e1}
-  .qr-area{padding:24px 22px 16px;display:flex;flex-direction:column;align-items:center;background:white}
-  .qr{width:100%;max-width:360px;height:auto;border-radius:12px;border:1.5px solid #e2e8f0;display:block}
-  .scan-hint{font-size:10px;color:#94a3b8;margin-top:10px;font-weight:500}
-  .punch{display:flex;align-items:center;background:white}
-  .circle{width:22px;height:22px;border-radius:50%;background:#f1f5f9;border:1.5px solid #e2e8f0;flex-shrink:0}
-  .l{margin-left:-11px}.r{margin-right:-11px}
-  .dash{flex:1;border-top:2px dashed #cbd5e1;margin:0 10px}
-  .footer{background:white;padding:12px 22px 16px;display:flex;align-items:center;justify-content:center;gap:10px}
-  .id-label{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px}
-  .id-val{font-family:monospace;font-size:14px;font-weight:800;letter-spacing:2px}
-  @media print{body{background:white;padding:0}.ticket{break-inside:avoid;box-shadow:none;border:1px solid #e2e8f0;max-width:100%;margin-bottom:20px}}
-  .rekap-container{background:white;border-radius:20px;padding:24px;box-shadow:0 8px 32px rgba(0,32,96,.12);max-width:460px;margin:0 auto 32px;page-break-inside:avoid;}
-  .rekap-container h2{font-size:15px;color:#002060;margin-bottom:16px;border-bottom:1px solid #e2e8f0;padding-bottom:8px;font-weight:800;text-align:left;}
-  .rekap-section{margin-bottom:16px;}
-  .rekap-section:last-child{margin-bottom:0;}
-  .rekap-section h3{font-size:13px;color:#0f172a;margin-bottom:8px;font-weight:700;}
-  .rekap-table{width:100%;border-collapse:collapse;font-size:11px;}
-  .rekap-table td{padding:4px 0;vertical-align:top;color:#334155;}
-  .rekap-table td:first-child{width:140px;font-weight:600;color:#64748b;}
-  .rekap-table-child{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
-  .rekap-table-child th{padding:6px;background:#f8fafc;font-size:10px;text-align:left;color:#64748b;border-bottom:1px solid #e2e8f0;font-weight:600;}
-  .rekap-table-child td{padding:6px;border-bottom:1px solid #e2e8f0;color:#334155;}
-  @media print{
-    .rekap-container{box-shadow:none;border:1px solid #e2e8f0;max-width:100%;margin-bottom:20px;}
-  }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#F5F7F8;padding:32px 16px 60px;color:#2C353B;}
+
+.page-header{max-width:540px;margin:0 auto 28px;text-align:center;}
+.page-header-logo{font-size:28px;font-weight:800;font-style:italic;color:#DC0032;letter-spacing:-1px;margin-bottom:2px;}
+.page-header-sub{font-size:11px;color:#9AAAB3;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;}
+.page-header-instruction{margin-top:12px;font-size:12px;color:#6B7882;background:#fff;border-radius:12px;padding:10px 16px;border:1px solid #EEF1F3;}
+
+/* ── Ticket card ── */
+.ticket{max-width:540px;margin:0 auto 24px;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(44,53,59,.14);}
+
+.ticket-head{padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;color:white;}
+.ticket-head-left{}
+.event-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:.75;margin-bottom:4px;}
+.ticket-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:3px;opacity:.85;margin-bottom:3px;}
+.ticket-title{font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.1;}
+.denso-mark{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;font-style:italic;color:white;border:2px solid rgba(255,255,255,.3);}
+
+.ticket-body{background:#fff;display:flex;align-items:stretch;}
+.ticket-body-left{flex:1;padding:20px 20px 20px 24px;display:flex;flex-direction:column;gap:6px;}
+.info-row{display:flex;flex-direction:column;gap:1px;}
+.info-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9AAAB3;}
+.info-val{font-size:13px;font-weight:600;color:#2C353B;}
+.ticket-id-block{margin-top:auto;padding-top:12px;border-top:1px solid #EEF1F3;}
+.ticket-id-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9AAAB3;margin-bottom:3px;}
+.ticket-id-val{font-family:monospace;font-size:13px;font-weight:800;letter-spacing:2.5px;}
+
+.ticket-divider{width:1px;background:#EEF1F3;position:relative;flex-shrink:0;margin:12px 0;}
+.notch{width:18px;height:18px;border-radius:50%;background:#F5F7F8;position:absolute;left:50%;transform:translateX(-50%);border:1px solid #EEF1F3;}
+.notch.top{top:-9px;}.notch.bot{bottom:-9px;}
+.dashed-line{position:absolute;top:18px;bottom:18px;left:50%;border-left:1.5px dashed #CDD4D8;}
+
+.ticket-body-right{width:140px;flex-shrink:0;padding:16px 20px 16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.qr-img{width:108px;height:108px;display:block;border-radius:10px;border:1.5px solid #EEF1F3;}
+.qr-hint{font-size:8.5px;color:#9AAAB3;font-weight:600;text-align:center;text-transform:uppercase;letter-spacing:1px;}
+
+/* ── Summary card ── */
+.summary{max-width:540px;margin:0 auto 24px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(44,53,59,.10);break-inside:avoid;}
+.summary-head{background:#DC0032;padding:16px 24px;color:white;}
+.summary-head-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2px;opacity:.85;}
+.summary-body{padding:20px 24px;}
+.summary-section{margin-bottom:16px;}
+.summary-section:last-child{margin-bottom:0;}
+.summary-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9AAAB3;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #EEF1F3;}
+.summary-row{display:flex;gap:8px;margin-bottom:5px;font-size:12px;}
+.summary-key{width:130px;flex-shrink:0;color:#9AAAB3;font-weight:600;}
+.summary-val{color:#2C353B;font-weight:500;}
+table.child-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+table.child-table th{background:#F5F7F8;padding:6px 10px;text-align:left;font-size:10px;color:#6B7882;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #EEF1F3;}
+table.child-table td{padding:7px 10px;border-bottom:1px solid #EEF1F3;color:#2C353B;font-weight:500;}
+
+@media print{
+  body{background:white;padding:0;}
+  .ticket,.summary{box-shadow:none;border:1px solid #EEF1F3;max-width:100%;margin-bottom:18px;}
+}
 </style>
 </head><body>
-<h1>🎪 DENSO Family Gathering 2025</h1>
-<p class="sub-head">E-Ticket Resmi · Tunjukkan QR Code kepada petugas saat check-in</p>
+
+<div class="page-header">
+  <div class="page-header-logo">DENSO</div>
+  <div class="page-header-sub">Crafting the Core</div>
+  <div class="page-header-instruction">
+    📋 Tunjukkan QR Code kepada petugas di setiap pos. Setiap tiket hanya berlaku sekali scan.
+  </div>
+</div>
+
 ${cards}
 
-<div class="rekap-container">
-  <h2>Rekap Data Registrasi</h2>
-  <div class="rekap-section">
-    <h3>Data Peserta</h3>
-    <table class="rekap-table">
-      <tr><td>Nama Lengkap</td><td>: ${personal.fullName}</td></tr>
-      <tr><td>NIK</td><td>: ${personal.nik}</td></tr>
-      <tr><td>Divisi</td><td>: ${personal.division}</td></tr>
-      <tr><td>Email</td><td>: ${personal.email}</td></tr>
-      <tr><td>No. HP</td><td>: ${personal.phone}</td></tr>
-      <tr><td>Ukuran Kaos</td><td>: ${personal.tshirtSize || '-'}</td></tr>
-      <tr><td>Status Marital</td><td>: ${personal.maritalStatus}</td></tr>
-    </table>
-  </div>
-  ${personal.maritalStatus === 'Family' ? `
-    <div class="rekap-section">
-      <h3>Data Keluarga</h3>
-      ${family.hasSpouse ? `
-      <table class="rekap-table">
-        <tr><td>Nama Pasangan</td><td>: ${family.spouseName}</td></tr>
-        <tr><td>Ukuran Kaos Pasangan</td><td>: ${family.spouseTshirtSize || '-'}</td></tr>
-      </table>
-      ` : ''}
-      ${family.hasChildren && family.children.length > 0 ? `
-      <table class="rekap-table-child">
-        <tr>
-          <th>Nama Anak</th>
-          <th>Usia</th>
-          <th>Ukuran Kaos</th>
-        </tr>
-        ${family.children.map(c => `
-          <tr>
-            <td>${c.name}</td>
-            <td>${c.age} Tahun</td>
-            <td>${c.tshirtSize || '-'}</td>
-          </tr>
-        `).join('')}
-      </table>
-      ` : ''}
-      ${!family.hasSpouse && (!family.hasChildren || family.children.length === 0) ? '<p style="font-size:11px;color:#64748b;margin-top:4px;">Tidak ada data keluarga yang diisi.</p>' : ''}
+<div class="summary">
+  <div class="summary-head"><div class="summary-head-title">Rekap Registrasi</div></div>
+  <div class="summary-body">
+    <div class="summary-section">
+      <div class="summary-section-title">Data Peserta</div>
+      <div class="summary-row"><span class="summary-key">Nama Lengkap</span><span class="summary-val">${personal.fullName}</span></div>
+      <div class="summary-row"><span class="summary-key">NIK</span><span class="summary-val">${personal.nik}</span></div>
+      <div class="summary-row"><span class="summary-key">Divisi</span><span class="summary-val">${personal.division}</span></div>
+      <div class="summary-row"><span class="summary-key">Email</span><span class="summary-val">${personal.email}</span></div>
+      <div class="summary-row"><span class="summary-key">No. HP</span><span class="summary-val">${personal.phone}</span></div>
+      <div class="summary-row"><span class="summary-key">Ukuran Kaos</span><span class="summary-val">${personal.tshirtSize || '-'}</span></div>
     </div>
-  ` : ''}
+    ${personal.maritalStatus === 'Family' ? `
+    <div class="summary-section">
+      <div class="summary-section-title">Data Keluarga</div>
+      ${family.hasSpouse ? `
+        <div class="summary-row"><span class="summary-key">Pasangan</span><span class="summary-val">${family.spouseName}</span></div>
+        <div class="summary-row"><span class="summary-key">Ukuran Kaos Pasangan</span><span class="summary-val">${family.spouseTshirtSize || '-'}</span></div>
+      ` : ''}
+      ${childRows ? `
+        <table class="child-table">
+          <tr><th>Nama Anak</th><th>Usia</th><th>Ukuran Kaos</th></tr>
+          ${childRows}
+        </table>` : ''}
+    </div>` : ''}
+  </div>
 </div>
 
 <script>
   window.onload=function(){
-    const imgs=document.querySelectorAll('img');
-    let n=0;
+    var imgs=document.querySelectorAll('img');
+    var n=0;
     if(!imgs.length){window.print();return;}
-    imgs.forEach(img=>{
-      const done=()=>{if(++n===imgs.length)window.print();};
+    imgs.forEach(function(img){
+      var done=function(){if(++n===imgs.length)window.print();};
       if(img.complete)done();else{img.onload=done;img.onerror=done;}
     });
   };
@@ -182,7 +205,7 @@ ${cards}
 </body></html>`;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 export function TicketResultStep() {
   const { personalData, familyData } = useRegistrationStore();
   const [isGenerating, setIsGenerating] = useState(true);
@@ -190,7 +213,6 @@ export function TicketResultStep() {
   const [iceCreamTickets, setIceCreamTickets] = useState<TicketInfo[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const ticketRef = useRef<HTMLDivElement>(null);
-
   const registerEmployee = useAdminStore(s => s.registerEmployee);
 
   useEffect(() => {
@@ -200,30 +222,20 @@ export function TicketResultStep() {
         { title: 'Kupon Snack Pagi',        id: generateMockTicketId('SNK'), color: '#B45309', icon: Coffee },
         { title: 'Kupon Makan Siang',        id: generateMockTicketId('LNC'), color: '#C2410C', icon: UtensilsCrossed },
       ];
-
       let iceTickets: TicketInfo[] = [];
       if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
         const kids = familyData.children.filter(c => c.age <= 12);
         iceTickets = kids.map(kid => ({
-          title: 'Kupon Es Krim',
-          id: generateMockTicketId('ICE'),
-          color: '#9D174D',
-          icon: IceCream2,
-          ownerName: kid.name,
+          title: 'Kupon Es Krim', id: generateMockTicketId('ICE'),
+          color: '#9D174D', icon: IceCream2, ownerName: kid.name,
         }));
       }
-
       setTickets(mainTickets);
       setIceCreamTickets(iceTickets);
-
-      // Sync to admin store so scanner can find these tickets
       registerEmployee({
-        fullName: personalData.fullName,
-        nik: personalData.nik,
-        division: personalData.division,
-        email: personalData.email,
-        phone: personalData.phone,
-        tshirtSize: personalData.tshirtSize as string,
+        fullName: personalData.fullName, nik: personalData.nik,
+        division: personalData.division, email: personalData.email,
+        phone: personalData.phone, tshirtSize: personalData.tshirtSize as string,
         maritalStatus: personalData.maritalStatus as 'Single' | 'Family',
         spouseName: familyData.spouseName,
         spouseTshirtSize: familyData.spouseTshirtSize as string | undefined,
@@ -237,38 +249,28 @@ export function TicketResultStep() {
           ...iceTickets.map(t => ({ id: t.id, type: 'icecream' as const, label: t.title })),
         ],
       });
-
       setIsGenerating(false);
-    }, 2000);
+    }, 1800);
     return () => clearTimeout(timer);
   }, [personalData, familyData]);
 
-  // Preview → buka di window baru
   const handlePreview = () => {
     const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
-    const pw = window.open('', '_blank', 'width=560,height=900');
+    const pw = window.open('', '_blank', 'width=600,height=900');
     if (pw) { pw.document.write(html); pw.document.close(); }
   };
 
-  // Unduh PDF → langsung download tanpa print dialog via html2canvas + jsPDF
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import('jspdf'),
-        import('html2canvas'),
+        import('jspdf'), import('html2canvas'),
       ]);
-
-      // Render hidden iframe dengan konten tiket
       const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
-
-      // Buat container tersembunyi
       const container = document.createElement('div');
-      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:480px;background:white;';
+      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:560px;background:#F5F7F8;';
       container.innerHTML = html.replace(/<script[\s\S]*?<\/script>/gi, '');
       document.body.appendChild(container);
-
-      // Tunggu QR images load
       await new Promise<void>(resolve => {
         const imgs = container.querySelectorAll('img');
         if (!imgs.length) { resolve(); return; }
@@ -279,187 +281,129 @@ export function TicketResultStep() {
           else { img.onload = done; img.onerror = done; }
         });
       });
-
-      // Capture ke canvas
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#f1f5f9',
-        width: 480,
-      });
-
+      const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#F5F7F8', width: 560 });
       document.body.removeChild(container);
-
-      // Generate PDF
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const imgW = pageW;
       const imgH = (canvas.height * pageW) / canvas.width;
-
-      let yPos = 0;
-      let remaining = imgH;
-
+      let yPos = 0; let remaining = imgH;
       while (remaining > 0) {
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, -yPos, imgW, imgH);
-        remaining -= pageH;
-        yPos += pageH;
+        remaining -= pageH; yPos += pageH;
         if (remaining > 0) pdf.addPage();
       }
-
       pdf.save(`E-Ticket_${personalData.fullName.replace(/\s+/g, '_')}.pdf`);
     } catch (err) {
-      console.error('PDF generation failed:', err);
-      alert('Gagal membuat PDF. Silakan coba Preview lalu simpan manual.');
+      console.error(err);
+      alert('Gagal membuat PDF. Coba Preview lalu simpan manual.');
     } finally {
       setIsDownloading(false);
     }
   };
 
-  // ── Loading state ──────────────────────────────────────────────────────────
   if (isGenerating) {
     return (
-      <div className="p-12 flex flex-col items-center justify-center text-center space-y-6 min-h-[400px]">
+      <div className="flex flex-col items-center justify-center text-center gap-5 p-12 min-h-[360px]">
         <div className="relative w-20 h-20 flex items-center justify-center">
           <div className="absolute inset-0 border-4 rounded-full" style={{ borderColor: '#EEF1F3' }} />
           <div className="absolute inset-0 border-4 rounded-full border-t-transparent animate-spin" style={{ borderColor: '#DC0032' }} />
           <QrCode className="w-8 h-8 animate-pulse" style={{ color: '#DC0032' }} />
         </div>
         <div>
-          <h3 className="font-display font-bold text-xl mb-2" style={{ color: '#4A565E' }}>Memproses Data…</h3>
-          <p className="text-sm" style={{ color: '#6B7882' }}>Sedang membuat QR Code tiket unik untuk Anda.</p>
+          <h3 className="font-display font-bold text-xl mb-1" style={{ color: '#4A565E' }}>Menerbitkan Tiket…</h3>
+          <p className="text-sm" style={{ color: '#6B7882' }}>Sedang membuat QR Code unik untuk Anda.</p>
         </div>
       </div>
     );
   }
 
-  // ── Ticket card (compact web view) ─────────────────────────────────────────
-  const CompactTicketCard = ({ ticket }: { ticket: TicketInfo }) => {
-    const Icon = ticket.icon;
-    return (
-      <div
-        className="relative overflow-hidden bg-white rounded-2xl flex"
-        style={{ border: '1px solid #EEF1F3', boxShadow: '0 1px 6px rgba(74,86,94,0.06)' }}
-      >
-        {/* Left accent bar */}
-        <div className="w-1.5 flex-shrink-0" style={{ background: ticket.color }} />
-
-        <div className="flex-1 flex items-center justify-between p-4 gap-4">
-          <div className="flex items-center gap-3">
-            {/* Icon */}
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: ticket.color + '14' }}
-            >
-              <Icon className="w-5 h-5" style={{ color: ticket.color }} strokeWidth={1.5} />
-            </div>
-            <div>
-              {ticket.ownerName && (
-                <p
-                  className="text-[10px] font-semibold uppercase tracking-wide mb-0.5"
-                  style={{ color: '#9AAAB3' }}
-                >
-                  {ticket.ownerName}
-                </p>
-              )}
-              <p className="font-display font-bold text-sm leading-tight" style={{ color: '#4A565E' }}>
-                {ticket.title}
-              </p>
-              <p className="font-mono text-[10px] font-semibold tracking-widest mt-0.5" style={{ color: '#9AAAB3' }}>
-                {ticket.id}
-              </p>
-            </div>
-          </div>
-
-          {/* QR code */}
-          <img
-            src={getQRUrl(ticket.id, 120)}
-            alt={`QR ${ticket.title}`}
-            className="w-14 h-14 rounded-lg flex-shrink-0"
-            style={{ border: '1px solid #EEF1F3' }}
-          />
-        </div>
-      </div>
-    );
-  };
-
   const allTickets = [...tickets, ...iceCreamTickets];
 
   return (
-    <div className="p-6 md:p-10" ref={ticketRef}>
-      {/* Success header */}
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#DC003212' }}>
-          <CheckCircle2 className="w-8 h-8" style={{ color: '#DC0032' }} />
+    <div className="flex flex-col" ref={ticketRef}>
+      {/* ── Content ── */}
+      <div className="p-6 sm:p-8 space-y-5">
+
+        {/* Success header */}
+        <div className="text-center">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+            style={{ background: '#DC003212' }}
+          >
+            <CheckCircle2 className="w-7 h-7" style={{ color: '#DC0032' }} />
+          </div>
+          <h2 className="font-display font-extrabold text-xl" style={{ color: '#4A565E' }}>Registrasi Berhasil!</h2>
+          <p className="font-sans text-sm mt-1.5 max-w-xs mx-auto" style={{ color: '#6B7882' }}>
+            Tiket Anda telah diterbitkan,{' '}
+            <span className="font-semibold" style={{ color: '#4A565E' }}>{personalData.fullName}</span>.
+          </p>
         </div>
-        <h2 className="text-2xl font-display font-bold" style={{ color: '#4A565E' }}>Registrasi Berhasil!</h2>
-        <p className="text-sm mt-2 max-w-md mx-auto" style={{ color: '#6B7882' }}>
-          Terima kasih <strong style={{ color: '#4A565E' }}>{personalData.fullName}</strong>, tiket Anda telah diterbitkan.
-          Simpan dan tunjukkan QR Code saat check-in.
+
+        {/* Ticket cards — redesigned */}
+        <div className="space-y-3">
+          {allTickets.map((ticket, i) => {
+            const Icon = ticket.icon;
+            return (
+              <div key={i} className="rounded-2xl overflow-hidden flex"
+                style={{ boxShadow: '0 2px 16px rgba(44,53,59,.10)', border: '1px solid #EEF1F3' }}>
+                {/* Colored left band */}
+                <div className="w-2 flex-shrink-0" style={{ background: ticket.color }} />
+                {/* Main body */}
+                <div className="flex-1 bg-white flex items-center gap-4 px-4 py-3.5">
+                  {/* Icon badge */}
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: ticket.color + '12' }}>
+                    <Icon className="w-5 h-5" style={{ color: ticket.color }} strokeWidth={1.5} />
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    {ticket.ownerName && (
+                      <p className="font-sans text-[10px] font-semibold uppercase tracking-wider mb-0.5"
+                        style={{ color: '#9AAAB3' }}>{ticket.ownerName}</p>
+                    )}
+                    <p className="font-display font-bold text-sm" style={{ color: '#2C353B' }}>{ticket.title}</p>
+                    <p className="font-mono text-[10px] font-medium tracking-widest mt-0.5" style={{ color: '#CDD4D8' }}>
+                      {ticket.id}
+                    </p>
+                  </div>
+                  {/* QR */}
+                  <div className="flex-shrink-0 p-1.5 rounded-xl" style={{ background: '#F5F7F8' }}>
+                    <img src={getQRUrl(ticket.id, 100)} alt={`QR ${ticket.title}`}
+                      className="w-12 h-12 rounded-lg block" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-center font-sans text-xs" style={{ color: '#CDD4D8' }}>
+          {allTickets.length} tiket diterbitkan · Preview atau unduh untuk menyimpan
         </p>
       </div>
 
-      {/* Compact ticket list */}
-      <div className="rounded-2xl p-5 mb-6" style={{ background: '#F5F7F8', border: '1px solid #EEF1F3' }}>
-        <h3 className="text-xs font-semibold uppercase tracking-widest mb-4 pb-2" style={{ color: '#9AAAB3', borderBottom: '1px solid #EEF1F3' }}>
-          Daftar E-Ticket ({allTickets.length} Tiket)
-        </h3>
-        <div className="space-y-3">
-          {allTickets.map((ticket, i) => (
-            <CompactTicketCard key={i} ticket={ticket} />
-          ))}
-        </div>
-      </div>
-
-      {/* Info hint */}
-      <p className="text-center text-xs mb-5" style={{ color: '#9AAAB3' }}>
-        Klik <strong>Preview PDF</strong> untuk melihat tampilan tiket lengkap, atau <strong>Unduh PDF</strong> untuk menyimpan langsung.
-      </p>
-
-      {/* Action buttons — 2×2 grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <RippleButton
-          variant="outline"
-          size="md"
-          icon={<Eye className="w-4 h-4" />}
-          onClick={handlePreview}
-          fullWidth
-        >
-          Preview PDF
-        </RippleButton>
-
-        <RippleButton
-          variant="outline"
-          size="md"
-          icon={
-            isDownloading
+      {/* ── Footer — naturally at bottom ── */}
+      <div className="px-6 sm:px-8 py-4" style={{ borderTop: '1px solid #EEF1F3', background: '#FFFFFF' }}>
+        <div className="grid grid-cols-2 gap-2.5">
+          <RippleButton variant="outline" size="sm" icon={<Eye className="w-4 h-4" />} onClick={handlePreview} fullWidth>
+            Preview PDF
+          </RippleButton>
+          <RippleButton variant="outline" size="sm"
+            icon={isDownloading
               ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              : <Download className="w-4 h-4" />
-          }
-          onClick={handleDownloadPDF}
-          disabled={isDownloading}
-          fullWidth
-        >
-          {isDownloading ? 'Membuat…' : 'Unduh PDF'}
-        </RippleButton>
-
-        <RippleButton
-          variant="outline"
-          size="md"
-          icon={<Mail className="w-4 h-4" />}
-          fullWidth
-        >
-          Kirim ke Email
-        </RippleButton>
-
-        <RippleButton
-          variant="primary"
-          size="md"
-          icon={<MessageCircle className="w-4 h-4" />}
-          fullWidth
-        >
-          Kirim via WhatsApp
-        </RippleButton>
+              : <Download className="w-4 h-4" />}
+            onClick={handleDownloadPDF} disabled={isDownloading} fullWidth>
+            {isDownloading ? 'Membuat…' : 'Unduh PDF'}
+          </RippleButton>
+          <RippleButton variant="outline" size="sm" icon={<Mail className="w-4 h-4" />} fullWidth>
+            Kirim ke Email
+          </RippleButton>
+          <RippleButton variant="primary" size="sm" icon={<MessageCircle className="w-4 h-4" />} fullWidth>
+            Kirim via WhatsApp
+          </RippleButton>
+        </div>
       </div>
     </div>
   );

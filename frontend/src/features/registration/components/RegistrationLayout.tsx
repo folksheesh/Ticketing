@@ -27,7 +27,7 @@ export function RegistrationLayout() {
      */
     <div
       className="flex flex-col lg:flex-row"
-      style={{ height: '100vh', overflow: 'hidden' }}
+      style={{ height: '100dvh', overflow: 'hidden' }}
     >
       {/* ══════════════════════════════════════════════════════════
           LEFT PANEL  — branding + photo (desktop only)
@@ -90,20 +90,18 @@ export function RegistrationLayout() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          RIGHT PANEL  — form
+          RIGHT PANEL  — single scroll container
       ══════════════════════════════════════════════════════════ */}
       <div
-        className="flex-1 overflow-y-auto"
-        style={{ background: '#F5F7F8' }}
+        className="flex-1 overflow-y-auto panel-scroll"
+        style={{ background: '#F5F7F8', overscrollBehavior: 'contain' }}
+        tabIndex={-1}
       >
-        <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10 lg:py-16 flex flex-col min-h-full">
+        <div className="max-w-2xl mx-auto px-5 sm:px-8 py-7 lg:py-8 flex flex-col">
 
           {/* Mobile header */}
-          <div className="lg:hidden text-center mb-8">
-            <h2
-              className="font-display font-extrabold"
-              style={{ fontSize: '1.75rem', color: '#4A565E' }}
-            >
+          <div className="lg:hidden text-center mb-6">
+            <h2 className="font-display font-extrabold" style={{ fontSize: '1.5rem', color: '#4A565E' }}>
               Registrasi Tiket
             </h2>
             <p className="font-sans text-sm mt-1" style={{ color: '#6B7882' }}>
@@ -111,20 +109,10 @@ export function RegistrationLayout() {
             </p>
           </div>
 
-          {/* ── Stepper ───────────────────────────────────────────── */}
-          <div className="mb-8 lg:mb-10">
-            {/* Track */}
+          {/* ── Stepper ── */}
+          <div className="mb-6">
             <div className="relative flex items-center justify-between">
-              {/* Background line */}
-              <div
-                className="absolute h-px top-5"
-                style={{
-                  left: '2rem', right: '2rem',
-                  background: '#CDD4D8',
-                  zIndex: 0,
-                }}
-              />
-              {/* Progress fill */}
+              <div className="absolute h-px top-5" style={{ left: '2rem', right: '2rem', background: '#CDD4D8', zIndex: 0 }} />
               <div
                 className="absolute h-px top-5 transition-all duration-500 ease-out"
                 style={{
@@ -134,32 +122,22 @@ export function RegistrationLayout() {
                   zIndex: 1,
                 }}
               />
-
               {STEPS.map((step) => {
                 const done    = currentStep > step.id;
                 const active  = currentStep === step.id;
                 const skipped = step.id === 2 && isSingle;
-
                 return (
-                  <div
-                    key={step.id}
-                    className="relative z-10 flex flex-col items-center gap-2.5"
-                    style={{ opacity: skipped ? 0.35 : 1 }}
-                  >
+                  <div key={step.id} className="relative z-10 flex flex-col items-center gap-2" style={{ opacity: skipped ? 0.35 : 1 }}>
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-sm transition-all duration-300"
                       style={{
-                        background: done ? '#DC0032' : active ? '#FFFFFF' : '#FFFFFF',
-                        border: done
-                          ? 'none'
-                          : active
-                            ? '2.5px solid #DC0032'
-                            : '2px solid #CDD4D8',
+                        background: done ? '#DC0032' : '#FFFFFF',
+                        border: done ? 'none' : active ? '2.5px solid #DC0032' : '2px solid #CDD4D8',
                         color: done ? '#FFFFFF' : active ? '#DC0032' : '#9AAAB3',
                         boxShadow: active ? '0 0 0 4px rgba(220,0,50,0.12)' : 'none',
                       }}
                     >
-                      {done ? <Check className="w-4.5 h-4.5 w-[18px] h-[18px]" /> : step.id}
+                      {done ? <Check style={{ width: 18, height: 18 }} /> : step.id}
                     </div>
                     <span
                       className="font-sans text-[11px] font-semibold uppercase tracking-wider text-center whitespace-nowrap"
@@ -173,9 +151,9 @@ export function RegistrationLayout() {
             </div>
           </div>
 
-          {/* ── Form card ─────────────────────────────────────────── */}
+          {/* ── Form card ── */}
           <div
-            className="flex-1 rounded-3xl overflow-hidden"
+            className="rounded-3xl overflow-hidden"
             style={{
               background: '#FFFFFF',
               boxShadow: '0 4px 32px rgba(74,86,94,0.09)',
