@@ -15,7 +15,7 @@ const schema = z.object({
   children: z.array(z.object({
     id:         z.string(),
     name:       z.string().min(2, 'Nama anak harus diisi'),
-    age:        z.preprocess(val => Number(val), z.number().min(0).max(50, 'Umur tidak valid')),
+    age:        z.preprocess(val => val === '' || val === null || val === undefined ? undefined : Number(val), z.number({ required_error: 'Umur harus diisi' }).min(0).max(50, 'Umur tidak valid')),
     tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'] as const).optional(),
   })),
 }).superRefine((data, ctx) => {
@@ -367,7 +367,7 @@ export function FamilyDataStep() {
                         type="number"
                         min="0"
                         max="50"
-                        placeholder="0"
+                        placeholder="Umur"
                         hasError={!!errors.children?.[i]?.age}
                         {...register(`children.${i}.age`)}
                       />
@@ -397,7 +397,7 @@ export function FamilyDataStep() {
 
               <button
                 type="button"
-                onClick={() => append({ id: crypto.randomUUID(), name: '', age: 0, tshirtSize: 'S' })}
+                onClick={() => append({ id: crypto.randomUUID(), name: '', age: '' as unknown as number, tshirtSize: undefined })}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-sans font-semibold text-sm transition-all duration-200"
                 style={{ border: '2px dashed #CDD4D8', color: '#9AAAB3', background: 'transparent' }}
                 onMouseEnter={e => { const b = e.currentTarget; b.style.borderColor = '#DC0032'; b.style.color = '#DC0032'; b.style.background = '#DC00320A'; }}

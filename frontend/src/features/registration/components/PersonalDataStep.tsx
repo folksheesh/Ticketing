@@ -337,13 +337,27 @@ export function PersonalDataStep() {
               <SInput placeholder="Ketik nama lengkap…" error={!!errors.fullName} {...register('fullName')} />
             </Field>
             <Field label="NIK (Nomor Induk Karyawan)" icon={Hash} error={errors.nik}>
-              <SInput placeholder="Ketik NIK…" error={!!errors.nik} {...register('nik')} />
+              <SInput
+                placeholder="Ketik NIK…"
+                inputMode="numeric"
+                error={!!errors.nik}
+                {...register('nik', {
+                  onChange: e => { e.target.value = e.target.value.replace(/\D/g, ''); }
+                })}
+              />
             </Field>
             <Field label="Email Pribadi / Kantor" icon={Mail} error={errors.email}>
               <SInput type="email" placeholder="email@example.com" error={!!errors.email} {...register('email')} />
             </Field>
             <Field label="Nomor WhatsApp" icon={Phone} error={errors.phone}>
-              <SInput placeholder="08123456789" error={!!errors.phone} {...register('phone')} />
+              <SInput
+                placeholder="08123456789"
+                inputMode="numeric"
+                error={!!errors.phone}
+                {...register('phone', {
+                  onChange: e => { e.target.value = e.target.value.replace(/\D/g, ''); }
+                })}
+              />
             </Field>
           </div>
 
