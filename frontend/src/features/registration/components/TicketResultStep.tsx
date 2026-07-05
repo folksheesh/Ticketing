@@ -76,7 +76,7 @@ function buildPDFHtml(
     return 'TIKET';
   };
 
-  // ── Build pages: First page = header + info, then 1 ticket per page ──
+  // ── Build pages: First page = header + info ONLY, then 1 ticket per page ──
   const firstPageHtml = `
 <div class="page">
   <div class="hdr">
@@ -95,10 +95,12 @@ function buildPDFHtml(
     </div>
   </div>
 
-  <div class="div-row"><div class="div-line"></div><div class="div-txt">&#127903; Tiket Anda (${allTickets.length} tiket)</div><div class="div-line"></div></div>
-  
-  <div style="text-align:center;padding:20px;background:#FFF;border-radius:12px;margin-top:10px;">
-    <p style="font-size:11px;color:#8896A8;font-weight:600;">Setiap tiket ditampilkan di halaman terpisah untuk kemudahan scan QR</p>
+  <div style="background:#FFF;border-radius:12px;padding:20px;margin-top:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);">
+    <div style="font-size:13px;font-weight:700;color:#DC0032;margin-bottom:8px;">📋 Tiket Anda</div>
+    <div style="font-size:20px;font-weight:900;color:#1A2233;margin-bottom:12px;">${allTickets.length} Tiket</div>
+    <div style="font-size:10px;color:#8896A8;font-weight:500;line-height:1.5;">
+      Setiap tiket ditampilkan di halaman terpisah<br/>untuk kemudahan scan QR code
+    </div>
   </div>
 
   <div class="footer">
@@ -107,63 +109,71 @@ function buildPDFHtml(
   </div>
 </div>`;
 
-  // ── Each ticket gets its own page ──
+  // ── Each ticket gets its own page with centered layout ──
   const ticketPages = allTickets.map((t, idx) => {
     const qrSrc = qrDataMap?.get(t.id) || getQRUrl(t.id, 500);
     
     return `
 <div class="page page-break">
-  <div class="hdr" style="margin-bottom:20px;">
-    <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Crafting the Core</div></div>
-    <div><div class="hdr-event">Tiket ${idx + 1} dari ${allTickets.length}</div></div>
-  </div>
-
-  <div class="ticket-wrap">
-    <div class="ticket-left" style="background:${t.color};">
-      <div>
-        <div class="tl-cat">${ticketCatLabel(t)}</div>
-        <div class="tl-title">${ticketLabel(t)}</div>
-        <div class="tl-event">DENSO Family Gathering 2026</div>
-        <div class="tl-date">&#128197; 15 September 2026</div>
-      </div>
-      <div class="tl-num">${String(idx + 1).padStart(2, '0')}</div>
-    </div>
-    <div class="ticket-mid">
-      <div class="tm-row">
-        <div class="tm-cell">
-          <div class="tm-label">NAMA</div>
-          <div class="tm-val">${t.ownerName ?? personal.fullName}</div>
-        </div>
-        <div class="tm-cell">
-          <div class="tm-label">NIK</div>
-          <div class="tm-val">${personal.nik}</div>
-        </div>
-      </div>
-      <div class="tm-row" style="margin-top:10px;">
-        <div class="tm-cell">
-          <div class="tm-label">DIVISI</div>
-          <div class="tm-val">${personal.division}</div>
-        </div>
-        <div class="tm-cell">
-          <div class="tm-label">ID TIKET</div>
-          <div class="tm-val tm-id" style="color:${t.color};">${t.id}</div>
-        </div>
-      </div>
-      <div class="tm-barline" style="background:${t.color}25;"></div>
-      <div class="tm-note">Tunjukkan QR kepada petugas &#183; Berlaku sekali pakai</div>
-    </div>
-    <div class="ticket-tear" style="border-color:${t.color}40;"></div>
-    <div class="ticket-right">
-      <img src="${qrSrc}" class="tr-qr" alt="QR" crossorigin="anonymous"/>
-      <div class="tr-scan">SCAN QR</div>
+  <div class="hdr" style="margin-bottom:24px;">
+    <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Family Gathering 2026</div></div>
+    <div style="text-align:${isMobile ? 'center' : 'right'};">
+      <div class="hdr-event">Tiket ${idx + 1} dari ${allTickets.length}</div>
+      <div style="display:inline-block;background:${t.color};color:#FFF;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 12px;border-radius:20px;margin-top:8px;">${ticketLabel(t)}</div>
     </div>
   </div>
 
-  <div class="footer" style="margin-top:30px;">
+  <div style="display:flex;flex-direction:column;gap:20px;margin-top:20px;">
+    
+    <!-- Ticket Info Card -->
+    <div style="background:#FFF;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.07);">
+      <div style="border-left:4px solid ${t.color};padding-left:16px;margin-bottom:16px;">
+        <div style="font-size:8px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">${ticketCatLabel(t)}</div>
+        <div style="font-size:16px;font-weight:800;color:#1A2233;margin-bottom:6px;">${ticketLabel(t)}</div>
+        <div style="font-size:10px;color:#6B7882;font-weight:600;">ID: <span style="font-family:monospace;color:${t.color};font-weight:800;">${t.id}</span></div>
+      </div>
+      
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;width:80px;">Nama</td>
+          <td style="padding:8px 0;color:#CDD4D8;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">${t.ownerName ?? personal.fullName}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">NIK</td>
+          <td style="padding:8px 0;color:#CDD4D8;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">${personal.nik}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Divisi</td>
+          <td style="padding:8px 0;color:#CDD4D8;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">${personal.division}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Tanggal</td>
+          <td style="padding:8px 0;color:#CDD4D8;">:</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">15 September 2026</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- QR Code Card -->
+    <div style="background:linear-gradient(135deg, #FFF 0%, #F8F9FB 100%);border-radius:12px;padding:32px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${t.color}20;">
+      <div style="font-size:11px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">&#128242; Scan QR Code</div>
+      <div style="display:inline-block;padding:12px;background:#FFF;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
+        <img src="${qrSrc}" style="width:${isMobile ? '140px' : '120px'};height:${isMobile ? '140px' : '120px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR" crossorigin="anonymous"/>
+      </div>
+      <div style="font-size:9px;color:#B0BAC7;font-weight:500;margin-top:16px;line-height:1.5;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
+    </div>
+
+  </div>
+
+  <div class="footer" style="margin-top:24px;">
     <div class="ft">Tiket untuk <b>${t.ownerName ?? personal.fullName}</b></div>
-    <div class="ft" style="text-align:${isMobile ? 'center' : 'right'};">ID: <b>${t.id}</b></div>
+    <div class="ft" style="text-align:${isMobile ? 'center' : 'right'};">DENSO Family Gathering 2026</div>
   </div>
 </div>`;
+  }).join('');
   }).join('');
 
   // ── summary data rows ──
