@@ -172,37 +172,164 @@ function buildPDFHtml(
       </table>
     </div>`;
 
-  // ── Build pages: First page = header + info ONLY, then 1 ticket per page ──
+  // ── Build pages: First page = beautiful data summary, then 1 QR per page ──
   const firstPageHtml = `
 <div class="page">
-  <div class="hdr">
-    <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Crafting the Core</div></div>
-    <div><div class="hdr-event">Family Gathering 2026</div><div class="hdr-date">Minggu, 15 September 2026</div><div style="text-align:${isMobile ? 'center' : 'right'};"><div class="hdr-badge">E-Ticket Resmi</div></div></div>
-  </div>
-
-  <div class="icard">
-    <div class="icard-hdr"><span class="icard-icon">&#128203;</span><span class="icard-title">Rekap Data Registrasi</span></div>
-    <div class="icard-body">
-      <div class="section">
-        <div class="section-title"><span class="sdot" style="background:#DC0032;"></span>Data Karyawan</div>
-        <table class="info-table">${infoRows}</table>
+  <!-- Hero Header with Gradient -->
+  <div style="background:linear-gradient(135deg, #1A2233 0%, #2C3E50 100%);border-radius:16px;padding:32px 28px;margin-bottom:20px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:rgba(220,0,50,0.1);border-radius:50%;"></div>
+    <div style="position:absolute;bottom:-30px;left:-30px;width:150px;height:150px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
+    <div style="position:relative;z-index:1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-size:36px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-2px;line-height:1;margin-bottom:4px;">DENSO</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:3px;">Crafting the Core</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="display:inline-block;background:#DC0032;color:#FFF;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;padding:6px 16px;border-radius:20px;box-shadow:0 4px 12px rgba(220,0,50,0.4);">E-Ticket Resmi</div>
+        </div>
       </div>
-      ${familySectionHtml}
-      ${personal.maritalStatus === 'Family' ? foodAllocationHtml : ''}
+      <div style="border-top:2px solid rgba(255,255,255,0.1);padding-top:16px;margin-top:16px;">
+        <div style="font-size:24px;font-weight:800;color:#FFFFFF;margin-bottom:6px;">Family Gathering 2026</div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">📅</span>
+            <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">Minggu, 15 September 2026</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">🎫</span>
+            <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">${allTickets.length} Tiket Diterbitkan</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div style="background:#FFF;border-radius:12px;padding:20px;margin-top:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);">
-    <div style="font-size:13px;font-weight:700;color:#DC0032;margin-bottom:8px;">📋 Tiket Anda</div>
-    <div style="font-size:20px;font-weight:900;color:#1A2233;margin-bottom:12px;">${allTickets.length} Tiket</div>
-    <div style="font-size:10px;color:#8896A8;font-weight:500;line-height:1.5;">
-      Setiap tiket ditampilkan di halaman terpisah<br/>untuk kemudahan scan QR code
+  <!-- Main Content Grid -->
+  <div style="display:grid;grid-template-columns:${personal.maritalStatus === 'Family' ? '1fr 1fr' : '1fr'};gap:16px;margin-bottom:16px;">
+    
+    <!-- Data Karyawan Card -->
+    <div style="background:#FFF;border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #DC0032;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #F0F2F5;">
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#DC0032,#A8001E);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>
+        <div>
+          <div style="font-size:11px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Data Karyawan</div>
+          <div style="font-size:18px;font-weight:800;color:#1A2233;line-height:1.2;">${personal.fullName}</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;width:90px;vertical-align:top;">NIK</td>
+          <td style="padding:10px 0;color:#CDD4D8;vertical-align:top;">:</td>
+          <td style="padding:10px 0;font-size:12px;color:#1A2233;font-weight:700;vertical-align:top;">${personal.nik}</td>
+        </tr>
+        <tr style="background:#F8F9FB;">
+          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">Divisi</td>
+          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:10px 8px;font-size:12px;color:#1A2233;font-weight:700;">${personal.division}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;">Email</td>
+          <td style="padding:10px 0;color:#CDD4D8;">:</td>
+          <td style="padding:10px 0;font-size:11px;color:#1A2233;font-weight:600;">${personal.email}</td>
+        </tr>
+        <tr style="background:#F8F9FB;">
+          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">No. HP</td>
+          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:10px 8px;font-size:12px;color:#1A2233;font-weight:700;">${personal.phone}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
+          <td style="padding:10px 0;color:#CDD4D8;">:</td>
+          <td style="padding:10px 0;font-size:12px;color:#1A2233;font-weight:700;">${personal.tshirtSize || '-'}</td>
+        </tr>
+        <tr style="background:#F8F9FB;">
+          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">Status</td>
+          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:10px 8px;">
+            <span style="display:inline-block;background:${personal.maritalStatus === 'Family' ? '#DBEAFE' : '#F3F4F6'};color:${personal.maritalStatus === 'Family' ? '#1E40AF' : '#4B5563'};font-size:10px;font-weight:700;padding:4px 12px;border-radius:12px;">${personal.maritalStatus === 'Family' ? '👨‍👩‍👧 Keluarga' : '👤 Sendiri'}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    ${personal.maritalStatus === 'Family' ? `
+    <!-- Data Keluarga Card -->
+    <div style="background:#FFF;border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #0077CC;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #F0F2F5;">
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#0077CC,#005A9C);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">👨‍👩‍👧</div>
+        <div>
+          <div style="font-size:11px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Data Keluarga</div>
+          <div style="font-size:18px;font-weight:800;color:#1A2233;line-height:1.2;">${totalPeople} Anggota</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        ${family.hasSpouse ? `
+        <tr>
+          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;width:90px;vertical-align:top;">Pasangan</td>
+          <td style="padding:10px 0;color:#CDD4D8;vertical-align:top;">:</td>
+          <td style="padding:10px 0;font-size:12px;color:#1A2233;font-weight:700;vertical-align:top;">${family.spouseName || '-'}</td>
+        </tr>
+        <tr style="background:#F8F9FB;">
+          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
+          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:10px 8px;font-size:12px;color:#1A2233;font-weight:700;">${family.spouseTshirtSize || '-'}</td>
+        </tr>
+        ` : ''}
+        ${family.hasChildren && family.children.length > 0 ? family.children.map((c, i) => `
+        <tr${i % 2 === 0 ? '' : ' style="background:#F8F9FB;"'}>
+          <td style="padding:10px ${i % 2 === 0 ? '0' : '8px'};font-size:10px;color:#8896A8;font-weight:600;vertical-align:top;">Anak ${i + 1}</td>
+          <td style="padding:10px ${i % 2 === 0 ? '0' : '4px'};color:#CDD4D8;vertical-align:top;">:</td>
+          <td style="padding:10px ${i % 2 === 0 ? '0' : '8px'};font-size:11px;color:#1A2233;font-weight:600;vertical-align:top;">${c.name}, ${c.age} thn<br/><span style="font-size:10px;color:#6B7882;">Kaos: ${c.tshirtSize || '-'}</span></td>
+        </tr>
+        `).join('') : ''}
+      </table>
+    </div>
+    ` : ''}
+
+  </div>
+
+  <!-- Food Allocation Card -->
+  <div style="background:linear-gradient(135deg,#FFF 0%,#F8FAF9 100%);border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:2px solid #E8F5E9;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#16A34A,#15803D);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🍽️</div>
+        <div>
+          <div style="font-size:11px;color:#15803D;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Alokasi Konsumsi</div>
+          <div style="font-size:18px;font-weight:800;color:#1A2233;line-height:1.2;">${totalPeople} Orang Terdaftar</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FEF3C7;">
+        <div style="font-size:11px;color:#92400E;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">☕ Snack Pagi</div>
+        <div style="font-size:28px;font-weight:900;color:#B45309;line-height:1;">${totalPeople}</div>
+        <div style="font-size:10px;color:#92400E;font-weight:600;margin-top:4px;">Porsi</div>
+      </div>
+      <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FEE2E2;">
+        <div style="font-size:11px;color:#991B1B;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🍛 Makan Siang</div>
+        <div style="font-size:28px;font-weight:900;color:#DC2626;line-height:1;">${totalPeople}</div>
+        <div style="font-size:10px;color:#991B1B;font-weight:600;margin-top:4px;">Porsi</div>
+      </div>
     </div>
   </div>
 
-  <div class="footer">
-    <div class="ft">Diterbitkan untuk <b>${personal.fullName}</b> &nbsp;&#183;&nbsp; NIK ${personal.nik}</div>
-    <div class="ft" style="text-align:${isMobile ? 'center' : 'right'};"><b>DENSO Indonesia</b> &nbsp;&#183;&nbsp; Dokumen resmi, harap simpan dengan baik</div>
+  <!-- Ticket Info Banner -->
+  <div style="background:linear-gradient(135deg,#DC0032 0%,#A8001E 100%);border-radius:14px;padding:20px 24px;text-align:center;color:#FFF;margin-bottom:16px;box-shadow:0 4px 16px rgba(220,0,50,0.3);">
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;opacity:0.9;">📱 Tiket Digital Anda</div>
+    <div style="font-size:32px;font-weight:900;margin-bottom:8px;line-height:1;">${allTickets.length} Tiket</div>
+    <div style="font-size:11px;opacity:0.85;font-weight:500;line-height:1.5;">Setiap tiket memiliki QR code unik di halaman berikutnya<br/>Tunjukkan QR ke petugas saat check-in</div>
+  </div>
+
+  <!-- Footer -->
+  <div style="border-top:2px solid #E5E7EB;padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:10px;color:#6B7882;font-weight:500;">
+      Diterbitkan untuk <span style="color:#1A2233;font-weight:800;">${personal.fullName}</span> • NIK ${personal.nik}
+    </div>
+    <div style="font-size:10px;color:#6B7882;font-weight:500;text-align:right;">
+      <span style="color:#1A2233;font-weight:800;">DENSO Indonesia</span><br/>
+      Dokumen resmi • Harap disimpan
+    </div>
   </div>
 </div>`;
 
