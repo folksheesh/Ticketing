@@ -90,7 +90,7 @@ function buildPDFHtml(
         <div style="display:flex;gap:24px;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:16px;">📅</span>
-            <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">Minggu, 15 September 2026</span>
+            <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">Minggu, 13 September 2026</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:16px;">🎫</span>
@@ -279,7 +279,7 @@ function buildPDFHtml(
         <tr>
           <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Tanggal</td>
           <td style="padding:8px 0;color:#CDD4D8;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">15 September 2026</td>
+          <td style="padding:8px 0;font-size:12px;color:#1A2233;font-weight:700;">13 September 2026</td>
         </tr>
       </table>
     </div>
