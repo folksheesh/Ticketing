@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -19,8 +19,8 @@ const schema = z.object({
   division:      z.string().min(2, 'Divisi harus diisi'),
   email:         z.string().email('Format email tidak valid'),
   phone:         z.string().min(9, 'Nomor HP tidak valid'),
-  tshirtSize:    z.enum(['S','M','L','XL','XXL','3XL'], { errorMap: () => ({ message: 'Pilih ukuran kaos' }) }),
-  maritalStatus: z.enum(['Single','Family'],            { errorMap: () => ({ message: 'Pilih status kehadiran' }) }),
+  tshirtSize:    z.enum(['S','M','L','XL','XXL','3XL'] as const),
+  maritalStatus: z.enum(['Single','Family'] as const),
 });
 type Form = z.infer<typeof schema>;
 
@@ -282,7 +282,7 @@ function SizeSelector({
 export function PersonalDataStep() {
   const { personalData, setPersonalData, nextStep, setStep } = useRegistrationStore();
 
-  const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm<Form>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<Form>({
     resolver: zodResolver(schema),
     defaultValues: {
       fullName:      personalData.fullName,

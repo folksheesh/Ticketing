@@ -1,7 +1,7 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Plus, Trash2, ArrowRight, ArrowLeft, Shirt, Baby } from 'lucide-react';
+import { User, Plus, Trash2, ArrowRight, ArrowLeft, ShirtIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { RippleButton } from '../../../components/atoms/RippleButton';
@@ -10,15 +10,13 @@ import { RippleButton } from '../../../components/atoms/RippleButton';
 const schema = z.object({
   hasSpouse:        z.boolean(),
   spouseName:       z.string().optional(),
-  spouseTshirtSize: z.enum(['S','M','L','XL','XXL','3XL']).optional(),
+  spouseTshirtSize: z.enum(['S','M','L','XL','XXL','3XL'] as const).optional(),
   hasChildren:      z.boolean(),
   children: z.array(z.object({
     id:         z.string(),
     name:       z.string().min(2, 'Nama anak harus diisi'),
     age:        z.coerce.number().min(0).max(50, 'Umur tidak valid'),
-    tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'], {
-      errorMap: () => ({ message: 'Pilih ukuran' }),
-    }).optional(),
+    tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'] as const).optional(),
   })),
 }).superRefine((data, ctx) => {
   if (data.hasSpouse && (!data.spouseName || data.spouseName.length < 2)) {
@@ -265,12 +263,13 @@ export function FamilyDataStep() {
                   }}
                   placeholder="Ketik nama pasangan…"
                   onFocus={(e) => Object.assign(e.currentTarget.style, { ...focusIn, paddingLeft: '2.5rem' })}
-                  onBlur={(e)  => Object.assign(e.currentTarget.style, {
-                    ...inputBase,
-                    paddingLeft: '2.5rem',
-                    ...(errors.spouseName ? { borderColor: '#DC0032', background: '#FFF8F9' } : {}),
+                  {...register('spouseName', {
+                    onBlur: (e) => Object.assign(e.currentTarget.style, {
+                      ...inputBase,
+                      paddingLeft: '2.5rem',
+                      ...(errors.spouseName ? { borderColor: '#DC0032', background: '#FFF8F9' } : {}),
+                    })
                   })}
-                  {...register('spouseName')}
                 />
               </div>
               {errors.spouseName && (

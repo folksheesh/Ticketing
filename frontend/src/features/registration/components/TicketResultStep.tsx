@@ -11,8 +11,8 @@ import type { PersonalData, FamilyData } from '../types';
 const generateMockTicketId = (prefix: string) =>
   `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
 
-const getQRUrl = (data: string, size = 200) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=2`;
+const getQRUrl = (data: string, size = 400) =>
+  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=1&format=svg`;
 
 interface TicketInfo {
   title: string;
@@ -39,8 +39,49 @@ function buildPDFHtml(
     return 'TIKET';
   };
 
-  const cards = allTickets.map(t => `
-    <div class="ticket" style="break-inside:avoid;">
+  const childRows = (family.hasChildren && family.children.length > 0)
+    ? family.children.map(c => `<tr><td>${c.name}</td><td>${c.age} thn</td><td>${c.tshirtSize || '-'}</td></tr>`).join('')
+    : '';
+
+  // Summary card HTML
+  const summaryHtml = `
+<div class="summary">
+  <div class="summary-head">
+    <div class="summary-head-title">📋 Rekap Data Registrasi</div>
+  </div>
+  <div class="summary-body">
+    <div class="summary-section">
+      <div class="summary-section-title">Data Karyawan</div>
+      <div class="summary-row"><span class="summary-key">Nama Lengkap</span><span class="summary-val">${personal.fullName}</span></div>
+      <div class="summary-row"><span class="summary-key">NIK</span><span class="summary-val">${personal.nik}</span></div>
+      <div class="summary-row"><span class="summary-key">Divisi</span><span class="summary-val">${personal.division}</span></div>
+      <div class="summary-row"><span class="summary-key">Email</span><span class="summary-val">${personal.email}</span></div>
+      <div class="summary-row"><span class="summary-key">No. HP</span><span class="summary-val">${personal.phone}</span></div>
+      <div class="summary-row"><span class="summary-key">Ukuran Kaos</span><span class="summary-val">${personal.tshirtSize || '-'}</span></div>
+      <div class="summary-row"><span class="summary-key">Status</span><span class="summary-val">${personal.maritalStatus === 'Family' ? 'Membawa Keluarga' : 'Sendiri'}</span></div>
+    </div>
+    ${personal.maritalStatus === 'Family' ? `
+    <div class="summary-section">
+      <div class="summary-section-title">Data Keluarga</div>
+      ${family.hasSpouse ? `
+        <div class="summary-row"><span class="summary-key">Nama Pasangan</span><span class="summary-val">${family.spouseName}</span></div>
+        <div class="summary-row"><span class="summary-key">Ukuran Kaos Pasangan</span><span class="summary-val">${family.spouseTshirtSize || '-'}</span></div>
+      ` : ''}
+      ${childRows ? `
+        <div style="margin-top:12px;">
+          <div style="font-size:10px;font-weight:600;color:#6B7882;margin-bottom:8px;">Daftar Anak:</div>
+          <table class="child-table">
+            <tr><th>Nama Anak</th><th>Usia</th><th>Ukuran Kaos</th></tr>
+            ${childRows}
+          </table>
+        </div>` : ''}
+    </div>` : ''}
+  </div>
+</div>`;
+
+  // Ticket cards HTML
+  const ticketCards = allTickets.map(t => `
+    <div class="ticket">
       <div class="ticket-head" style="background:${t.color};">
         <div class="ticket-head-left">
           <div class="event-label">DENSO Family Gathering 2026</div>
@@ -86,69 +127,68 @@ function buildPDFHtml(
       </div>
     </div>`).join('');
 
-  const childRows = (family.hasChildren && family.children.length > 0)
-    ? family.children.map(c => `<tr><td>${c.name}</td><td>${c.age} thn</td><td>${c.tshirtSize || '-'}</td></tr>`).join('')
-    : '';
-
   return `<!DOCTYPE html><html lang="id"><head>
 <meta charset="UTF-8"/>
 <title>E-Ticket – ${personal.fullName} · DENSO Family Gathering 2026</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#F5F7F8;padding:32px 16px 60px;color:#2C353B;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#F5F7F8;padding:24px 16px 48px;color:#2C353B;}
 
-.page-header{max-width:540px;margin:0 auto 28px;text-align:center;}
-.page-header-logo{font-size:28px;font-weight:800;font-style:italic;color:#DC0032;letter-spacing:-1px;margin-bottom:2px;}
+.page-header{max-width:540px;margin:0 auto 20px;text-align:center;}
+.page-header-logo{font-size:42px;font-weight:900;font-style:italic;color:#DC0032;letter-spacing:-2px;margin-bottom:4px;line-height:1;}
 .page-header-sub{font-size:11px;color:#9AAAB3;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;}
-.page-header-instruction{margin-top:12px;font-size:12px;color:#6B7882;background:#fff;border-radius:12px;padding:10px 16px;border:1px solid #EEF1F3;}
+.page-header-instruction{margin-top:12px;font-size:11.5px;color:#6B7882;background:#fff;border-radius:12px;padding:10px 16px;border:1px solid #EEF1F3;line-height:1.5;}
 
-/* ── Ticket card ── */
-.ticket{max-width:540px;margin:0 auto 24px;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(44,53,59,.14);}
-
-.ticket-head{padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;color:white;}
-.ticket-head-left{}
-.event-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:.75;margin-bottom:4px;}
-.ticket-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:3px;opacity:.85;margin-bottom:3px;}
-.ticket-title{font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.1;}
-.denso-mark{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;font-style:italic;color:white;border:2px solid rgba(255,255,255,.3);}
-
-.ticket-body{background:#fff;display:flex;align-items:stretch;}
-.ticket-body-left{flex:1;padding:20px 20px 20px 24px;display:flex;flex-direction:column;gap:6px;}
-.info-row{display:flex;flex-direction:column;gap:1px;}
-.info-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9AAAB3;}
-.info-val{font-size:13px;font-weight:600;color:#2C353B;}
-.ticket-id-block{margin-top:auto;padding-top:12px;border-top:1px solid #EEF1F3;}
-.ticket-id-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9AAAB3;margin-bottom:3px;}
-.ticket-id-val{font-family:monospace;font-size:13px;font-weight:800;letter-spacing:2.5px;}
-
-.ticket-divider{width:1px;background:#EEF1F3;position:relative;flex-shrink:0;margin:12px 0;}
-.notch{width:18px;height:18px;border-radius:50%;background:#F5F7F8;position:absolute;left:50%;transform:translateX(-50%);border:1px solid #EEF1F3;}
-.notch.top{top:-9px;}.notch.bot{bottom:-9px;}
-.dashed-line{position:absolute;top:18px;bottom:18px;left:50%;border-left:1.5px dashed #CDD4D8;}
-
-.ticket-body-right{width:140px;flex-shrink:0;padding:16px 20px 16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
-.qr-img{width:108px;height:108px;display:block;border-radius:10px;border:1.5px solid #EEF1F3;}
-.qr-hint{font-size:8.5px;color:#9AAAB3;font-weight:600;text-align:center;text-transform:uppercase;letter-spacing:1px;}
-
-/* ── Summary card ── */
-.summary{max-width:540px;margin:0 auto 24px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(44,53,59,.10);break-inside:avoid;}
-.summary-head{background:#DC0032;padding:16px 24px;color:white;}
-.summary-head-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2px;opacity:.85;}
-.summary-body{padding:20px 24px;}
+/* ── Summary card (REKAP) ── */
+.summary{max-width:540px;margin:0 auto 20px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(44,53,59,.12);border:1px solid #EEF1F3;page-break-inside:avoid;}
+.summary-head{background:linear-gradient(135deg,#DC0032 0%,#B8002A 100%);padding:14px 20px;color:white;}
+.summary-head-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;}
+.summary-body{padding:18px 20px;}
 .summary-section{margin-bottom:16px;}
 .summary-section:last-child{margin-bottom:0;}
-.summary-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9AAAB3;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #EEF1F3;}
-.summary-row{display:flex;gap:8px;margin-bottom:5px;font-size:12px;}
-.summary-key{width:130px;flex-shrink:0;color:#9AAAB3;font-weight:600;}
-.summary-val{color:#2C353B;font-weight:500;}
-table.child-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
-table.child-table th{background:#F5F7F8;padding:6px 10px;text-align:left;font-size:10px;color:#6B7882;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #EEF1F3;}
-table.child-table td{padding:7px 10px;border-bottom:1px solid #EEF1F3;color:#2C353B;font-weight:500;}
+.summary-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#DC0032;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #DC003220;}
+.summary-row{display:flex;margin-bottom:6px;font-size:12px;line-height:1.5;}
+.summary-key{width:140px;flex-shrink:0;color:#6B7882;font-weight:600;}
+.summary-val{flex:1;color:#2C353B;font-weight:500;word-wrap:break-word;}
+table.child-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px;}
+table.child-table th{background:#F5F7F8;padding:8px 12px;text-align:left;font-size:10px;color:#6B7882;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #EEF1F3;}
+table.child-table td{padding:8px 12px;border-bottom:1px solid #EEF1F3;color:#2C353B;font-weight:500;}
+table.child-table tr:last-child td{border-bottom:none;}
+
+/* ── Ticket card ── */
+.ticket{max-width:540px;margin:0 auto 18px;border-radius:16px;overflow:hidden;box-shadow:0 6px 28px rgba(44,53,59,.14);border:1px solid #EEF1F3;page-break-inside:avoid;}
+
+.ticket-head{padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;color:white;}
+.ticket-head-left{}
+.event-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;opacity:.75;margin-bottom:3px;}
+.ticket-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;opacity:.9;margin-bottom:3px;}
+.ticket-title{font-size:18px;font-weight:800;letter-spacing:-.4px;line-height:1.15;}
+.denso-mark{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;font-style:italic;color:white;border:2px solid rgba(255,255,255,.25);}
+
+.ticket-body{background:#fff;display:flex;align-items:stretch;}
+.ticket-body-left{flex:1;padding:16px 16px 16px 20px;display:flex;flex-direction:column;gap:8px;}
+.info-row{display:flex;flex-direction:column;gap:2px;}
+.info-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9AAAB3;}
+.info-val{font-size:13px;font-weight:600;color:#2C353B;line-height:1.3;word-wrap:break-word;}
+.ticket-id-block{margin-top:auto;padding-top:10px;border-top:1px solid #EEF1F3;}
+.ticket-id-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#9AAAB3;margin-bottom:3px;}
+.ticket-id-val{font-family:monospace;font-size:12px;font-weight:800;letter-spacing:1.8px;}
+
+.ticket-divider{width:1px;background:#EEF1F3;position:relative;flex-shrink:0;margin:12px 0;}
+.notch{width:16px;height:16px;border-radius:50%;background:#F5F7F8;position:absolute;left:50%;transform:translateX(-50%);border:1px solid #EEF1F3;}
+.notch.top{top:-8px;}.notch.bot{bottom:-8px;}
+.dashed-line{position:absolute;top:16px;bottom:16px;left:50%;border-left:1.5px dashed #CDD4D8;}
+
+.ticket-body-right{width:150px;flex-shrink:0;padding:14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.qr-img{width:120px;height:120px;display:block;border-radius:8px;border:3px solid #DC0032;padding:2px;background:white;image-rendering:pixelated;}
+.qr-hint{font-size:8px;color:#6B7882;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.8px;line-height:1.2;}
 
 @media print{
-  body{background:white;padding:0;}
-  .ticket,.summary{box-shadow:none;border:1px solid #EEF1F3;max-width:100%;margin-bottom:18px;}
+  body{background:white;padding:12px 8px;}
+  .ticket,.summary{box-shadow:none;border:1px solid #DDD;max-width:100%;margin-bottom:14px;}
+  .page-header-instruction{page-break-after:avoid;}
+  .summary{page-break-after:avoid;}
 }
 </style>
 </head><body>
@@ -161,35 +201,9 @@ table.child-table td{padding:7px 10px;border-bottom:1px solid #EEF1F3;color:#2C3
   </div>
 </div>
 
-${cards}
+${summaryHtml}
 
-<div class="summary">
-  <div class="summary-head"><div class="summary-head-title">Rekap Registrasi</div></div>
-  <div class="summary-body">
-    <div class="summary-section">
-      <div class="summary-section-title">Data Peserta</div>
-      <div class="summary-row"><span class="summary-key">Nama Lengkap</span><span class="summary-val">${personal.fullName}</span></div>
-      <div class="summary-row"><span class="summary-key">NIK</span><span class="summary-val">${personal.nik}</span></div>
-      <div class="summary-row"><span class="summary-key">Divisi</span><span class="summary-val">${personal.division}</span></div>
-      <div class="summary-row"><span class="summary-key">Email</span><span class="summary-val">${personal.email}</span></div>
-      <div class="summary-row"><span class="summary-key">No. HP</span><span class="summary-val">${personal.phone}</span></div>
-      <div class="summary-row"><span class="summary-key">Ukuran Kaos</span><span class="summary-val">${personal.tshirtSize || '-'}</span></div>
-    </div>
-    ${personal.maritalStatus === 'Family' ? `
-    <div class="summary-section">
-      <div class="summary-section-title">Data Keluarga</div>
-      ${family.hasSpouse ? `
-        <div class="summary-row"><span class="summary-key">Pasangan</span><span class="summary-val">${family.spouseName}</span></div>
-        <div class="summary-row"><span class="summary-key">Ukuran Kaos Pasangan</span><span class="summary-val">${family.spouseTshirtSize || '-'}</span></div>
-      ` : ''}
-      ${childRows ? `
-        <table class="child-table">
-          <tr><th>Nama Anak</th><th>Usia</th><th>Ukuran Kaos</th></tr>
-          ${childRows}
-        </table>` : ''}
-    </div>` : ''}
-  </div>
-</div>
+${ticketCards}
 
 <script>
   window.onload=function(){
@@ -266,37 +280,89 @@ export function TicketResultStep() {
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'), import('html2canvas'),
       ]);
+      
       const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
       const container = document.createElement('div');
-      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:560px;background:#F5F7F8;';
+      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:580px;background:#F5F7F8;padding:20px;z-index:-9999;';
       container.innerHTML = html.replace(/<script[\s\S]*?<\/script>/gi, '');
       document.body.appendChild(container);
+      
+      // Wait for all images to load
       await new Promise<void>(resolve => {
         const imgs = container.querySelectorAll('img');
         if (!imgs.length) { resolve(); return; }
         let loaded = 0;
-        imgs.forEach(img => {
-          const done = () => { if (++loaded === imgs.length) resolve(); };
-          if ((img as HTMLImageElement).complete) done();
-          else { img.onload = done; img.onerror = done; }
+        imgs.forEach((img) => {
+          const imageElement = img as HTMLImageElement;
+          const done = () => { 
+            loaded++;
+            if (loaded === imgs.length) resolve(); 
+          };
+          if (imageElement.complete) {
+            done();
+          } else {
+            imageElement.onload = done;
+            imageElement.onerror = done;
+          }
         });
       });
-      const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#F5F7F8', width: 560 });
+      
+      // Add delay to ensure rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const canvas = await html2canvas(container, { 
+        scale: 2, 
+        useCORS: true, 
+        backgroundColor: '#F5F7F8', 
+        width: 580,
+        logging: false,
+        allowTaint: true,
+        foreignObjectRendering: true,
+      });
+      
       document.body.removeChild(container);
+      
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW;
-      const imgH = (canvas.height * pageW) / canvas.width;
-      let yPos = 0; let remaining = imgH;
+      const imgW = pageW - 4; // margin
+      const imgH = (canvas.height * imgW) / canvas.width;
+      
+      let yPos = 0;
+      let pageIndex = 0;
+      let remaining = imgH;
+      
       while (remaining > 0) {
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, -yPos, imgW, imgH);
-        remaining -= pageH; yPos += pageH;
-        if (remaining > 0) pdf.addPage();
+        const heightLeft = remaining;
+        let position = 0;
+        
+        if (pageIndex > 0) {
+          pdf.addPage();
+          position = heightLeft - pageH;
+        } else {
+          position = 0;
+        }
+        
+        const sourceY = yPos * canvas.height / imgH;
+        const sourceHeight = Math.min(pageH * canvas.height / imgH, canvas.height - sourceY);
+        
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = sourceHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+        if (tempCtx) {
+          tempCtx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+          pdf.addImage(tempCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 2, position + 2, imgW, (sourceHeight * imgW) / canvas.width);
+        }
+        
+        remaining -= pageH;
+        yPos += pageH;
+        pageIndex++;
       }
+      
       pdf.save(`E-Ticket_${personalData.fullName.replace(/\s+/g, '_')}.pdf`);
     } catch (err) {
-      console.error(err);
+      console.error('PDF Error:', err);
       alert('Gagal membuat PDF. Coba Preview lalu simpan manual.');
     } finally {
       setIsDownloading(false);

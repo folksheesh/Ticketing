@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, X, Mail, Shirt, CheckCircle2, Clock, Ticket } from 'lucide-react';
+import { Search, X, CheckCircle2, Clock, Ticket } from 'lucide-react';
 import { useAdminStore } from '../store/useAdminStore';
 import type { Employee } from '../types';
 import { cn } from '../../../lib/cn';

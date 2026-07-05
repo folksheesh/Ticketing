@@ -1,0 +1,7 @@
+node_modules
+*.log
+.git
+.vscode
+.DS_Store
+frontend/dist
+frontend/node_modules
