@@ -76,12 +76,48 @@ function buildPDFHtml(
     return 'TIKET';
   };
 
-  // ── ticket stripe HTML ──
-  const ticketStripes = allTickets.map((t, idx) => {
-    // Use data URI if available, otherwise use regular URL
+  // ── Build pages: First page = header + info, then 1 ticket per page ──
+  const firstPageHtml = `
+<div class="page">
+  <div class="hdr">
+    <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Crafting the Core</div></div>
+    <div><div class="hdr-event">Family Gathering 2026</div><div class="hdr-date">Minggu, 15 September 2026</div><div style="text-align:${isMobile ? 'center' : 'right'};"><div class="hdr-badge">E-Ticket Resmi</div></div></div>
+  </div>
+
+  <div class="icard">
+    <div class="icard-hdr"><span class="icard-icon">&#128203;</span><span class="icard-title">Rekap Data Registrasi</span></div>
+    <div class="icard-body">
+      <div class="section">
+        <div class="section-title"><span class="sdot" style="background:#DC0032;"></span>Data Karyawan</div>
+        <table class="info-table">${infoRows}</table>
+      </div>
+      ${familySectionHtml}
+    </div>
+  </div>
+
+  <div class="div-row"><div class="div-line"></div><div class="div-txt">&#127903; Tiket Anda (${allTickets.length} tiket)</div><div class="div-line"></div></div>
+  
+  <div style="text-align:center;padding:20px;background:#FFF;border-radius:12px;margin-top:10px;">
+    <p style="font-size:11px;color:#8896A8;font-weight:600;">Setiap tiket ditampilkan di halaman terpisah untuk kemudahan scan QR</p>
+  </div>
+
+  <div class="footer">
+    <div class="ft">Diterbitkan untuk <b>${personal.fullName}</b> &nbsp;&#183;&nbsp; NIK ${personal.nik}</div>
+    <div class="ft" style="text-align:${isMobile ? 'center' : 'right'};"><b>DENSO Indonesia</b> &nbsp;&#183;&nbsp; Dokumen resmi, harap simpan dengan baik</div>
+  </div>
+</div>`;
+
+  // ── Each ticket gets its own page ──
+  const ticketPages = allTickets.map((t, idx) => {
     const qrSrc = qrDataMap?.get(t.id) || getQRUrl(t.id, 500);
     
     return `
+<div class="page page-break">
+  <div class="hdr" style="margin-bottom:20px;">
+    <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Crafting the Core</div></div>
+    <div><div class="hdr-event">Tiket ${idx + 1} dari ${allTickets.length}</div></div>
+  </div>
+
   <div class="ticket-wrap">
     <div class="ticket-left" style="background:${t.color};">
       <div>
@@ -121,7 +157,13 @@ function buildPDFHtml(
       <img src="${qrSrc}" class="tr-qr" alt="QR" crossorigin="anonymous"/>
       <div class="tr-scan">SCAN QR</div>
     </div>
-  </div>`;
+  </div>
+
+  <div class="footer" style="margin-top:30px;">
+    <div class="ft">Tiket untuk <b>${t.ownerName ?? personal.fullName}</b></div>
+    <div class="ft" style="text-align:${isMobile ? 'center' : 'right'};">ID: <b>${t.id}</b></div>
+  </div>
+</div>`;
   }).join('');
 
   // ── summary data rows ──
@@ -219,40 +261,21 @@ html,body{width:${pageWidth}px;background:#F0F2F5;font-family:'Segoe UI',Arial,s
 .tr-qr{width:${isMobile ? '110px' : '88px'};height:${isMobile ? '110px' : '88px'};display:block;border-radius:7px;border:2.5px solid #DC0032;padding:2px;background:white;}
 .tr-scan{font-size:7px;font-weight:800;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;}
 
+/* PAGE BREAK for PDF */
+.page-break{page-break-before:always;}
+
 /* FOOTER */
 .footer{margin-top:16px;border-top:1px solid #D0D5DD;padding-top:10px;display:flex;${isMobile ? 'flex-direction:column;gap:8px;' : 'justify-content:space-between;'}align-items:center;}
 .ft{font-size:9px;color:#8896A8;font-weight:500;${isMobile ? 'text-align:center;' : ''}}
 .ft b{color:#1A2233;font-weight:700;}
 </style>
 </head>
-<body><div class="page">
+<body>
 
-<div class="hdr">
-  <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Crafting the Core</div></div>
-  <div><div class="hdr-event">Family Gathering 2026</div><div class="hdr-date">Minggu, 15 September 2026</div><div style="text-align:right;"><div class="hdr-badge">E-Ticket Resmi</div></div></div>
-</div>
+${firstPageHtml}
+${ticketPages}
 
-<div class="icard">
-  <div class="icard-hdr"><span class="icard-icon">&#128203;</span><span class="icard-title">Rekap Data Registrasi</span></div>
-  <div class="icard-body">
-    <div class="section">
-      <div class="section-title"><span class="sdot" style="background:#DC0032;"></span>Data Karyawan</div>
-      <table class="info-table">${infoRows}</table>
-    </div>
-    ${familySectionHtml}
-  </div>
-</div>
-
-<div class="div-row"><div class="div-line"></div><div class="div-txt">&#127903; Tiket Anda (${allTickets.length} tiket)</div><div class="div-line"></div></div>
-
-${ticketStripes}
-
-<div class="footer">
-  <div class="ft">Diterbitkan untuk <b>${personal.fullName}</b> &nbsp;&#183;&nbsp; NIK ${personal.nik}</div>
-  <div class="ft" style="text-align:right;"><b>DENSO Indonesia</b> &nbsp;&#183;&nbsp; Dokumen resmi, harap simpan dengan baik</div>
-</div>
-
-</div></body></html>`;
+</body></html>`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -345,12 +368,10 @@ export function TicketResultStep() {
       iframeDoc.write(html.replace(/<script[\s\S]*?<\/script>/gi, ''));
       iframeDoc.close();
 
-      // Resize iframe to full content height
+      // Wait for content to load
       await new Promise(resolve => setTimeout(resolve, 300));
-      const scrollH = iframeDoc.body.scrollHeight || 1200;
-      iframe.style.height = scrollH + 'px';
 
-      // Wait for all images to load (data URIs should load instantly, but wait to be safe)
+      // Wait for all images to load
       await new Promise<void>(resolve => {
         const imgs = iframeDoc.querySelectorAll('img');
         if (!imgs.length) { setTimeout(resolve, 200); return; }
@@ -369,38 +390,42 @@ export function TicketResultStep() {
         });
       });
 
-      // Extra settle time
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const canvas = await html2canvas(iframeDoc.body, {
-        scale: 2,
-        useCORS: false, // Not needed since we're using data URIs
-        allowTaint: true,
-        backgroundColor: '#F0F2F5',
-        width: pageWidth,
-        windowWidth: pageWidth,
-        logging: false,
-      });
+      // Process each .page div separately to create proper page breaks
+      const pages = iframeDoc.querySelectorAll('.page');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+      
+      for (let i = 0; i < pages.length; i++) {
+        const pageEl = pages[i] as HTMLElement;
+        
+        // Temporarily adjust iframe size to fit this page
+        iframe.style.height = (pageEl.scrollHeight + 50) + 'px';
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        const canvas = await html2canvas(pageEl, {
+          scale: 2,
+          useCORS: false,
+          allowTaint: true,
+          backgroundColor: '#F0F2F5',
+          width: pageWidth,
+          windowWidth: pageWidth,
+          logging: false,
+        });
+
+        if (i > 0) pdf.addPage();
+        
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const imgW = pageW;
+        const imgH = (canvas.height * pageW) / canvas.width;
+
+        // Center vertically if content is smaller than page
+        const yPos = imgH < pageH ? (pageH - imgH) / 2 : 0;
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, yPos, imgW, imgH);
+      }
 
       document.body.removeChild(iframe);
-
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW;
-      const imgH = (canvas.height * pageW) / canvas.width;
-
-      let yOffset = 0;
-      let page = 0;
-      let remaining = imgH;
-
-      while (remaining > 0) {
-        if (page > 0) pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, -yOffset, imgW, imgH);
-        remaining -= pageH;
-        yOffset += pageH;
-        page++;
-      }
 
       pdf.save(`E-Ticket_${personalData.fullName.replace(/\s+/g, '_')}.pdf`);
     } catch (err) {
