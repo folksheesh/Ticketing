@@ -6,8 +6,8 @@ export const EVENT_CONFIG = {
   venue: {
     name: 'Lapangan DENSO Fajar Plant',
     address: 'DENSO Fajar Plant',
-    city: 'Indonesia',
-    mapUrl: 'https://maps.google.com',
+    city: 'Cikarang Barat',
+    mapUrl: 'https://maps.app.goo.gl/9xKjwFjGstpMuBx86',
   },
   maxParticipants: 15000,
   company: 'PT Denso Indonesia',

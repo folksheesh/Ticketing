@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import QRCode from 'qrcode';
 import {
   QrCode, Download, Mail, MessageCircle, CheckCircle2, Eye,
   Ticket, Coffee, UtensilsCrossed, IceCream2, type LucideIcon,
@@ -11,8 +12,15 @@ import type { PersonalData, FamilyData } from '../types';
 const generateMockTicketId = (prefix: string) =>
   `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
 
-const getQRUrl = (data: string, size = 400) =>
-  `https://quickchart.io/qr?text=${encodeURIComponent(data)}&size=${size}&margin=2&ecLevel=M&format=png`;
+// ── Generate QR as high-res PNG data URI (client-side, no CORS) ──
+const generateQRDataURI = async (text: string): Promise<string> => {
+  return QRCode.toDataURL(text, {
+    width: 400,
+    margin: 2,
+    errorCorrectionLevel: 'M',
+    color: { dark: '#000000', light: '#FFFFFF' },
+  });
+};
 
 interface TicketInfo {
   title: string;
@@ -22,25 +30,21 @@ interface TicketInfo {
   ownerName?: string;
 }
 
-// ─── PDF Template ─────────────────────────────────────────────────────────────
-// A4 = 794px wide at 96dpi — render at exact width so jsPDF fills perfectly
-const A4_W = 794;
-const A4_MOBILE_W = 600; // Slimmer width for mobile portrait
-
-// Detect if mobile device
-const isMobileDevice = () => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-};
+// ─── PDF HTML Builder ─────────────────────────────────────────────────────────
+// Uses table-based layout: stable across all PDF renderers, no flexbox/grid issues.
+// Each page is exactly 794px wide (A4 @ 96dpi). QR is pre-rendered data URI.
+// No external image requests — zero CORS issues.
 
 function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
   personal: PersonalData,
   family: FamilyData,
-  isMobile = false // Flag to use mobile layout
+  qrMap: Record<string, string>,  // ticketId → data URI
 ) {
   const allTickets = [...tickets, ...iceCreamTickets];
-  const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
+  const PW = 794; // A4 width px @ 96dpi
+  const PAD = 36; // page padding
 
   const ticketLabel = (t: TicketInfo) => {
     if (t.icon === Ticket)          return 'Tiket Registrasi';
@@ -50,333 +54,294 @@ function buildPDFHtml(
     return 'Tiket';
   };
 
-  const ticketCatLabel = (t: TicketInfo) => {
+  const ticketCat = (t: TicketInfo) => {
     if (t.icon === Ticket)          return 'TIKET REGISTRASI';
-    if (t.icon === Coffee)          return 'FOOD &amp; BEVERAGE';
-    if (t.icon === UtensilsCrossed) return 'FOOD &amp; BEVERAGE';
+    if (t.icon === Coffee)          return 'FOOD & BEVERAGE';
+    if (t.icon === UtensilsCrossed) return 'FOOD & BEVERAGE';
     if (t.icon === IceCream2)       return 'KIDS SPECIAL';
     return 'TIKET';
   };
 
-  // Calculate food allocation
-  let totalPeople = 1; // Diri sendiri
+  let totalPeople = 1;
   if (personal.maritalStatus === 'Family') {
-    if (family.hasSpouse) totalPeople++; // Pasangan
-    if (family.hasChildren) totalPeople += family.children.length; // Anak-anak
+    if (family.hasSpouse) totalPeople++;
+    if (family.hasChildren) totalPeople += family.children.length;
   }
-
-  // Count ice cream tickets (for kids <=12 years old)
   const iceCreamCount = iceCreamTickets.length;
+  const contentW = PW - PAD * 2;
 
-  // ── Build pages: First page = beautiful data summary, then 1 QR per page ──
-  const firstPageHtml = `
-<div class="page">
-  <!-- Hero Header with Gradient -->
-  <div style="background:linear-gradient(135deg, #1A2233 0%, #2C3E50 100%);border-radius:16px;padding:32px 28px;margin-bottom:20px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:rgba(220,0,50,0.1);border-radius:50%;"></div>
-    <div style="position:absolute;bottom:-30px;left:-30px;width:150px;height:150px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
-    <div style="position:relative;z-index:1;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div>
-          <div style="font-size:36px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-2px;line-height:1;margin-bottom:4px;">DENSO</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:3px;">Crafting the Core</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="display:inline-block;background:#DC0032;color:#FFF;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;padding:6px 16px;border-radius:20px;box-shadow:0 4px 12px rgba(220,0,50,0.4);">E-Ticket Resmi</div>
-        </div>
-      </div>
-      <div style="border-top:2px solid rgba(255,255,255,0.1);padding-top:16px;margin-top:16px;">
-        <div style="font-size:24px;font-weight:800;color:#FFFFFF;margin-bottom:6px;">Family Gathering 2026</div>
-        <div style="display:flex;gap:24px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:16px;">📅</span>
-            <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">Minggu, 13 September 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:16px;">🎫</span>
-            <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">${allTickets.length} Tiket Diterbitkan</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  // ── helpers ──
+  const row = (label: string, value: string, bg = '') =>
+    `<tr${bg ? ` style="background:${bg};"` : ''}>
+      <td style="padding:7px 0;font-size:10px;color:#6B7882;font-weight:600;width:76px;vertical-align:top;white-space:nowrap;">${label}</td>
+      <td style="padding:7px 4px;font-size:10px;color:#9AAAB3;vertical-align:top;width:8px;">:</td>
+      <td style="padding:7px 0;font-size:11px;color:#1A2233;font-weight:700;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;">${value}</td>
+    </tr>`;
 
-  <!-- Main Content Grid -->
-  <div style="display:${personal.maritalStatus === 'Family' ? 'grid' : 'block'};${personal.maritalStatus === 'Family' ? 'grid-template-columns:1fr 1fr;' : ''}gap:16px;margin-bottom:16px;">
-    
-    <!-- Data Karyawan Card -->
-    <div style="background:#FFF;border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #DC0032;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #F0F2F5;">
-        <div style="width:44px;height:44px;background:linear-gradient(135deg,#DC0032,#A8001E);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👤</div>
-        <div style="min-width:0;flex:1;">
-          <div style="font-size:10px;color:#8896A8 !important;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Data Karyawan</div>
-          <div style="font-size:15px;font-weight:800;color:#1A2233 !important;line-height:1.3;word-wrap:break-word;overflow-wrap:break-word;">${personal.fullName}</div>
-        </div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;width:80px;vertical-align:top;">NIK</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;vertical-align:top;width:8px;">:</td>
-          <td style="padding:8px 0;font-size:11px;color:#1A2233 !important;font-weight:700;vertical-align:top;word-wrap:break-word;">${personal.nik}</td>
-        </tr>
-        <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8 !important;font-weight:600;">Divisi</td>
-          <td style="padding:8px 4px;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 6px;font-size:11px;color:#1A2233 !important;font-weight:700;word-wrap:break-word;">${personal.division}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Email</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 0;font-size:10px;color:#1A2233 !important;font-weight:600;word-break:break-all;overflow-wrap:break-word;">${personal.email}</td>
-        </tr>
-        <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8 !important;font-weight:600;">No. HP</td>
-          <td style="padding:8px 4px;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 6px;font-size:11px;color:#1A2233 !important;font-weight:700;">${personal.phone}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Kaos</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 0;font-size:11px;color:#1A2233 !important;font-weight:700;">${personal.tshirtSize || '-'}</td>
-        </tr>
-        <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8 !important;font-weight:600;">Status</td>
-          <td style="padding:8px 4px;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 6px;">
-            <span style="display:inline-block;background:${personal.maritalStatus === 'Family' ? '#DBEAFE' : '#F3F4F6'};color:${personal.maritalStatus === 'Family' ? '#1E40AF' : '#4B5563'} !important;font-size:9px;font-weight:700;padding:4px 10px;border-radius:12px;">${personal.maritalStatus === 'Family' ? '👨‍👩‍👧 Keluarga' : '👤 Sendiri'}</span>
-          </td>
-        </tr>
-      </table>
-    </div>
+  // ── PAGE 1: Summary ──
+  const familyColWidth = Math.floor((contentW - 16) / 2);
+  const hasFamily = personal.maritalStatus === 'Family';
 
-    ${personal.maritalStatus === 'Family' ? `
-    <!-- Data Keluarga Card -->
-    <div style="background:#FFF;border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #0077CC;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #F0F2F5;">
-        <div style="width:44px;height:44px;background:linear-gradient(135deg,#0077CC,#005A9C);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👨‍👩‍👧</div>
-        <div>
-          <div style="font-size:10px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Data Keluarga</div>
-          <div style="font-size:16px;font-weight:800;color:#1A2233;line-height:1.2;">${totalPeople} Anggota</div>
-        </div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;">
-        ${family.hasSpouse ? `
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;width:80px;vertical-align:top;">Pasangan</td>
-          <td style="padding:8px 0;color:#CDD4D8;vertical-align:top;width:8px;">:</td>
-          <td style="padding:8px 0;font-size:11px;color:#1A2233;font-weight:700;vertical-align:top;">${family.spouseName || '-'}</td>
-        </tr>
-        <tr style="background:#F8F9FB;">
-          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
-          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:8px 6px;font-size:11px;color:#1A2233;font-weight:700;">${family.spouseTshirtSize || '-'}</td>
-        </tr>
-        ` : ''}
-        ${family.hasChildren && family.children.length > 0 ? family.children.map((c, i) => `
-        <tr${(family.hasSpouse ? i : i + 1) % 2 === 0 ? ' style="background:#F8F9FB;"' : ''}>
-          <td style="padding:8px ${(family.hasSpouse ? i : i + 1) % 2 === 0 ? '6px' : '0'};font-size:10px;color:#8896A8;font-weight:600;vertical-align:top;">Anak ${i + 1}</td>
-          <td style="padding:8px ${(family.hasSpouse ? i : i + 1) % 2 === 0 ? '4px' : '0'};color:#CDD4D8;vertical-align:top;">:</td>
-          <td style="padding:8px ${(family.hasSpouse ? i : i + 1) % 2 === 0 ? '6px' : '0'};font-size:10px;color:#1A2233;font-weight:600;vertical-align:top;">${c.name}, ${c.age} thn<br/><span style="font-size:9px;color:#6B7882;">Kaos: ${c.tshirtSize || '-'}</span></td>
-        </tr>
-        `).join('') : ''}
-      </table>
-    </div>
-    ` : ''}
+  const summaryPage = `
+<div class="pdf-page">
 
-  </div>
+  <!-- HEADER BAND -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="background:#1A2233;border-radius:12px;margin-bottom:16px;">
+    <tr>
+      <td style="padding:24px 28px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td>
+              <div style="font-size:34px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-2px;line-height:1;">DENSO</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.65);font-weight:600;text-transform:uppercase;letter-spacing:3px;margin-top:3px;">Crafting the Core</div>
+            </td>
+            <td style="text-align:right;vertical-align:top;">
+              <span style="display:inline-block;background:#DC0032;color:#FFF;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:2px;padding:5px 14px;border-radius:20px;">E-Ticket Resmi</span>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding-top:14px;border-top:1px solid rgba(255,255,255,0.12);margin-top:14px;">
+              <table cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding-top:14px;">
+                <div style="font-size:22px;font-weight:800;color:#FFFFFF;line-height:1.2;margin-bottom:8px;">Family Gathering 2026</div>
+                <span style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;">&#128197; Minggu, 13 September 2026</span>
+                &nbsp;&nbsp;&nbsp;
+                <span style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;">&#127963; Lapangan DENSO Fajar Plant</span>
+                &nbsp;&nbsp;&nbsp;
+                <span style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;">&#127915; ${allTickets.length} Tiket Diterbitkan</span>
+              </td></tr></table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 
-  <!-- Food Allocation Card -->
-  <div style="background:linear-gradient(135deg,#FFF 0%,#F8FAF9 100%);border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:2px solid #E8F5E9;margin-bottom:16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:48px;height:48px;background:linear-gradient(135deg,#16A34A,#15803D);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🍽️</div>
-        <div>
-          <div style="font-size:11px;color:#15803D;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Alokasi Konsumsi</div>
-          <div style="font-size:18px;font-weight:800;color:#1A2233;line-height:1.2;">${totalPeople} Orang Terdaftar</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr${iceCreamCount > 0 ? ' 1fr' : ''};gap:12px;">
-      <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FEF3C7;">
-        <div style="font-size:11px;color:#92400E;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">☕ Snack Pagi</div>
-        <div style="font-size:28px;font-weight:900;color:#B45309;line-height:1;">${totalPeople}</div>
-        <div style="font-size:10px;color:#92400E;font-weight:600;margin-top:4px;">Porsi</div>
-      </div>
-      <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FEE2E2;">
-        <div style="font-size:11px;color:#991B1B;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🍛 Makan Siang</div>
-        <div style="font-size:28px;font-weight:900;color:#DC2626;line-height:1;">${totalPeople}</div>
-        <div style="font-size:10px;color:#991B1B;font-weight:600;margin-top:4px;">Porsi</div>
-      </div>
-      ${iceCreamCount > 0 ? `
-      <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FCE7F3;">
-        <div style="font-size:11px;color:#831843;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🍦 Es Krim</div>
-        <div style="font-size:28px;font-weight:900;color:#BE185D;line-height:1;">${iceCreamCount}</div>
-        <div style="font-size:10px;color:#831843;font-weight:600;margin-top:4px;">Porsi</div>
-      </div>
-      ` : ''}
-    </div>
-  </div>
+  <!-- DATA CARDS ROW -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+    <tr valign="top">
+      <!-- Karyawan Card -->
+      <td width="${hasFamily ? familyColWidth : contentW}" style="background:#FFFFFF;border-radius:12px;border-left:4px solid #DC0032;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;border-bottom:1px solid #F0F2F5;padding-bottom:12px;">
+          <tr>
+            <td style="font-size:9px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Data Karyawan</td>
+          </tr>
+          <tr>
+            <td style="font-size:16px;font-weight:800;color:#1A2233;line-height:1.3;word-wrap:break-word;overflow-wrap:break-word;padding-top:2px;">${personal.fullName}</td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${row('NIK', personal.nik)}
+          ${row('Divisi', personal.division, '#F8F9FB')}
+          ${row('Email', `<span style="word-break:break-all;">${personal.email}</span>`)}
+          ${row('No. HP', personal.phone, '#F8F9FB')}
+          ${row('Kaos', personal.tshirtSize || '-')}
+          ${row('Status', personal.maritalStatus === 'Family' ? 'Keluarga' : 'Sendiri', '#F8F9FB')}
+        </table>
+      </td>
+      ${hasFamily ? `
+      <td width="16"></td>
+      <!-- Keluarga Card -->
+      <td width="${familyColWidth}" style="background:#FFFFFF;border-radius:12px;border-left:4px solid #0077CC;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;border-bottom:1px solid #F0F2F5;padding-bottom:12px;">
+          <tr>
+            <td style="font-size:9px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Data Keluarga</td>
+          </tr>
+          <tr>
+            <td style="font-size:16px;font-weight:800;color:#1A2233;line-height:1.3;padding-top:2px;">${totalPeople} Anggota</td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${family.hasSpouse ? `${row('Pasangan', family.spouseName || '-')}${row('Kaos', family.spouseTshirtSize || '-', '#F8F9FB')}` : ''}
+          ${family.hasChildren && family.children.length > 0 ? family.children.map((c, i) =>
+            row(`Anak ${i + 1}`, `${c.name}, ${c.age} thn &nbsp;<span style="font-size:9px;color:#6B7882;">Kaos: ${c.tshirtSize || '-'}</span>`, i % 2 === 0 ? '' : '#F8F9FB')
+          ).join('') : ''}
+        </table>
+      </td>` : ''}
+    </tr>
+  </table>
 
-  <!-- Ticket Info Banner -->
-  <div style="background:linear-gradient(135deg,#DC0032 0%,#A8001E 100%);border-radius:14px;padding:20px 24px;text-align:center;color:#FFF;margin-bottom:16px;box-shadow:0 4px 16px rgba(220,0,50,0.3);">
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;opacity:0.9;">📱 Tiket Digital Anda</div>
-    <div style="font-size:32px;font-weight:900;margin-bottom:8px;line-height:1;">${allTickets.length} Tiket</div>
-    <div style="font-size:11px;opacity:0.85;font-weight:500;line-height:1.5;">Setiap tiket memiliki QR code unik di halaman berikutnya<br/>Tunjukkan QR ke petugas saat check-in</div>
-  </div>
+  <!-- FOOD ALLOCATION CARD -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:12px;border:2px solid #D1FAE5;padding:0;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+    <tr>
+      <td style="padding:16px 18px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+          <tr>
+            <td>
+              <div style="font-size:10px;color:#16A34A;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Alokasi Konsumsi</div>
+              <div style="font-size:17px;font-weight:800;color:#1A2233;margin-top:2px;">${totalPeople} Orang Terdaftar</div>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="${iceCreamCount > 0 ? Math.floor((contentW - 72) / 3) : Math.floor((contentW - 52) / 2)}" style="background:#FFFBEB;border-radius:10px;border:1px solid #FDE68A;padding:12px 14px;">
+              <div style="font-size:10px;color:#92400E;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Snack Pagi</div>
+              <div style="font-size:28px;font-weight:900;color:#B45309;line-height:1;">${totalPeople}</div>
+              <div style="font-size:9px;color:#92400E;font-weight:600;margin-top:3px;">Porsi</div>
+            </td>
+            <td width="16"></td>
+            <td width="${iceCreamCount > 0 ? Math.floor((contentW - 72) / 3) : Math.floor((contentW - 52) / 2)}" style="background:#FEF2F2;border-radius:10px;border:1px solid #FECACA;padding:12px 14px;">
+              <div style="font-size:10px;color:#991B1B;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Makan Siang</div>
+              <div style="font-size:28px;font-weight:900;color:#DC2626;line-height:1;">${totalPeople}</div>
+              <div style="font-size:9px;color:#991B1B;font-weight:600;margin-top:3px;">Porsi</div>
+            </td>
+            ${iceCreamCount > 0 ? `
+            <td width="16"></td>
+            <td width="${Math.floor((contentW - 72) / 3)}" style="background:#FDF4FF;border-radius:10px;border:1px solid #F0ABFC;padding:12px 14px;">
+              <div style="font-size:10px;color:#86198F;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Es Krim</div>
+              <div style="font-size:28px;font-weight:900;color:#A21CAF;line-height:1;">${iceCreamCount}</div>
+              <div style="font-size:9px;color:#86198F;font-weight:600;margin-top:3px;">Porsi (Anak &#8804;12 thn)</div>
+            </td>` : ''}
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 
-  <!-- Footer -->
-  <div style="border-top:2px solid #E5E7EB;padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
-    <div style="font-size:10px;color:#6B7882;font-weight:500;">
-      Diterbitkan untuk <span style="color:#1A2233;font-weight:800;">${personal.fullName}</span> • NIK ${personal.nik}
-    </div>
-    <div style="font-size:10px;color:#6B7882;font-weight:500;text-align:right;">
-      <span style="color:#1A2233;font-weight:800;">DENSO Indonesia</span><br/>
-      Dokumen resmi • Harap disimpan
-    </div>
-  </div>
+  <!-- TICKET COUNT BANNER -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="background:#DC0032;border-radius:12px;margin-bottom:16px;">
+    <tr>
+      <td style="padding:16px 24px;text-align:center;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.85);margin-bottom:6px;">Tiket Digital Anda</div>
+        <div style="font-size:30px;font-weight:900;color:#FFFFFF;line-height:1;margin-bottom:6px;">${allTickets.length} Tiket</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);font-weight:500;line-height:1.6;">Setiap tiket memiliki QR code unik di halaman berikutnya &#183; Tunjukkan QR ke petugas saat check-in</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- PAGE FOOTER -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="border-top:1px solid #E5E7EB;padding-top:10px;">
+    <tr>
+      <td style="font-size:9px;color:#6B7882;">Diterbitkan untuk <b style="color:#1A2233;">${personal.fullName}</b> &bull; NIK ${personal.nik}</td>
+      <td style="text-align:right;font-size:9px;color:#6B7882;"><b style="color:#1A2233;">DENSO Indonesia</b> &bull; Dokumen resmi</td>
+    </tr>
+  </table>
 </div>`;
 
-  // ── Each ticket gets its own page with centered layout ──
+  // ── Per-ticket QR pages ──
   const ticketPages = allTickets.map((t, idx) => {
-    const qrSrc = getQRUrl(t.id, 400);
-    
+    const qrDataURI = qrMap[t.id] ?? '';
+    const label = ticketLabel(t);
+    const cat = ticketCat(t);
+
     return `
-<div class="page page-break">
-  <div class="hdr" style="margin-bottom:24px;">
-    <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Family Gathering 2026</div></div>
-    <div style="text-align:${isMobile ? 'center' : 'right'};">
-      <div class="hdr-event">Tiket ${idx + 1} dari ${allTickets.length}</div>
-      <div style="display:inline-block;background:${t.color};color:#FFF;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 12px;border-radius:20px;margin-top:8px;">${ticketLabel(t)}</div>
-    </div>
-  </div>
+<div class="pdf-page pdf-page-break">
 
-  <div style="display:flex;flex-direction:column;gap:20px;margin-top:20px;">
-    
-    <!-- Ticket Info Card -->
-    <div style="background:#FFF;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.07);">
-      <div style="border-left:4px solid ${t.color};padding-left:16px;margin-bottom:16px;">
-        <div style="font-size:8px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">${ticketCatLabel(t)}</div>
-        <div style="font-size:16px;font-weight:800;color:#1A2233;margin-bottom:6px;">${ticketLabel(t)}</div>
-        <div style="font-size:10px;color:#6B7882;font-weight:600;">ID: <span style="font-family:monospace;color:${t.color};font-weight:800;">${t.id}</span></div>
-      </div>
-      
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;width:80px;">Nama</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;word-wrap:break-word;overflow-wrap:break-word;">${t.ownerName ?? personal.fullName}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">NIK</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;">${personal.nik}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Divisi</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;word-wrap:break-word;">${personal.division}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;font-size:10px;color:#8896A8 !important;font-weight:600;">Tanggal</td>
-          <td style="padding:8px 0;color:#CDD4D8 !important;">:</td>
-          <td style="padding:8px 0;font-size:12px;color:#1A2233 !important;font-weight:700;">13 September 2026</td>
-        </tr>
-      </table>
-    </div>
+  <!-- HEADER -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="background:#1A2233;border-radius:12px;margin-bottom:20px;">
+    <tr>
+      <td style="padding:18px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td>
+            <div style="font-size:26px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-1.5px;line-height:1;">DENSO</div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.55);font-weight:600;text-transform:uppercase;letter-spacing:2.5px;margin-top:2px;">Family Gathering 2026</div>
+          </td>
+          <td style="text-align:right;vertical-align:middle;">
+            <div style="font-size:13px;font-weight:700;color:#FFFFFF;line-height:1.3;">Tiket ${idx + 1} dari ${allTickets.length}</div>
+            <span style="display:inline-block;background:${t.color};color:#FFF;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 12px;border-radius:20px;margin-top:6px;">${label}</span>
+          </td>
+        </tr></table>
+      </td>
+    </tr>
+  </table>
 
-    <!-- QR Code Card -->
-    <div style="background:linear-gradient(135deg, #FFF 0%, #F8F9FB 100%);border-radius:12px;padding:${isMobile ? '24px' : '28px'};text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${t.color}20;">
-      <div style="font-size:11px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">&#128242; Scan QR Code</div>
-      <div style="display:inline-block;padding:10px;background:#FFF;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
-        <img src="${qrSrc}" style="width:${isMobile ? '180px' : '160px'};height:${isMobile ? '180px' : '160px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR"/>
-      </div>
-      <div style="font-size:9px;color:#B0BAC7;font-weight:500;margin-top:14px;line-height:1.5;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
-    </div>
+  <!-- MAIN CONTENT: info left, QR right -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+    <tr valign="top">
 
-  </div>
+      <!-- Info Card -->
+      <td style="background:#FFFFFF;border-radius:12px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,0.07);border-left:4px solid ${t.color};">
+        <div style="font-size:8px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;">${cat}</div>
+        <div style="font-size:17px;font-weight:800;color:#1A2233;margin-bottom:4px;word-wrap:break-word;">${label}</div>
+        <div style="font-size:9px;color:#6B7882;font-weight:600;margin-bottom:14px;font-family:monospace;letter-spacing:1px;">ID: <span style="color:${t.color};">${t.id}</span></div>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${row('Nama', t.ownerName ?? personal.fullName)}
+          ${row('NIK', personal.nik, '#F8F9FB')}
+          ${row('Divisi', personal.division)}
+          ${row('Tanggal', '13 September 2026', '#F8F9FB')}
+          ${row('Lokasi', 'Lapangan DENSO Fajar Plant')}
+        </table>
+      </td>
 
-  <div class="footer" style="margin-top:24px;">
-    <div class="ft">Tiket untuk <b>${t.ownerName ?? personal.fullName}</b></div>
-    <div class="ft" style="text-align:${isMobile ? 'center' : 'right'};">DENSO Family Gathering 2026</div>
-  </div>
+      <td width="20"></td>
+
+      <!-- QR Card -->
+      <td width="230" style="background:#F8F9FB;border-radius:12px;padding:20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.07);border:2px solid #E5E7EB;">
+        <div style="font-size:9px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Scan QR Code</div>
+        <div style="display:inline-block;background:#FFFFFF;padding:8px;border-radius:10px;border:3px solid ${t.color};">
+          <img src="${qrDataURI}" width="170" height="170" style="display:block;border-radius:4px;" alt="QR Code ${t.id}"/>
+        </div>
+        <div style="font-size:8px;color:#9AAAB3;font-weight:500;margin-top:12px;line-height:1.6;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
+        <div style="font-size:8px;font-family:monospace;color:${t.color};font-weight:700;margin-top:6px;letter-spacing:0.5px;">${t.id}</div>
+      </td>
+
+    </tr>
+  </table>
+
+  <!-- PAGE FOOTER -->
+  <table width="${contentW}" cellpadding="0" cellspacing="0" style="border-top:1px solid #E5E7EB;padding-top:10px;">
+    <tr>
+      <td style="font-size:9px;color:#6B7882;">Tiket untuk <b style="color:#1A2233;">${t.ownerName ?? personal.fullName}</b></td>
+      <td style="text-align:right;font-size:9px;color:#6B7882;"><b style="color:#1A2233;">DENSO</b> Family Gathering 2026</td>
+    </tr>
+  </table>
 </div>`;
   }).join('');
 
+  // ── CSS: table-based, no flexbox/grid, color-adjust forced ──
+  const css = `
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:${PW}px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #1A2233;
+  background: #F0F2F5;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  color-adjust: exact !important;
+}
+.pdf-page {
+  width: ${PW}px;
+  padding: ${PAD}px;
+  background: #F0F2F5;
+  page-break-after: always;
+  break-after: page;
+}
+.pdf-page:last-child {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.pdf-page-break {
+  page-break-before: always;
+  break-before: page;
+}
+/* Ensure no element cuts mid-card */
+table { border-collapse: collapse; }
+td { word-wrap: break-word; overflow-wrap: break-word; }
+img { display: block; max-width: 100%; }
+/* Prevent any overflow hiding */
+* { overflow: visible !important; }
+b, strong { font-weight: 700; }
+@media print {
+  html, body { width: ${PW}px !important; }
+  .pdf-page { padding: ${PAD}px !important; }
+}`;
+
   return `<!DOCTYPE html>
-<html lang="id"><head>
+<html lang="id">
+<head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>E-Ticket — ${personal.fullName}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:${pageWidth}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}
-.page{width:${pageWidth}px;background:#F0F2F5;padding:${isMobile ? '20px 16px' : '28px 36px 32px'};}
-
-/* HEADER */
-.hdr{display:flex;align-items:center;justify-content:space-between;background:#1A2233 !important;border-radius:14px;padding:${isMobile ? '16px 20px' : '18px 28px'};margin-bottom:16px;${isMobile ? 'flex-direction:column;gap:12px;text-align:center;' : ''}}
-.hdr-logo{font-size:${isMobile ? '26px' : '30px'};font-weight:900;font-style:italic;color:#FFFFFF !important;letter-spacing:-1.5px;line-height:1;}
-.hdr-tag{font-size:8.5px;color:#8896A8 !important;font-weight:500;text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
-.hdr-event{font-size:${isMobile ? '13px' : '14px'};font-weight:700;color:#FFF !important;line-height:1.2;text-align:${isMobile ? 'center' : 'right'};}
-.hdr-date{font-size:10px;color:#8896A8 !important;margin-top:3px;text-align:${isMobile ? 'center' : 'right'};}
-.hdr-badge{display:inline-block;background:#DC0032 !important;color:#FFF !important;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;margin-top:6px;}
-
-/* INFO CARD */
-.icard{background:#FFF !important;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
-.icard-hdr{background:linear-gradient(90deg,#DC0032 0%,#A8001E 100%) !important;padding:9px 20px;display:flex;align-items:center;gap:8px;}
-.icard-icon{font-size:13px;}
-.icard-title{font-size:10px;font-weight:800;color:#FFF !important;text-transform:uppercase;letter-spacing:1.5px;}
-.icard-body{padding:14px 20px;display:flex;gap:24px;${isMobile ? 'flex-direction:column;gap:16px;' : ''}}
-.section{flex:1;}
-.section+.section{${isMobile ? 'border-top:1px solid #EBEDF0;padding-top:16px;' : 'border-left:1px solid #EBEDF0;padding-left:24px;'}}
-.section-title{font-size:8.5px;font-weight:700;color:#8896A8 !important;text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
-.sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.info-table{width:100%;border-collapse:collapse;}
-.si-key{font-size:10.5px;color:#8896A8 !important;font-weight:600;padding:2.5px 0;width:${isMobile ? '90px' : '100px'};vertical-align:top;}
-.si-sep{color:#CDD4D8 !important;padding:2.5px 6px;vertical-align:top;}
-.si-val{font-size:11px;color:#1A2233 !important;font-weight:600;padding:2.5px 0;vertical-align:top;}
-
-/* DIVIDER */
-.div-row{display:flex;align-items:center;gap:10px;margin:14px 0 10px;}
-.div-line{flex:1;height:1px;background:#D0D5DD;}
-.div-txt{font-size:8.5px;font-weight:700;color:#8896A8 !important;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
-
-/* TICKET - Mobile: Vertical Stack, Desktop: Horizontal */
-.ticket-wrap{display:flex;${isMobile ? 'flex-direction:column;' : ''}background:#FFF !important;border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);${isMobile ? 'height:auto;' : 'height:112px;'}}
-.ticket-left{width:${isMobile ? '100%' : '196px'};flex-shrink:0;padding:${isMobile ? '18px 20px' : '14px 16px'};display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
-.ticket-left::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
-.tl-cat{font-size:7px;font-weight:700;color:rgba(255,255,255,.7) !important;text-transform:uppercase;letter-spacing:1.8px;margin-bottom:3px;}
-.tl-title{font-size:${isMobile ? '14.5px' : '13.5px'};font-weight:800;color:#FFF !important;line-height:1.15;letter-spacing:-.3px;}
-.tl-event{font-size:8px;color:rgba(255,255,255,.6) !important;margin-top:4px;}
-.tl-date{font-size:8px;color:rgba(255,255,255,.75) !important;margin-top:2px;font-weight:600;}
-.tl-num{font-size:32px;font-weight:900;color:rgba(255,255,255,.1);line-height:1;font-style:italic;${isMobile ? 'position:static;text-align:right;margin-top:8px;' : 'position:absolute;bottom:7px;right:11px;'}}
-.ticket-mid{${isMobile ? 'width:100%;' : 'flex:1;'}padding:${isMobile ? '16px 20px' : '12px 16px'};display:flex;flex-direction:column;justify-content:center;}
-.tm-row{display:flex;gap:16px;}
-.tm-cell{flex:1;}
-.tm-label{font-size:7px;font-weight:700;color:#9AAAB3;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;}
-.tm-val{font-size:${isMobile ? '11.5px' : '12px'};font-weight:700;color:#1A2233;line-height:1.2;}
-.tm-id{font-family:monospace;font-size:${isMobile ? '10px' : '10.5px'};letter-spacing:1.5px;font-weight:800;}
-.tm-barline{height:2.5px;border-radius:2px;margin:9px 0 6px;}
-.tm-note{font-size:${isMobile ? '7.5px' : '8px'};color:#B0BAC7;font-weight:500;}
-.ticket-tear{${isMobile ? 'width:100%;height:0;border-left:none;border-top:2px dashed;margin:0;' : 'width:0;border-left:2px dashed;margin:12px 0;'}flex-shrink:0;}
-.ticket-right{width:${isMobile ? '100%' : '122px'};flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#F8F9FB;padding:${isMobile ? '20px' : '10px 12px'};}
-.tr-qr{width:${isMobile ? '110px' : '88px'};height:${isMobile ? '110px' : '88px'};display:block;border-radius:7px;border:2.5px solid #DC0032;padding:2px;background:white;}
-.tr-scan{font-size:7px;font-weight:800;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;}
-
-/* PAGE BREAK for PDF */
-.page-break{page-break-before:always;}
-
-/* FOOTER */
-.footer{margin-top:16px;border-top:1px solid #D0D5DD;padding-top:10px;display:flex;${isMobile ? 'flex-direction:column;gap:8px;' : 'justify-content:space-between;'}align-items:center;}
-.ft{font-size:9px;color:#8896A8;font-weight:500;${isMobile ? 'text-align:center;' : ''}}
-.ft b{color:#1A2233;font-weight:700;}
-</style>
+<style>${css}</style>
 </head>
 <body>
-
-${firstPageHtml}
+${summaryPage}
 ${ticketPages}
-
-</body></html>`;
+</body>
+</html>`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -392,9 +357,9 @@ export function TicketResultStep() {
   useEffect(() => {
     const timer = setTimeout(() => {
       const mainTickets: TicketInfo[] = [
-        { title: 'Tiket Registrasi', id: generateMockTicketId('REG'), color: '#DC0032', icon: Ticket },
-        { title: 'Kupon Snack Pagi',        id: generateMockTicketId('SNK'), color: '#B45309', icon: Coffee },
-        { title: 'Kupon Makan Siang',        id: generateMockTicketId('LNC'), color: '#C2410C', icon: UtensilsCrossed },
+        { title: 'Tiket Registrasi',  id: generateMockTicketId('REG'), color: '#DC0032', icon: Ticket },
+        { title: 'Kupon Snack Pagi',  id: generateMockTicketId('SNK'), color: '#B45309', icon: Coffee },
+        { title: 'Kupon Makan Siang', id: generateMockTicketId('LNC'), color: '#C2410C', icon: UtensilsCrossed },
       ];
       let iceTickets: TicketInfo[] = [];
       if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
@@ -417,7 +382,7 @@ export function TicketResultStep() {
         tickets: [
           ...mainTickets.map(t => ({
             id: t.id,
-            type: (t.title.includes('Masuk') ? 'entry' : t.title.includes('Snack') ? 'snack' : 'lunch') as 'entry' | 'snack' | 'lunch',
+            type: (t.title.includes('Registrasi') ? 'entry' : t.title.includes('Snack') ? 'snack' : 'lunch') as 'entry' | 'snack' | 'lunch',
             label: t.title,
           })),
           ...iceTickets.map(t => ({ id: t.id, type: 'icecream' as const, label: t.title })),
@@ -428,167 +393,170 @@ export function TicketResultStep() {
     return () => clearTimeout(timer);
   }, [personalData, familyData]);
 
-  const handlePreview = () => {
-    const isMobile = isMobileDevice();
-    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, isMobile);
-    const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
-    
-    // Open in new window with exact PDF dimensions, centered
-    const pw = window.open('', '_blank', `width=${pageWidth + 50},height=900,left=${(screen.width - pageWidth - 50) / 2},top=50`);
-    if (pw) { 
-      pw.document.write(html); 
-      pw.document.close();
-      
-      // Add print button and center content styling
-      const style = pw.document.createElement('style');
-      style.textContent = `
-        @media screen {
-          body { 
-            overflow-y: scroll; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-          }
-          .print-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #DC0032;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(220, 0, 50, 0.3);
-            z-index: 9999;
-          }
-          .print-btn:hover { background: #B8002A; }
-          .page { margin-bottom: 20px; }
-        }
-        @media print {
-          .print-btn { display: none; }
-          body { padding: 0; align-items: flex-start; }
-          .page { margin-bottom: 0; }
-        }
-      `;
-      pw.document.head.appendChild(style);
-      
-      const btn = pw.document.createElement('button');
-      btn.className = 'print-btn';
-      btn.textContent = '🖨️ Print PDF';
-      btn.onclick = () => pw.print();
-      pw.document.body.insertBefore(btn, pw.document.body.firstChild);
-    }
+  // ── Pre-generate all QR codes as data URIs ──
+  const buildQRMap = async (): Promise<Record<string, string>> => {
+    const allTickets = [...tickets, ...iceCreamTickets];
+    const entries = await Promise.all(
+      allTickets.map(async t => {
+        const uri = await generateQRDataURI(t.id);
+        return [t.id, uri] as [string, string];
+      })
+    );
+    return Object.fromEntries(entries);
   };
 
+  // ── Preview: open in new window, content centered ──
+  const handlePreview = async () => {
+    const qrMap = await buildQRMap();
+    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrMap);
+
+    const pw = window.open('', '_blank');
+    if (!pw) return;
+
+    pw.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    background: #6B7882;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0 40px;
+  }
+  .pdf-page {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    margin-bottom: 16px;
+  }
+  .print-btn {
+    position: fixed; top: 16px; right: 16px;
+    background: #DC0032; color: #FFF; border: none;
+    padding: 10px 22px; border-radius: 8px;
+    font-weight: 700; font-size: 14px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(220,0,50,0.35);
+    z-index: 9999;
+  }
+  @media print {
+    html, body { background: white; padding: 0; display: block; }
+    .print-btn { display: none; }
+  }
+</style>
+</head><body>`);
+    pw.document.write(`<button class="print-btn" onclick="window.print()">&#128438; Print / Save PDF</button>`);
+
+    // Write only the inner body content from the built HTML
+    const bodyMatch = html.match(/<body>([\s\S]*)<\/body>/);
+    if (bodyMatch) pw.document.write(bodyMatch[1]);
+
+    // Inject the PDF CSS into the preview window
+    const cssMatch = html.match(/<style>([\s\S]*?)<\/style>/);
+    if (cssMatch) {
+      const s = pw.document.createElement('style');
+      s.textContent = cssMatch[1];
+      pw.document.head.appendChild(s);
+    }
+
+    pw.document.write('</body></html>');
+    pw.document.close();
+  };
+
+  // ── Download PDF ──
+  // Pipeline: generate QR (client-side data URI) → build HTML →
+  //           render in hidden iframe → wait fonts+images → html2canvas per page → jsPDF
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
+      // 1. Generate all QR codes as PNG data URIs (client-side, zero CORS)
+      const qrMap = await buildQRMap();
+
+      // 2. Build HTML
+      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrMap);
+
+      // 3. Load libraries
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'), import('html2canvas'),
       ]);
 
-      const isMobile = isMobileDevice();
-      const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
-
-      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, isMobile);
-
-      // Use an isolated iframe to avoid global CSS interference
+      // 4. Render into hidden iframe (isolated from app CSS)
+      const PW = 794;
       const iframe = document.createElement('iframe');
-      iframe.style.cssText = `position:fixed;top:-9999px;left:-9999px;width:${pageWidth}px;height:1px;border:none;visibility:hidden;`;
+      iframe.setAttribute('aria-hidden', 'true');
+      iframe.style.cssText = `
+        position:fixed;top:-99999px;left:-99999px;
+        width:${PW}px;height:1200px;
+        border:none;visibility:hidden;pointer-events:none;
+      `;
       document.body.appendChild(iframe);
 
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!iframeDoc) throw new Error('Cannot access iframe document');
+      const iDoc = iframe.contentDocument!;
+      iDoc.open();
+      iDoc.write(html);
+      iDoc.close();
 
-      iframeDoc.open();
-      iframeDoc.write(html.replace(/<script[\s\S]*?<\/script>/gi, ''));
-      iframeDoc.close();
+      // 5. Wait for fonts to be ready
+      await iDoc.fonts.ready;
 
-      // Wait for content to load
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Wait for all images (QR codes) to load with longer timeout
+      // 6. Wait for all images — since all src are data URIs, this is nearly instant
       await new Promise<void>(resolve => {
-        const imgs = iframeDoc.querySelectorAll('img');
-        
-        if (!imgs.length) { 
-          setTimeout(resolve, 500); 
-          return; 
-        }
-        
-        let loaded = 0;
-        const total = imgs.length;
-        
-        const checkComplete = () => {
-          loaded++;
-          if (loaded >= total) {
-            setTimeout(resolve, 1000); // Extra settle time for QR rendering
-          }
-        };
-        
-        imgs.forEach((img) => {
-          const el = img as HTMLImageElement;
-          
-          if (el.complete && el.naturalHeight > 0) {
-            checkComplete();
-          } else {
-            const timeout = setTimeout(() => checkComplete(), 8000); // Longer timeout
-            el.onload = () => { 
-              clearTimeout(timeout); 
-              checkComplete(); 
-            };
-            el.onerror = () => { 
-              clearTimeout(timeout); 
-              checkComplete(); 
-            };
+        const imgs = Array.from(iDoc.querySelectorAll('img')) as HTMLImageElement[];
+        if (imgs.length === 0) { resolve(); return; }
+        let done = 0;
+        const check = () => { if (++done >= imgs.length) resolve(); };
+        imgs.forEach(img => {
+          if (img.complete && img.naturalWidth > 0) { check(); }
+          else {
+            img.onload = check;
+            img.onerror = check; // still proceed even if one fails
           }
         });
       });
 
-      // Process each .page div separately to create proper page breaks
-      const pages = iframeDoc.querySelectorAll('.page');
+      // 7. Small settle time for layout stabilisation
+      await new Promise(r => setTimeout(r, 300));
+
+      // 8. Render each .pdf-page into its own PDF page
+      const pages = Array.from(iDoc.querySelectorAll('.pdf-page')) as HTMLElement[];
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-      
+      const pdfW = pdf.internal.pageSize.getWidth();   // 210mm
+      const pdfH = pdf.internal.pageSize.getHeight();  // 297mm
+
       for (let i = 0; i < pages.length; i++) {
-        const pageEl = pages[i] as HTMLElement;
-        
-        // Temporarily adjust iframe size to fit this page
-        iframe.style.height = (pageEl.scrollHeight + 50) + 'px';
-        await new Promise(resolve => setTimeout(resolve, 200));
+        const pageEl = pages[i];
+        // Resize iframe height to match this page content exactly
+        const pageH = pageEl.scrollHeight;
+        iframe.style.height = `${pageH + 10}px`;
+        await new Promise(r => setTimeout(r, 80)); // allow reflow
 
         const canvas = await html2canvas(pageEl, {
-          scale: 2.5,
-          useCORS: true,
-          allowTaint: true,
+          scale: 3,            // 3× for crisp text & QR
+          useCORS: false,      // all images are data URIs — no CORS needed
+          allowTaint: false,
           backgroundColor: '#F0F2F5',
-          width: pageWidth,
-          windowWidth: pageWidth,
-          logging: true,
-          imageTimeout: 15000,
-          removeContainer: false,
+          width: PW,
+          windowWidth: PW,
+          scrollX: 0,
+          scrollY: 0,
+          logging: false,
+          imageTimeout: 0,     // disable timeout — data URIs always instant
+          removeContainer: true,
         });
 
         if (i > 0) pdf.addPage();
-        
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const imgW = pageW;
-        const imgH = (canvas.height * pageW) / canvas.width;
 
-        // Center vertically if content is smaller than page
-        const yPos = imgH < pageH ? (pageH - imgH) / 2 : 0;
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, yPos, imgW, imgH);
+        const imgW = pdfW;
+        const imgH = (canvas.height / canvas.width) * pdfW;
+        // If content shorter than page, center vertically
+        const yOff = imgH < pdfH ? (pdfH - imgH) / 2 : 0;
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, yOff, imgW, imgH);
       }
 
       document.body.removeChild(iframe);
-
       pdf.save(`E-Ticket_${personalData.fullName.replace(/\s+/g, '_')}.pdf`);
+
     } catch (err) {
-      console.error('PDF Error:', err);
-      alert('Gagal membuat PDF. Coba gunakan tombol Preview lalu simpan manual.');
+      console.error('PDF error:', err);
+      alert('Gagal membuat PDF. Silakan coba tombol Preview dan gunakan Print > Save as PDF.');
     } finally {
       setIsDownloading(false);
     }
@@ -614,15 +582,11 @@ export function TicketResultStep() {
 
   return (
     <div className="flex flex-col" ref={ticketRef}>
-      {/* ── Content ── */}
       <div className="p-6 sm:p-8 space-y-5">
 
         {/* Success header */}
         <div className="text-center">
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-            style={{ background: '#DC003212' }}
-          >
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: '#DC003212' }}>
             <CheckCircle2 className="w-7 h-7" style={{ color: '#DC0032' }} />
           </div>
           <h2 className="font-display font-extrabold text-xl" style={{ color: '#4A565E' }}>Registrasi Berhasil!</h2>
@@ -632,23 +596,19 @@ export function TicketResultStep() {
           </p>
         </div>
 
-        {/* Ticket cards — redesigned */}
+        {/* Ticket list */}
         <div className="space-y-3">
           {allTickets.map((ticket, i) => {
             const Icon = ticket.icon;
             return (
               <div key={i} className="rounded-2xl overflow-hidden flex"
                 style={{ boxShadow: '0 2px 16px rgba(44,53,59,.10)', border: '1px solid #EEF1F3' }}>
-                {/* Colored left band */}
                 <div className="w-2 flex-shrink-0" style={{ background: ticket.color }} />
-                {/* Main body */}
                 <div className="flex-1 bg-white flex items-center gap-4 px-4 py-3.5">
-                  {/* Icon badge */}
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: ticket.color + '12' }}>
                     <Icon className="w-5 h-5" style={{ color: ticket.color }} strokeWidth={1.5} />
                   </div>
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     {ticket.ownerName && (
                       <p className="font-sans text-[10px] font-semibold uppercase tracking-wider mb-0.5"
@@ -659,11 +619,8 @@ export function TicketResultStep() {
                       {ticket.id}
                     </p>
                   </div>
-                  {/* QR */}
-                  <div className="flex-shrink-0 p-1.5 rounded-xl" style={{ background: '#F5F7F8' }}>
-                    <img src={getQRUrl(ticket.id, 100)} alt={`QR ${ticket.title}`}
-                      className="w-12 h-12 rounded-lg block" />
-                  </div>
+                  {/* Live QR preview using data URI */}
+                  <QrCode className="w-10 h-10 flex-shrink-0" style={{ color: ticket.color }} strokeWidth={1} />
                 </div>
               </div>
             );
@@ -675,7 +632,7 @@ export function TicketResultStep() {
         </p>
       </div>
 
-      {/* ── Footer — naturally at bottom ── */}
+      {/* Footer actions */}
       <div className="px-6 sm:px-8 py-4" style={{ borderTop: '1px solid #EEF1F3', background: '#FFFFFF' }}>
         <div className="grid grid-cols-2 gap-2.5">
           <RippleButton variant="outline" size="sm" icon={<Eye className="w-4 h-4" />} onClick={handlePreview} fullWidth>
