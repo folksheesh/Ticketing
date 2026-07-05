@@ -133,60 +133,63 @@ function buildPDFHtml(
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#F5F7F8;padding:24px 16px 48px;color:#2C353B;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#FFFFFF;padding:0;margin:0;color:#2C353B;}
+html{background:#FFFFFF;}
 
-.page-header{max-width:540px;margin:0 auto 20px;text-align:center;}
+.page-header{max-width:540px;margin:16px auto 16px;text-align:center;padding:12px 16px;}
 .page-header-logo{font-size:42px;font-weight:900;font-style:italic;color:#DC0032;letter-spacing:-2px;margin-bottom:4px;line-height:1;}
-.page-header-sub{font-size:11px;color:#9AAAB3;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;}
-.page-header-instruction{margin-top:12px;font-size:11.5px;color:#6B7882;background:#fff;border-radius:12px;padding:10px 16px;border:1px solid #EEF1F3;line-height:1.5;}
+.page-header-sub{font-size:11px;color:#6B7882;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;}
+.page-header-instruction{margin-top:12px;font-size:11px;color:#4A565E;background:#FFFAF9;border-radius:8px;padding:10px 14px;border:1px solid #DC003220;line-height:1.5;}
 
 /* ── Summary card (REKAP) ── */
-.summary{max-width:540px;margin:0 auto 20px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(44,53,59,.12);border:1px solid #EEF1F3;page-break-inside:avoid;}
-.summary-head{background:linear-gradient(135deg,#DC0032 0%,#B8002A 100%);padding:14px 20px;color:white;}
-.summary-head-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;}
-.summary-body{padding:18px 20px;}
+.summary{max-width:540px;margin:12px auto;background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #EEEFF3;page-break-inside:avoid;}
+.summary-head{background:linear-gradient(135deg,#DC0032 0%,#B8001A 100%);padding:12px 16px;color:white;display:flex;align-items:center;gap:10px;}
+.summary-head-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;}
+.summary-body{padding:14px 16px;}
 .summary-section{margin-bottom:16px;}
 .summary-section:last-child{margin-bottom:0;}
-.summary-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#DC0032;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #DC003220;}
-.summary-row{display:flex;margin-bottom:6px;font-size:12px;line-height:1.5;}
-.summary-key{width:140px;flex-shrink:0;color:#6B7882;font-weight:600;}
-.summary-val{flex:1;color:#2C353B;font-weight:500;word-wrap:break-word;}
-table.child-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px;}
-table.child-table th{background:#F5F7F8;padding:8px 12px;text-align:left;font-size:10px;color:#6B7882;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #EEF1F3;}
-table.child-table td{padding:8px 12px;border-bottom:1px solid #EEF1F3;color:#2C353B;font-weight:500;}
+.summary-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#DC0032;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #DC003215;}
+.summary-row{display:flex;margin-bottom:5px;font-size:11px;line-height:1.4;}
+.summary-key{width:130px;flex-shrink:0;color:#6B7882;font-weight:600;}
+.summary-val{flex:1;color:#1F2937;font-weight:500;word-wrap:break-word;}
+table.child-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px;border:1px solid #EEEFF3;}
+table.child-table th{background:#DC0032;color:white;padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+table.child-table td{padding:7px 10px;border-bottom:1px solid #EEEFF3;color:#1F2937;font-weight:500;background:white;}
 table.child-table tr:last-child td{border-bottom:none;}
+table.child-table tr:nth-child(even) td{background:#FAFBFC;}
 
 /* ── Ticket card ── */
-.ticket{max-width:540px;margin:0 auto 18px;border-radius:16px;overflow:hidden;box-shadow:0 6px 28px rgba(44,53,59,.14);border:1px solid #EEF1F3;page-break-inside:avoid;}
+.ticket{max-width:540px;margin:12px auto;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #EEEFF3;page-break-inside:avoid;background:#FFFFFF;}
 
-.ticket-head{padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;color:white;}
+.ticket-head{padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start;color:white;}
 .ticket-head-left{}
-.event-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;opacity:.75;margin-bottom:3px;}
-.ticket-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;opacity:.9;margin-bottom:3px;}
-.ticket-title{font-size:18px;font-weight:800;letter-spacing:-.4px;line-height:1.15;}
+.event-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.8;margin-bottom:2px;}
+.ticket-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;opacity:.9;margin-bottom:2px;}
+.ticket-title{font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.1;}
 .denso-mark{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;font-style:italic;color:white;border:2px solid rgba(255,255,255,.25);}
 
 .ticket-body{background:#fff;display:flex;align-items:stretch;}
-.ticket-body-left{flex:1;padding:16px 16px 16px 20px;display:flex;flex-direction:column;gap:8px;}
-.info-row{display:flex;flex-direction:column;gap:2px;}
-.info-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9AAAB3;}
-.info-val{font-size:13px;font-weight:600;color:#2C353B;line-height:1.3;word-wrap:break-word;}
-.ticket-id-block{margin-top:auto;padding-top:10px;border-top:1px solid #EEF1F3;}
-.ticket-id-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#9AAAB3;margin-bottom:3px;}
-.ticket-id-val{font-family:monospace;font-size:12px;font-weight:800;letter-spacing:1.8px;}
+.ticket-body-left{flex:1;padding:12px 12px 12px 16px;display:flex;flex-direction:column;gap:6px;}
+.info-row{display:flex;flex-direction:column;gap:1.5px;}
+.info-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#6B7882;}
+.info-val{font-size:12px;font-weight:600;color:#1F2937;line-height:1.2;word-wrap:break-word;}
+.ticket-id-block{margin-top:auto;padding-top:8px;border-top:1px solid #EEEFF3;}
+.ticket-id-label{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6B7882;margin-bottom:2px;}
+.ticket-id-val{font-family:monospace;font-size:11px;font-weight:800;letter-spacing:1.5px;}
 
-.ticket-divider{width:1px;background:#EEF1F3;position:relative;flex-shrink:0;margin:12px 0;}
-.notch{width:16px;height:16px;border-radius:50%;background:#F5F7F8;position:absolute;left:50%;transform:translateX(-50%);border:1px solid #EEF1F3;}
-.notch.top{top:-8px;}.notch.bot{bottom:-8px;}
-.dashed-line{position:absolute;top:16px;bottom:16px;left:50%;border-left:1.5px dashed #CDD4D8;}
+.ticket-divider{width:1px;background:#EEEFF3;position:relative;flex-shrink:0;margin:10px 0;}
+.notch{width:14px;height:14px;border-radius:50%;background:#FFFFFF;position:absolute;left:50%;transform:translateX(-50%);border:1px solid #EEEFF3;}
+.notch.top{top:-7px;}.notch.bot{bottom:-7px;}
+.dashed-line{position:absolute;top:14px;bottom:14px;left:50%;border-left:1.5px dashed #CDD4D8;}
 
-.ticket-body-right{width:150px;flex-shrink:0;padding:14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
-.qr-img{width:120px;height:120px;display:block;border-radius:8px;border:3px solid #DC0032;padding:2px;background:white;image-rendering:pixelated;}
+.ticket-body-right{width:130px;flex-shrink:0;padding:12px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.qr-img{width:110px;height:110px;display:block;border-radius:8px;border:2.5px solid #DC0032;padding:2px;background:white;image-rendering:pixelated;}
 .qr-hint{font-size:8px;color:#6B7882;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.8px;line-height:1.2;}
 
 @media print{
-  body{background:white;padding:12px 8px;}
-  .ticket,.summary{box-shadow:none;border:1px solid #DDD;max-width:100%;margin-bottom:14px;}
+  body{background:#FFFFFF;padding:0;margin:0;}
+  html{background:#FFFFFF;}
+  .ticket,.summary{box-shadow:none;border:1px solid #DDD;max-width:100%;margin:8px 0;}
   .page-header-instruction{page-break-after:avoid;}
   .summary{page-break-after:avoid;}
 }
@@ -283,81 +286,83 @@ export function TicketResultStep() {
       
       const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
       const container = document.createElement('div');
-      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:580px;background:#F5F7F8;padding:20px;z-index:-9999;';
+      container.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:600px;background:#F5F7F8;padding:0;z-index:-9999;opacity:1;';
       container.innerHTML = html.replace(/<script[\s\S]*?<\/script>/gi, '');
       document.body.appendChild(container);
       
-      // Wait for all images to load
+      // Wait significantly longer for all images, including QR codes from external API
       await new Promise<void>(resolve => {
         const imgs = container.querySelectorAll('img');
-        if (!imgs.length) { resolve(); return; }
+        if (!imgs.length) { 
+          setTimeout(resolve, 500);
+          return; 
+        }
         let loaded = 0;
+        let failed = 0;
+        const total = imgs.length;
+        
         imgs.forEach((img) => {
           const imageElement = img as HTMLImageElement;
           const done = () => { 
             loaded++;
-            if (loaded === imgs.length) resolve(); 
+            if (loaded + failed >= total) resolve(); 
           };
-          if (imageElement.complete) {
+          
+          if (imageElement.complete && imageElement.naturalHeight > 0) {
             done();
           } else {
-            imageElement.onload = done;
-            imageElement.onerror = done;
+            const timeout = setTimeout(done, 5000); // 5s timeout per image
+            imageElement.onload = () => {
+              clearTimeout(timeout);
+              done();
+            };
+            imageElement.onerror = () => {
+              clearTimeout(timeout);
+              failed++;
+              done();
+            };
           }
         });
       });
       
-      // Add delay to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Add delay for rendering
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       const canvas = await html2canvas(container, { 
-        scale: 2, 
+        scale: 1.5, 
         useCORS: true, 
-        backgroundColor: '#F5F7F8', 
-        width: 580,
-        logging: false,
         allowTaint: true,
-        foreignObjectRendering: true,
+        backgroundColor: '#F5F7F8', 
+        width: 600,
+        logging: false,
+        imageTimeout: 10000,
       });
       
       document.body.removeChild(container);
       
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdf = new jsPDF({ 
+        orientation: 'portrait', 
+        unit: 'mm', 
+        format: 'a4',
+        compress: true,
+      });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW - 4; // margin
-      const imgH = (canvas.height * imgW) / canvas.width;
+      const imgW = pageW;
+      const imgH = (canvas.height * pageW) / canvas.width;
       
       let yPos = 0;
-      let pageIndex = 0;
+      let page = 0;
       let remaining = imgH;
       
       while (remaining > 0) {
-        const heightLeft = remaining;
-        let position = 0;
-        
-        if (pageIndex > 0) {
-          pdf.addPage();
-          position = heightLeft - pageH;
-        } else {
-          position = 0;
-        }
-        
-        const sourceY = yPos * canvas.height / imgH;
-        const sourceHeight = Math.min(pageH * canvas.height / imgH, canvas.height - sourceY);
-        
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = sourceHeight;
-        const tempCtx = tempCanvas.getContext('2d');
-        if (tempCtx) {
-          tempCtx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
-          pdf.addImage(tempCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 2, position + 2, imgW, (sourceHeight * imgW) / canvas.width);
-        }
-        
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, -yPos, imgW, imgH);
         remaining -= pageH;
         yPos += pageH;
-        pageIndex++;
+        page++;
       }
       
       pdf.save(`E-Ticket_${personalData.fullName.replace(/\s+/g, '_')}.pdf`);
