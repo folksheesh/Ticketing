@@ -1,127 +1,194 @@
-import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ShieldCheck } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check } from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { PersonalDataStep } from './PersonalDataStep';
 import { FamilyDataStep } from './FamilyDataStep';
 import { TicketResultStep } from './TicketResultStep';
-import { cn } from '../../../lib/cn';
+import { Logo } from '../../../components/atoms/Logo';
 
+/* ─── Step metadata ─────────────────────────────────────────────────────── */
 const STEPS = [
-  { id: 1, title: 'Data Pribadi' },
-  { id: 2, title: 'Data Keluarga' },
-  { id: 3, title: 'E-Ticket' },
+  { id: 1, title: 'Data Pribadi',  short: '01' },
+  { id: 2, title: 'Data Keluarga', short: '02' },
+  { id: 3, title: 'E-Ticket',      short: '03' },
 ];
+
+
 
 export function RegistrationLayout() {
   const { currentStep, personalData } = useRegistrationStore();
   const isSingle = personalData.maritalStatus === 'Single';
-  
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row font-sans overflow-hidden">
-      
-      {/* ── Left Panel (Branding & Hero) ── */}
-      <div className="lg:w-[45%] xl:w-[40%] bg-denso-navy relative flex flex-col justify-between p-8 lg:p-12 overflow-hidden shrink-0">
-        
-        {/* Decorative Blobs */}
-        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse duration-10000" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-denso-amber rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse duration-7000" />
-        
-        {/* Top Content */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-white/10">
-              <ShieldCheck className="w-7 h-7 text-denso-navy" />
-            </div>
-            <div>
-              <p className="font-display font-bold text-white text-xl leading-tight tracking-wide">DENSO</p>
-              <p className="text-xs text-white/60 font-medium tracking-widest uppercase mt-0.5">Indonesia</p>
-            </div>
-          </div>
-          
-          <h1 className="text-4xl lg:text-5xl font-display font-extrabold text-white leading-[1.1] tracking-tight">
-            Family Gathering <br />
-            <span className="text-denso-amber drop-shadow-lg">2025</span>
-          </h1>
-          <p className="mt-5 text-blue-100/90 text-base lg:text-lg max-w-md leading-relaxed font-medium">
-            Mari bergabung bersama keluarga besar DENSO dalam acara tahunan penuh kegembiraan, kebersamaan, dan puluhan doorprize menarik!
-          </p>
-        </div>
-        
-        {/* Hero Image */}
-        <div className="relative z-10 flex-1 flex items-center justify-center py-10 min-h-[300px]">
-          <img 
-            src="/hero.png" 
-            alt="Family Gathering Illustration" 
-            className="w-full max-w-md object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 ease-out"
+    /*
+     * The page is placed inside <MainLayout> which adds a fixed header (pt-20).
+     * We use min-h-screen so the two panels always fill the viewport,
+     * and overflow-hidden on the wrapper prevents double scrollbars.
+     */
+    <div
+      className="flex flex-col lg:flex-row"
+      style={{ height: '100vh', overflow: 'hidden' }}
+    >
+      {/* ══════════════════════════════════════════════════════════
+          LEFT PANEL  — branding + photo (desktop only)
+      ══════════════════════════════════════════════════════════ */}
+      <div
+        className="hidden lg:flex lg:w-[42%] xl:w-[38%] flex-col relative overflow-hidden flex-shrink-0"
+        style={{ background: '#DC0032' }}
+      >
+        {/* Photo — fills the panel, darkened with an overlay */}
+        <div className="absolute inset-0">
+          <img
+            /*
+             * Replace this src with the uploaded party photo once it's
+             * saved to src/assets/party.jpg — then import it and use
+             * the module URL here.
+             *
+             * The image below is a placeholder sourced from Unsplash
+             * (celebration / crowd category, free to use).
+             * Swap it with your actual image to remove the network dep.
+             */
+            src="https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=900&auto=format&fit=crop&q=80"
+            alt="Family Gathering"
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+          {/* Gradient overlay: heavy red tint at bottom, lighter at top */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(to bottom, rgba(220,0,50,0.62) 0%, rgba(140,0,30,0.88) 100%)',
+            }}
           />
         </div>
-        
-        {/* Footer */}
-        <div className="relative z-10 text-white/40 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-           <span>© 2025 PT Denso Indonesia</span>
+
+        {/* Content sits above the overlay */}
+        <div className="relative z-10 flex flex-col justify-between h-full p-10 xl:p-14">
+
+          {/* Top: Denso logo — white on red background */}
+          <Logo size="md" onDark />
+
+          {/* Middle: headline only */}
+          <div>
+            <h1
+              className="font-display font-extrabold text-white leading-[1.1]"
+              style={{ fontSize: 'clamp(2rem, 3.2vw, 3rem)' }}
+            >
+              Denso<br />
+              Family<br />
+              Gathering<br />
+              <span style={{ color: 'rgba(255,255,255,0.8)', fontStyle: 'italic' }}>2026</span>
+            </h1>
+          </div>
+
+          {/* Bottom: footer note */}
+          <p className="font-sans text-[11px] text-white/35 font-medium tracking-wide">
+            © 2026 PT Denso Indonesia
+          </p>
         </div>
       </div>
 
-      {/* ── Right Panel (Form Area) ── */}
-      <div className="flex-1 overflow-y-auto bg-slate-50 relative">
-        <div className="max-w-2xl mx-auto py-12 px-6 lg:px-12 lg:py-20 min-h-full flex flex-col justify-center">
-          
-          {/* Header Mobile */}
-          <div className="lg:hidden text-center mb-10">
-            <h2 className="text-3xl font-display font-bold text-slate-900 tracking-tight">Registrasi Tiket</h2>
-            <p className="text-slate-500 mt-2 text-sm">Lengkapi data Anda untuk mendapatkan e-ticket.</p>
+      {/* ══════════════════════════════════════════════════════════
+          RIGHT PANEL  — form
+      ══════════════════════════════════════════════════════════ */}
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ background: '#F5F7F8' }}
+      >
+        <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10 lg:py-16 flex flex-col min-h-full">
+
+          {/* Mobile header */}
+          <div className="lg:hidden text-center mb-8">
+            <h2
+              className="font-display font-extrabold"
+              style={{ fontSize: '1.75rem', color: '#4A565E' }}
+            >
+              Registrasi Tiket
+            </h2>
+            <p className="font-sans text-sm mt-1" style={{ color: '#6B7882' }}>
+              Lengkapi data Anda untuk mendapatkan e-ticket.
+            </p>
           </div>
 
-          {/* Stepper */}
-          <div className="mb-12 relative max-w-md mx-auto w-full">
-            <div className="absolute top-5 left-8 right-8 h-0.5 bg-slate-200 -translate-y-1/2 z-0" />
-            
-            <div className="relative z-10 flex justify-between items-start">
-              {STEPS.map((step, index) => {
-                const isCompleted = currentStep > step.id;
-                const isCurrent = currentStep === step.id;
-                const isDisabled = step.id === 2 && isSingle;
+          {/* ── Stepper ───────────────────────────────────────────── */}
+          <div className="mb-8 lg:mb-10">
+            {/* Track */}
+            <div className="relative flex items-center justify-between">
+              {/* Background line */}
+              <div
+                className="absolute h-px top-5"
+                style={{
+                  left: '2rem', right: '2rem',
+                  background: '#CDD4D8',
+                  zIndex: 0,
+                }}
+              />
+              {/* Progress fill */}
+              <div
+                className="absolute h-px top-5 transition-all duration-500 ease-out"
+                style={{
+                  left: '2rem',
+                  width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 100}% * (100% - 4rem) / 100%)`,
+                  background: '#DC0032',
+                  zIndex: 1,
+                }}
+              />
+
+              {STEPS.map((step) => {
+                const done    = currentStep > step.id;
+                const active  = currentStep === step.id;
+                const skipped = step.id === 2 && isSingle;
 
                 return (
-                  <div key={step.id} className={cn("flex flex-col items-center w-24", isDisabled && "opacity-30")}>
+                  <div
+                    key={step.id}
+                    className="relative z-10 flex flex-col items-center gap-2.5"
+                    style={{ opacity: skipped ? 0.35 : 1 }}
+                  >
                     <div
-                      className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 relative bg-white",
-                        isCompleted ? "border-2 border-emerald-500 text-emerald-500 shadow-sm" : 
-                        isCurrent ? "border-2 border-blue-600 text-blue-600 shadow-md ring-4 ring-blue-50" : 
-                        "border-2 border-slate-200 text-slate-400"
-                      )}
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-sm transition-all duration-300"
+                      style={{
+                        background: done ? '#DC0032' : active ? '#FFFFFF' : '#FFFFFF',
+                        border: done
+                          ? 'none'
+                          : active
+                            ? '2.5px solid #DC0032'
+                            : '2px solid #CDD4D8',
+                        color: done ? '#FFFFFF' : active ? '#DC0032' : '#9AAAB3',
+                        boxShadow: active ? '0 0 0 4px rgba(220,0,50,0.12)' : 'none',
+                      }}
                     >
-                      {isCompleted ? <Check className="w-5 h-5" /> : step.id}
+                      {done ? <Check className="w-4.5 h-4.5 w-[18px] h-[18px]" /> : step.id}
                     </div>
-                    <span className={cn(
-                      "mt-3 text-[10px] font-bold uppercase tracking-wider text-center transition-colors",
-                      isCurrent ? "text-blue-600" : isCompleted ? "text-slate-700" : "text-slate-400"
-                    )}>
+                    <span
+                      className="font-sans text-[11px] font-semibold uppercase tracking-wider text-center whitespace-nowrap"
+                      style={{ color: active ? '#DC0032' : done ? '#4A565E' : '#9AAAB3' }}
+                    >
                       {step.title}
                     </span>
                   </div>
                 );
               })}
             </div>
-            
-            {/* Active Progress Bar */}
-            <div 
-              className="absolute top-5 left-8 h-0.5 bg-blue-600 -translate-y-1/2 z-0 transition-all duration-500 ease-out" 
-              style={{ width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 100}%)` }}
-            />
           </div>
-          
-          {/* Form Container */}
-          <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden relative">
+
+          {/* ── Form card ─────────────────────────────────────────── */}
+          <div
+            className="flex-1 rounded-3xl overflow-hidden"
+            style={{
+              background: '#FFFFFF',
+              boxShadow: '0 4px 32px rgba(74,86,94,0.09)',
+              border: '1px solid rgba(74,86,94,0.08)',
+            }}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.25 }}
               >
                 {currentStep === 1 && <PersonalDataStep />}
                 {currentStep === 2 && <FamilyDataStep />}

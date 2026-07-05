@@ -14,15 +14,13 @@ export function GradientText({
   children,
   className,
   as: Component = 'span',
-  variant = 'amber',
+  variant = 'primary',
   from,
   to,
 }: GradientTextProps) {
+  // All gradient variants use the Denso red palette
   const gradientClass =
-    variant === 'primary' ? 'text-gradient' :
-    variant === 'sky'     ? 'text-gradient-sky' :
-    variant === 'amber'   ? 'text-gradient-amber' :
-    '';
+    variant === 'custom' ? '' : 'text-gradient';
 
   const customStyle =
     variant === 'custom' && from && to

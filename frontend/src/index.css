@@ -1,56 +1,70 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Nunito:ital,wght@1,900&display=swap');
 
-/* ===== Denso Design System ===== */
+/* ===================================================
+   DENSO Design System — Red / White / Slate
+   Primary accent : #DC0032  (Denso Red)
+   Base           : #FFFFFF  (White)
+   Neutral text   : #4A565E  (Slate)
+   =================================================== */
+
 @theme {
-  /* ── Brand Core (Deep Navy) ── */
-  --color-denso-navy:       #002060;
-  --color-denso-navy-dark:  #001133;
-  --color-denso-navy-mid:   #003399;
-  --color-denso-navy-light: #E6ECF5;
+  /* ── Brand Red ── */
+  --color-denso-red:        #DC0032;
+  --color-denso-red-dark:   #A80026;
+  --color-denso-red-light:  #FF1A47;
+  --color-denso-red-pale:   #FFF0F3;
+  --color-denso-red-muted:  #FFD6DE;
 
-  /* ── Sunny Yellow Accent (Ceria) ── */
-  --color-denso-amber:      #FFC000;
-  --color-denso-amber-deep: #E6AC00;
-  --color-denso-amber-pale: #FFF7D9;
-  --color-denso-amber-glow: #FFFDF5;
+  /* ── Neutral slate (text / UI chrome) ── */
+  --color-denso-slate:      #4A565E;
+  --color-denso-slate-dark: #2C353B;
+  --color-denso-slate-mid:  #6B7882;
+  --color-denso-slate-soft: #8E9BA3;
+  --color-denso-slate-pale: #CDD4D8;
+  --color-denso-slate-mist: #EEF1F3;
+  --color-denso-slate-ghost:#F5F7F8;
 
-  /* ── Neutrals (warm-tinted) ── */
-  --color-denso-cream:      #FEFAF4;
-  --color-denso-paper:      #F7F3ED;
-  --color-denso-mist:       #EDF2F8;
-  --color-denso-white:      #FFFFFF;
+  /* ── White base ── */
+  --color-denso-white: #FFFFFF;
 
-  --color-denso-gray-50:  #F8F6F2;
-  --color-denso-gray-100: #EEE9E0;
-  --color-denso-gray-200: #DDD5C7;
-  --color-denso-gray-300: #C4B8A7;
-  --color-denso-gray-400: #9E8F7E;
-  --color-denso-gray-500: #7A6E61;
-  --color-denso-gray-600: #5C5349;
-  --color-denso-gray-700: #3E3830;
-  --color-denso-gray-800: #241F19;
-  --color-denso-gray-900: #0F0C09;
+  /* ── Legacy colour aliases so no component breaks ── */
+  --color-denso-blue:        #DC0032;
+  --color-denso-blue-dark:   #A80026;
+  --color-denso-blue-light:  #FF1A47;
+  --color-denso-navy:        #2C353B;
+  --color-denso-navy-dark:   #1A2126;
+  --color-denso-navy-mid:    #4A565E;
+  --color-denso-navy-light:  #EEF1F3;
+  --color-denso-amber:       #DC0032;
+  --color-denso-amber-deep:  #A80026;
+  --color-denso-amber-pale:  #FFF0F3;
+  --color-denso-amber-glow:  #FFF5F7;
+  --color-denso-sky:         #DC0032;
+  --color-denso-cyan:        #A80026;
+  --color-denso-cyan-light:  #FFD6DE;
+  --color-denso-teal:        #DC0032;
+  --color-denso-cream:       #FFFFFF;
+  --color-denso-paper:       #F5F7F8;
+  --color-denso-mist:        #EEF1F3;
+
+  /* ── Neutral grays (warm-neutral, matches #4A565E family) ── */
+  --color-denso-gray-50:  #F5F7F8;
+  --color-denso-gray-100: #EEF1F3;
+  --color-denso-gray-200: #D8DFE3;
+  --color-denso-gray-300: #BEC8CE;
+  --color-denso-gray-400: #9AAAB3;
+  --color-denso-gray-500: #6B7882;
+  --color-denso-gray-600: #4A565E;
+  --color-denso-gray-700: #2C353B;
+  --color-denso-gray-800: #1A2126;
+  --color-denso-gray-900: #0D1114;
 
   /* ── Semantic ── */
-  --color-denso-success: #10B981;
-  --color-denso-warning: #F59E0B;
-  --color-denso-error:   #EF4444;
-  --color-denso-info:    #3B82F6;
-
-  /* ── Slate (for text) ── */
-  --color-denso-slate:       #1E293B;
-  --color-denso-slate-light: #475569;
-  --color-denso-slate-muted: #94A3B8;
-
-  /* ── Legacy aliases so existing components don't break ── */
-  --color-denso-blue:       #0054A6;
-  --color-denso-blue-dark:  #003D7A;
-  --color-denso-blue-light: #1A6FBF;
-  --color-denso-sky:        #F59E0B;   /* repurposed: amber takes this slot in old classes */
-  --color-denso-cyan:       #D97706;
-  --color-denso-cyan-light: #FEF3C7;
-  --color-denso-teal:       #F59E0B;
+  --color-denso-success: #16A34A;
+  --color-denso-warning: #D97706;
+  --color-denso-error:   #DC0032;
+  --color-denso-info:    #2563EB;
 
   /* ── Typography ── */
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -62,18 +76,18 @@
   --spacing-30: 7.5rem;
   --spacing-34: 8.5rem;
 
-  /* ── Border Radius ── */
+  /* ── Radius ── */
   --radius-4xl: 2rem;
   --radius-5xl: 2.5rem;
 
-  /* ── Shadows (warm-tinted, navy base) ── */
-  --shadow-glass:        0 8px 32px rgba(0, 61, 122, 0.08);
-  --shadow-card:         0 4px 24px rgba(0, 61, 122, 0.06);
-  --shadow-card-hover:   0 12px 40px rgba(0, 61, 122, 0.14);
-  --shadow-button:       0 4px 14px rgba(0, 61, 122, 0.3);
-  --shadow-button-hover: 0 6px 20px rgba(0, 61, 122, 0.4);
-  --shadow-amber:        0 4px 20px rgba(245, 158, 11, 0.35);
-  --shadow-glow:         0 0 40px rgba(245, 158, 11, 0.12);
+  /* ── Shadows ── */
+  --shadow-glass:        0 8px 32px rgba(44, 53, 59, 0.08);
+  --shadow-card:         0 2px 16px rgba(44, 53, 59, 0.07);
+  --shadow-card-hover:   0 8px 32px rgba(44, 53, 59, 0.13);
+  --shadow-button:       0 4px 14px rgba(220, 0, 50, 0.30);
+  --shadow-button-hover: 0 6px 20px rgba(220, 0, 50, 0.42);
+  --shadow-red:          0 4px 20px rgba(220, 0, 50, 0.28);
+  --shadow-glow:         0 0 40px rgba(220, 0, 50, 0.10);
 
   /* ── Easing ── */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -88,24 +102,23 @@
   --animate-gradient-shift: gradient-shift 8s ease infinite;
   --animate-spin-slow:      spin 24s linear infinite;
   --animate-marquee:        marquee 30s linear infinite;
-  --animate-arc-draw:       arc-draw 1.2s ease-out forwards;
 }
 
 /* ===== Keyframes ===== */
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-14px) rotate(0.8deg); }
-  66% { transform: translateY(-7px) rotate(-0.8deg); }
+  33%       { transform: translateY(-14px) rotate(0.6deg); }
+  66%       { transform: translateY(-7px)  rotate(-0.6deg); }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
+  0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
-  50%       { box-shadow: 0 0 40px rgba(245, 158, 11, 0.3); }
+  0%, 100% { box-shadow: 0 0 20px rgba(220, 0, 50, 0.08); }
+  50%       { box-shadow: 0 0 40px rgba(220, 0, 50, 0.22); }
 }
 
 @keyframes gradient-shift {
@@ -118,33 +131,28 @@
   100% { transform: translateX(-50%); }
 }
 
-@keyframes arc-draw {
-  from { stroke-dashoffset: 600; opacity: 0; }
-  to   { stroke-dashoffset: 0;   opacity: 1; }
-}
-
 @keyframes slide-up {
-  0%   { transform: translateY(30px); opacity: 0; }
-  100% { transform: translateY(0);    opacity: 1; }
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
 @keyframes fade-in {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes scale-in {
-  0%   { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1);   opacity: 1; }
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
 }
 
 @keyframes draw-check {
-  0%   { stroke-dashoffset: 100; }
-  100% { stroke-dashoffset: 0; }
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
 }
 
 @keyframes ripple {
-  0%   { transform: scale(0); opacity: 0.5; }
+  0%   { transform: scale(0); opacity: 0.45; }
   100% { transform: scale(4); opacity: 0; }
 }
 
@@ -155,10 +163,7 @@
   75%       { border-radius: 60% 40% 60% 30% / 60% 40% 30% 60%; }
 }
 
-/* ===== Base Styles ===== */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+/* ===== Base ===== */
 
 html {
   scroll-behavior: smooth;
@@ -170,7 +175,7 @@ html {
 body {
   font-family: var(--font-sans);
   color: var(--color-denso-slate);
-  background-color: var(--color-denso-cream);
+  background-color: var(--color-denso-white);
   line-height: 1.65;
   overflow-x: hidden;
 }
@@ -183,92 +188,102 @@ h1, h2, h3, h4, h5 {
 
 /* Focus */
 :focus-visible {
-  outline: 2px solid var(--color-denso-amber);
+  outline: 2px solid var(--color-denso-red);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
 /* Selection */
 ::selection {
-  background-color: var(--color-denso-amber-pale);
-  color: var(--color-denso-navy-dark);
+  background-color: var(--color-denso-red-muted);
+  color: var(--color-denso-red-dark);
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 7px; }
-::-webkit-scrollbar-track { background: var(--color-denso-paper); }
+::-webkit-scrollbar-track { background: var(--color-denso-slate-ghost); }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-denso-gray-300);
+  background: var(--color-denso-slate-pale);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--color-denso-gray-400); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-denso-slate-soft); }
 
 /* ===== Utility Classes ===== */
 
-/* Glass */
+/* Glass — white-based */
 .glass {
-  background: rgba(254, 250, 244, 0.72);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .glass-strong {
-  background: rgba(254, 250, 244, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .glass-subtle {
-  background: rgba(254, 250, 244, 0.45);
+  background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Gradient text — navy to amber */
+/* ── Gradient text ── */
+
+/* Red accent gradient */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-denso-navy), var(--color-denso-amber-deep));
+  background: linear-gradient(135deg, #DC0032, #A80026);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Secondary gradient — amber only */
+/* Alias variants — same red, defined independently (no @apply) */
 .text-gradient-sky {
-  background: linear-gradient(135deg, var(--color-denso-amber), var(--color-denso-amber-deep));
+  background: linear-gradient(135deg, #DC0032, #A80026);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Gradient text — pure amber warmth */
 .text-gradient-amber {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
+  background: linear-gradient(135deg, #DC0032, #A80026);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Backgrounds */
+/* Slate → red */
+.text-gradient-primary {
+  background: linear-gradient(135deg, #2C353B, #DC0032);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Backgrounds ── */
 .bg-gradient-denso {
-  background: linear-gradient(135deg, var(--color-denso-navy), var(--color-denso-navy-mid));
+  background: linear-gradient(135deg, #DC0032, #A80026);
 }
 
 .bg-gradient-hero {
-  background: linear-gradient(160deg, #FEFAF4 0%, #F7F3ED 40%, #EDF2F8 75%, #FEFAF4 100%);
+  /* Crisp white, very subtle warm edge */
+  background: #FFFFFF;
 }
 
 .bg-gradient-card {
-  background: linear-gradient(180deg, rgba(254,250,244,0.95) 0%, rgba(247,243,237,0.6) 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5F7F8 100%);
 }
 
 .bg-gradient-amber {
-  background: linear-gradient(135deg, var(--color-denso-amber), var(--color-denso-amber-deep));
+  background: linear-gradient(135deg, #DC0032, #A80026);
 }
 
-/* Ripple */
+/* ── Ripple ── */
 .ripple-container {
   position: relative;
   overflow: hidden;
@@ -281,10 +296,10 @@ h1, h2, h3, h4, h5 {
   pointer-events: none;
 }
 
-/* Blob */
+/* ── Blob ── */
 .blob { animation: blob 8s ease-in-out infinite; }
 
-/* Section padding */
+/* ── Section padding ── */
 .section-padding {
   padding-top: 5.5rem;
   padding-bottom: 5.5rem;
@@ -296,26 +311,25 @@ h1, h2, h3, h4, h5 {
   }
 }
 
-/* Denso arc motif */
-.arc-motif {
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600;
+/* ── Red glow on CTA ── */
+.red-glow {
+  box-shadow: 0 4px 20px rgba(220, 0, 50, 0.30);
 }
-.arc-motif.is-visible {
-  animation: arc-draw 1.4s ease-out forwards;
+.red-glow:hover {
+  box-shadow: 0 6px 28px rgba(220, 0, 50, 0.46);
 }
 
-/* No scrollbar */
+/* ── No scrollbar ── */
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Amber CTA glow */
+/* Backwards-compat alias used in old components */
 .amber-glow {
-  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 4px 20px rgba(220, 0, 50, 0.30);
 }
 .amber-glow:hover {
-  box-shadow: 0 6px 28px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 6px 28px rgba(220, 0, 50, 0.46);
 }

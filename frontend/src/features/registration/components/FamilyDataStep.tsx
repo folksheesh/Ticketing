@@ -1,254 +1,339 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Users, Plus, Trash2, ArrowRight, ArrowLeft, Download } from 'lucide-react';
+import { User, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { RippleButton } from '../../../components/atoms/RippleButton';
-import { cn } from '../../../lib/cn';
 
-const familyDataSchema = z.object({
+/* ─── schema ──────────────────────────────────────────────────────────────── */
+const schema = z.object({
   hasSpouse: z.boolean(),
   spouseName: z.string().optional(),
   spouseTshirtSize: z.enum(['S','M','L','XL','XXL','3XL']).optional(),
   hasChildren: z.boolean(),
   children: z.array(z.object({
     id: z.string(),
-    name: z.string().min(2, "Nama anak harus diisi"),
-    age: z.coerce.number().min(0, "Umur tidak valid").max(50, "Umur tidak valid"),
-    tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'], { errorMap: () => ({ message: "Pilih ukuran baju" }) }).optional(),
+    name: z.string().min(2, 'Nama anak harus diisi'),
+    age:  z.coerce.number().min(0).max(50, 'Umur tidak valid'),
+    tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'], {
+      errorMap: () => ({ message: 'Pilih ukuran' }),
+    }).optional(),
   })),
 }).superRefine((data, ctx) => {
   if (data.hasSpouse && (!data.spouseName || data.spouseName.length < 2)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Nama pasangan harus diisi",
-      path: ["spouseName"]
-    });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Nama pasangan harus diisi', path: ['spouseName'] });
   }
 });
+type Form = z.infer<typeof schema>;
 
-type FamilyDataForm = z.infer<typeof familyDataSchema>;
+/* ─── style helpers (same pattern as PersonalDataStep) ───────────────────── */
+const inputBase: React.CSSProperties = {
+  width: '100%',
+  background: '#F5F7F8',
+  border: '1.5px solid #CDD4D8',
+  borderRadius: '0.75rem',
+  padding: '0.65rem 0.875rem',
+  fontFamily: 'inherit',
+  fontSize: '0.875rem',
+  color: '#4A565E',
+  outline: 'none',
+  transition: 'border-color 0.2s, box-shadow 0.2s',
+};
+
+const focusIn  = { borderColor: '#DC0032', boxShadow: '0 0 0 3px rgba(220,0,50,0.10)', background: '#FFFFFF' };
+const focusOut = { ...inputBase };
+
+function SInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      style={inputBase}
+      onFocus={(e) => Object.assign(e.currentTarget.style, focusIn)}
+      onBlur={(e)  => Object.assign(e.currentTarget.style, focusOut)}
+      {...props}
+    />
+  );
+}
+function SSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      style={{ ...inputBase, appearance: 'none' }}
+      onFocus={(e) => Object.assign(e.currentTarget.style, { ...focusIn, appearance: 'none' })}
+      onBlur={(e)  => Object.assign(e.currentTarget.style, { ...inputBase, appearance: 'none' })}
+      {...props}
+    />
+  );
+}
+
+/* ─── Toggle switch ───────────────────────────────────────────────────────── */
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="relative flex-shrink-0 focus:outline-none"
+      style={{
+        width: '2.75rem', height: '1.5rem',
+        borderRadius: '999px',
+        background: checked ? '#DC0032' : '#CDD4D8',
+        transition: 'background 0.25s',
+        border: 'none',
+        cursor: 'pointer',
+      }}
+    >
+      <span
+        className="absolute top-[3px]"
+        style={{
+          left: checked ? 'calc(100% - 1.125rem - 3px)' : '3px',
+          width: '1.125rem', height: '1.125rem',
+          borderRadius: '50%',
+          background: '#FFFFFF',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+          transition: 'left 0.25s',
+          display: 'block',
+        }}
+      />
+    </button>
+  );
+}
+
+/* ─── Section toggle row ──────────────────────────────────────────────────── */
+function ToggleRow({
+  title, subtitle, checked, onChange,
+}: { title: string; subtitle: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div
+      className="flex items-center justify-between p-4 rounded-2xl"
+      style={{ background: '#F5F7F8', border: '1.5px solid #EEF1F3' }}
+    >
+      <div>
+        <p className="font-display font-semibold text-sm" style={{ color: '#4A565E' }}>{title}</p>
+        <p className="font-sans text-xs mt-0.5" style={{ color: '#6B7882' }}>{subtitle}</p>
+      </div>
+      <Toggle checked={checked} onChange={onChange} />
+    </div>
+  );
+}
+
+const SIZES = ['S','M','L','XL','XXL','3XL'] as const;
 
 export function FamilyDataStep() {
   const { familyData, setFamilyData, nextStep, prevStep } = useRegistrationStore();
-  
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<FamilyDataForm>({
-    resolver: zodResolver(familyDataSchema),
+
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<Form>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      hasSpouse: familyData.hasSpouse,
-      spouseName: familyData.spouseName,
+      hasSpouse:        familyData.hasSpouse,
+      spouseName:       familyData.spouseName,
       spouseTshirtSize: (familyData.spouseTshirtSize as any) || undefined,
-      hasChildren: familyData.hasChildren,
-      children: familyData.children,
+      hasChildren:      familyData.hasChildren,
+      children:         familyData.children,
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "children"
-  });
+  const { fields, append, remove } = useFieldArray({ control, name: 'children' });
 
-  const watchHasSpouse = watch('hasSpouse');
-  const watchHasChildren = watch('hasChildren');
+  const hasSpouse   = watch('hasSpouse');
+  const hasChildren = watch('hasChildren');
 
-  const onSubmit = (data: FamilyDataForm) => {
-    const cleanData = {
+  const onSubmit = (data: Form) => {
+    setFamilyData({
       ...data,
-      spouseName: data.hasSpouse ? data.spouseName : '',
-      spouseTshirtSize: data.hasSpouse ? data.spouseTshirtSize : undefined,
-      children: data.hasChildren ? data.children : []
-    };
-    
-    setFamilyData(cleanData);
+      spouseName:       data.hasSpouse   ? data.spouseName : '',
+      spouseTshirtSize: data.hasSpouse   ? data.spouseTshirtSize : undefined,
+      children:         data.hasChildren ? data.children  : [],
+    });
     nextStep();
   };
 
   return (
-    <div className="p-8 md:p-10">
+    <div className="p-7 sm:p-10">
+      {/* Step header */}
       <div className="mb-8">
-        <h2 className="text-2xl font-display font-bold text-denso-slate">Data Keluarga</h2>
-        <p className="text-denso-slate-light text-sm mt-1">
-          Daftarkan anggota keluarga inti Anda yang akan hadir.
+        <div className="flex items-center gap-2.5 mb-3">
+          <span
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-display font-bold text-white flex-shrink-0"
+            style={{ background: '#DC0032' }}
+          >
+            2
+          </span>
+          <h2 className="font-display font-extrabold text-xl" style={{ color: '#4A565E' }}>
+            Data Keluarga
+          </h2>
+        </div>
+        <p className="font-sans text-sm" style={{ color: '#6B7882' }}>
+          Daftarkan anggota keluarga inti yang akan hadir bersama Anda.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* Spouse Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-[#F8F9FA] rounded-xl border border-denso-gray-100">
-            <div>
-              <p className="font-semibold text-denso-slate">Membawa Pasangan?</p>
-              <p className="text-xs text-denso-slate-light">Istri / Suami</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" {...register('hasSpouse')} />
-              <div className="w-11 h-6 bg-denso-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-denso-navy"></div>
-            </label>
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
 
-          {watchHasSpouse && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 pl-2">
-              {/* Spouse Name */}
+        {/* ── Spouse ──────────────────────────────────────────────── */}
+        <div className="space-y-4">
+          <ToggleRow
+            title="Membawa Pasangan?"
+            subtitle="Istri / Suami"
+            checked={hasSpouse}
+            onChange={(v) => setValue('hasSpouse', v)}
+          />
+
+          {hasSpouse && (
+            <div className="space-y-4 pl-1">
+              {/* Name */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-semibold text-denso-slate">Nama Pasangan</label>
+                <label className="block text-sm font-semibold" style={{ color: '#4A565E' }}>
+                  Nama Pasangan
+                </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-denso-gray-400" />
-                  </div>
-                  <input 
-                    className={cn(
-                      "w-full pl-12 pr-4 py-3 bg-white border border-denso-gray-200 rounded-xl",
-                      "focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
-                      "transition-all duration-300 font-sans text-denso-slate placeholder:text-denso-gray-400",
-                      errors.spouseName && "border-denso-error focus:ring-denso-error/30 focus:border-denso-error"
-                    )}
-                    placeholder="Ketik nama pasangan..."
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <User className="w-[18px] h-[18px]" style={{ color: '#9AAAB3' }} />
+                  </span>
+                  <input
+                    style={{ ...inputBase, paddingLeft: '2.75rem', ...(errors.spouseName ? { borderColor: '#DC0032' } : {}) }}
+                    placeholder="Ketik nama pasangan…"
+                    onFocus={(e) => Object.assign(e.currentTarget.style, { ...focusIn, paddingLeft: '2.75rem' })}
+                    onBlur={(e)  => Object.assign(e.currentTarget.style, { ...inputBase, paddingLeft: '2.75rem' })}
                     {...register('spouseName')}
                   />
                 </div>
-                {errors.spouseName && <p className="text-xs text-denso-error font-medium pl-1">{errors.spouseName.message}</p>}
+                {errors.spouseName && (
+                  <p className="text-xs font-medium pl-1" style={{ color: '#DC0032' }}>
+                    {errors.spouseName.message}
+                  </p>
+                )}
               </div>
 
-              {/* Spouse T-Shirt Size */}
+              {/* T-shirt size */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-semibold text-denso-slate">Ukuran Baju Pasangan</label>
-                <select
-                  className={cn(
-                    "w-full md:w-48 px-4 py-3 bg-white border border-denso-gray-200 rounded-xl",
-                    "focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
-                    "transition-all duration-300 font-sans text-denso-slate"
-                  )}
-                  {...register('spouseTshirtSize')}
-                >
-                  <option value="">Pilih Ukuran</option>
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                  <option value="XL">XL</option>
-                  <option value="XXL">XXL</option>
-                  <option value="3XL">3XL</option>
-                </select>
+                <label className="block text-sm font-semibold" style={{ color: '#4A565E' }}>
+                  Ukuran Baju Pasangan
+                </label>
+                <SSelect className="w-full sm:w-40" {...register('spouseTshirtSize')}>
+                  <option value="">Pilih ukuran…</option>
+                  {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+                </SSelect>
               </div>
             </div>
           )}
         </div>
 
-        <div className="h-px bg-denso-gray-100" />
+        <div style={{ height: '1px', background: '#EEF1F3' }} />
 
-        {/* Children Section */}
+        {/* ── Children ────────────────────────────────────────────── */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-[#F8F9FA] rounded-xl border border-denso-gray-100">
-            <div>
-              <p className="font-semibold text-denso-slate">Membawa Anak?</p>
-              <p className="text-xs text-denso-slate-light">Anak yang terdaftar akan diverifikasi untuk mendapat tiket khusus.</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" {...register('hasChildren')} />
-              <div className="w-11 h-6 bg-denso-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-denso-amber"></div>
-            </label>
-          </div>
+          <ToggleRow
+            title="Membawa Anak?"
+            subtitle="Tiket khusus anak usia ≤12 tahun termasuk kupon es krim 🍦"
+            checked={hasChildren}
+            onChange={(v) => setValue('hasChildren', v)}
+          />
 
-          {watchHasChildren && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 pl-2">
-              {fields.map((field, index) => (
-                <div key={field.id} className="relative p-5 bg-white border border-denso-gray-200 rounded-2xl flex flex-col md:flex-row gap-4 items-start md:items-center">
-                  {/* Child Name */}
-                  <div className="flex-1 w-full space-y-1.5">
-                    <label className="block text-xs font-semibold text-denso-slate">Nama Anak {index + 1}</label>
-                    <input 
-                      className={cn(
-                        "w-full px-4 py-2.5 bg-[#F8F9FA] border border-denso-gray-200 rounded-xl text-sm",
-                        "focus:bg-white focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
-                        errors.children?.[index]?.name && "border-denso-error"
-                      )}
-                      placeholder="Nama anak"
-                      {...register(`children.${index}.name` as const)}
-                    />
-                    {errors.children?.[index]?.name && <p className="text-[10px] text-denso-error">{errors.children[index]?.name?.message}</p>}
-                  </div>
-                  
-                  {/* Child Age */}
-                  <div className="w-full md:w-24 space-y-1.5">
-                    <label className="block text-xs font-semibold text-denso-slate">Umur (Thn)</label>
-                    <input 
-                      type="number"
-                      className={cn(
-                        "w-full px-4 py-2.5 bg-[#F8F9FA] border border-denso-gray-200 rounded-xl text-sm",
-                        "focus:bg-white focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
-                        errors.children?.[index]?.age && "border-denso-error"
-                      )}
-                      placeholder="0"
-                      {...register(`children.${index}.age` as const)}
-                    />
-                    {errors.children?.[index]?.age && <p className="text-[10px] text-denso-error">{errors.children[index]?.age?.message}</p>}
-                  </div>
-
-                  {/* Child T-Shirt Size */}
-                  <div className="w-full md:w-32 space-y-1.5">
-                    <label className="block text-xs font-semibold text-denso-slate">Ukuran Baju</label>
-                    <select
-                      className={cn(
-                        "w-full px-4 py-2.5 bg-[#F8F9FA] border border-denso-gray-200 rounded-xl text-sm",
-                        "focus:bg-white focus:outline-none focus:ring-2 focus:ring-denso-amber/30 focus:border-denso-amber",
-                        errors.children?.[index]?.tshirtSize && "border-denso-error"
-                      )}
-                      {...register(`children.${index}.tshirtSize` as const)}
+          {hasChildren && (
+            <div className="space-y-3 pl-1">
+              {fields.map((field, i) => (
+                <div
+                  key={field.id}
+                  className="rounded-2xl p-4 relative"
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1.5px solid #EEF1F3',
+                    boxShadow: '0 1px 6px rgba(74,86,94,0.06)',
+                  }}
+                >
+                  {/* Row label */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span
+                      className="font-display font-bold text-xs uppercase tracking-widest"
+                      style={{ color: '#DC0032' }}
                     >
-                      <option value="" disabled>Pilih Ukuran</option>
-                      <option value="S">S</option>
-                      <option value="M">M</option>
-                      <option value="L">L</option>
-                      <option value="XL">XL</option>
-                      <option value="XXL">XXL</option>
-                      <option value="3XL">3XL</option>
-                    </select>
-                    {errors.children?.[index]?.tshirtSize && <p className="text-[10px] text-denso-error">{errors.children[index]?.tshirtSize?.message}</p>}
+                      Anak {i + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => remove(i)}
+                      className="p-1.5 rounded-lg transition-colors hover:bg-red-50"
+                      style={{ color: '#9AAAB3' }}
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => remove(index)}
-                    className="absolute top-4 right-4 md:static md:mt-6 p-2.5 text-denso-gray-400 hover:text-denso-error hover:bg-red-50 rounded-xl transition-colors"
-                    title="Hapus"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Hidden ID field */}
-                  <input type="hidden" {...register(`children.${index}.id` as const)} value={field.id} />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-1 space-y-1">
+                      <label className="block text-xs font-semibold" style={{ color: '#4A565E' }}>Nama</label>
+                      <SInput placeholder="Nama anak" {...register(`children.${i}.name`)} />
+                      {errors.children?.[i]?.name && (
+                        <p className="text-[11px]" style={{ color: '#DC0032' }}>{errors.children[i]?.name?.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-xs font-semibold" style={{ color: '#4A565E' }}>Umur (tahun)</label>
+                      <SInput type="number" placeholder="0" {...register(`children.${i}.age`)} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-xs font-semibold" style={{ color: '#4A565E' }}>Ukuran Baju</label>
+                      <SSelect {...register(`children.${i}.tshirtSize`)}>
+                        <option value="" disabled>Pilih…</option>
+                        {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </SSelect>
+                    </div>
+                  </div>
+
+                  <input type="hidden" {...register(`children.${i}.id`)} value={field.id} />
                 </div>
               ))}
 
               <button
                 type="button"
                 onClick={() => append({ id: crypto.randomUUID(), name: '', age: 0, tshirtSize: 'S' })}
-                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-denso-gray-300 rounded-2xl text-denso-slate-light font-semibold hover:border-denso-amber hover:text-denso-amber hover:bg-denso-amber/5 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-sans font-semibold text-sm transition-all duration-200"
+                style={{
+                  border: '2px dashed #CDD4D8',
+                  color: '#9AAAB3',
+                  background: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#DC0032';
+                  e.currentTarget.style.color = '#DC0032';
+                  e.currentTarget.style.background = '#DC00320A';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#CDD4D8';
+                  e.currentTarget.style.color = '#9AAAB3';
+                  e.currentTarget.style.background = 'transparent';
+                }}
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
                 Tambah Anak
               </button>
             </div>
           )}
         </div>
 
-        <div className="pt-6 border-t border-denso-gray-100 flex justify-between items-center">
-          <RippleButton 
-            type="button" 
-            variant="ghost" 
+        {/* Footer */}
+        <div
+          className="pt-6 flex justify-between items-center"
+          style={{ borderTop: '1px solid #EEF1F3' }}
+        >
+          <RippleButton
+            type="button"
+            variant="ghost"
             onClick={prevStep}
-            icon={<ArrowLeft className="w-5 h-5" />} 
+            icon={<ArrowLeft className="w-5 h-5" />}
           >
             Kembali
           </RippleButton>
-          
-          <div className="flex gap-4">
-            <RippleButton variant="outline" icon={<Download className="w-4 h-4" />} onClick={() => window.print()}>
-              Unduh PDF
-            </RippleButton>
-            <RippleButton type="submit" icon={<ArrowRight className="w-5 h-5" />} iconPosition="right">
-              Generate Ticket
-            </RippleButton>
-          </div>
+
+          <RippleButton
+            type="submit"
+            size="lg"
+            icon={<ArrowRight className="w-5 h-5" />}
+            iconPosition="right"
+          >
+            Generate Tiket
+          </RippleButton>
         </div>
       </form>
     </div>

@@ -9,12 +9,7 @@ interface AnimatedCounterProps {
   formatFn?: (n: number) => string;
 }
 
-export function AnimatedCounter({
-  value,
-  className,
-  duration = 2,
-  formatFn,
-}: AnimatedCounterProps) {
+export function AnimatedCounter({ value, className, duration = 2, formatFn }: AnimatedCounterProps) {
   const springValue = useSpring(0, { duration: duration * 1000 });
   const displayValue = useTransform(springValue, (latest) => {
     const rounded = Math.round(latest);
@@ -22,66 +17,68 @@ export function AnimatedCounter({
   });
   const [display, setDisplay] = useState('0');
 
+  useEffect(() => { springValue.set(value); }, [value, springValue]);
   useEffect(() => {
-    springValue.set(value);
-  }, [value, springValue]);
-
-  useEffect(() => {
-    const unsubscribe = displayValue.on('change', (latest) => {
-      setDisplay(latest);
-    });
-    return unsubscribe;
+    const unsub = displayValue.on('change', setDisplay);
+    return unsub;
   }, [displayValue]);
 
-  return (
-    <motion.span className={cn('tabular-nums', className)}>
-      {display}
-    </motion.span>
-  );
+  return <motion.span className={cn('tabular-nums', className)}>{display}</motion.span>;
 }
 
-/* ===== Flip Counter (for countdown) ===== */
+/* ===== Flip counter — renders on Denso-red background ===== */
 interface FlipDigitProps {
   value: number;
   label: string;
 }
 
 export function FlipDigit({ value, label }: FlipDigitProps) {
-  const prevValueRef = useRef(value);
+  const prevRef = useRef(value);
   const [flip, setFlip] = useState(false);
 
   useEffect(() => {
-    if (prevValueRef.current !== value) {
+    if (prevRef.current !== value) {
       setFlip(true);
-      const timeout = setTimeout(() => setFlip(false), 300);
-      prevValueRef.current = value;
-      return () => clearTimeout(timeout);
+      const t = setTimeout(() => setFlip(false), 300);
+      prevRef.current = value;
+      return () => clearTimeout(t);
     }
   }, [value]);
 
-  const displayValue = value.toString().padStart(2, '0');
+  const display = value.toString().padStart(2, '0');
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-2.5">
       <motion.div
-        className={cn(
-          'relative rounded-[1.5rem] overflow-hidden',
-          'bg-white/10 backdrop-blur-xl border border-white/20',
-          'px-5 py-4 md:px-8 md:py-6 min-w-[76px] md:min-w-[110px]',
-          'flex items-center justify-center',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.12)]'
-        )}
-        animate={flip ? { rotateX: [0, -15, 0], scale: [1, 1.05, 1], y: [0, -5, 0] } : {}}
-        transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+        className="relative rounded-2xl overflow-hidden flex items-center justify-center"
+        style={{
+          background: 'rgba(255,255,255,0.18)',
+          border: '1px solid rgba(255,255,255,0.28)',
+          backdropFilter: 'blur(8px)',
+          minWidth: '68px',
+          padding: '12px 16px',
+        }}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore — md breakpoint handled via inline style override below
+        animate={flip ? { rotateX: [0, -8, 0], scale: [1, 1.04, 1] } : {}}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
       >
-        {/* Glossy Top Highlight */}
-        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none rounded-t-[1.5rem]" />
-        
-        <span className="relative z-10 text-4xl md:text-6xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 tabular-nums drop-shadow-md">
-          {displayValue}
+        {/* Shine */}
+        <div
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{ background: 'linear-gradient(135deg, transparent 40%, white 50%, transparent 60%)' }}
+        />
+        <span
+          className="font-display font-bold tabular-nums text-white"
+          style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', lineHeight: 1 }}
+        >
+          {display}
         </span>
       </motion.div>
-      <span className="text-xs md:text-sm font-sans font-bold text-white/70 uppercase tracking-[0.2em]">
+      <span
+        className="font-sans font-medium uppercase tracking-widest"
+        style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.65)' }}
+      >
         {label}
       </span>
     </div>

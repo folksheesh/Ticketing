@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { QrCode, Download, Mail, MessageCircle, IceCream, Utensils, Coffee, CheckCircle2, Eye } from 'lucide-react';
+import {
+  QrCode, Download, Mail, MessageCircle, CheckCircle2, Eye,
+  Ticket, Coffee, UtensilsCrossed, IceCream2, type LucideIcon,
+} from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { useAdminStore } from '../../admin/store/useAdminStore';
 import { RippleButton } from '../../../components/atoms/RippleButton';
-import { cn } from '../../../lib/cn';
 import type { PersonalData, FamilyData } from '../types';
 
 const generateMockTicketId = (prefix: string) =>
@@ -16,7 +18,7 @@ interface TicketInfo {
   title: string;
   id: string;
   color: string;
-  emoji: string;
+  icon: LucideIcon;
   ownerName?: string;
 }
 
@@ -29,14 +31,23 @@ function buildPDFHtml(
 ) {
   const allTickets = [...tickets, ...iceCreamTickets];
 
+  // Map icon to a simple text symbol for the PDF (no SVG renderer)
+  const iconSymbol = (t: TicketInfo) => {
+    if (t.icon === Ticket)          return '◉';
+    if (t.icon === Coffee)          return '◈';
+    if (t.icon === UtensilsCrossed) return '◆';
+    if (t.icon === IceCream2)       return '◇';
+    return '▪';
+  };
+
   const cards = allTickets
     .map(
       t => `
     <div class="ticket">
       <div class="ticket-top" style="background:${t.color}">
-        <span class="emoji">${t.emoji}</span>
+        <span class="emoji">${iconSymbol(t)}</span>
         <div>
-          <div class="sub">DENSO Family Gathering 2025</div>
+          <div class="sub">DENSO Family Gathering 2026</div>
           <div class="title">${t.title}</div>
         </div>
       </div>
@@ -185,9 +196,9 @@ export function TicketResultStep() {
   useEffect(() => {
     const timer = setTimeout(() => {
       const mainTickets: TicketInfo[] = [
-        { title: 'Tiket Masuk & Souvenir', id: generateMockTicketId('REG'), color: '#002060', emoji: '🎫' },
-        { title: 'Kupon Snack Pagi',        id: generateMockTicketId('SNK'), color: '#B45309', emoji: '☕' },
-        { title: 'Kupon Makan Siang',        id: generateMockTicketId('LNC'), color: '#C2410C', emoji: '🍽️' },
+        { title: 'Tiket Masuk & Souvenir', id: generateMockTicketId('REG'), color: '#DC0032', icon: Ticket },
+        { title: 'Kupon Snack Pagi',        id: generateMockTicketId('SNK'), color: '#B45309', icon: Coffee },
+        { title: 'Kupon Makan Siang',        id: generateMockTicketId('LNC'), color: '#C2410C', icon: UtensilsCrossed },
       ];
 
       let iceTickets: TicketInfo[] = [];
@@ -197,7 +208,7 @@ export function TicketResultStep() {
           title: 'Kupon Es Krim',
           id: generateMockTicketId('ICE'),
           color: '#9D174D',
-          emoji: '🍦',
+          icon: IceCream2,
           ownerName: kid.name,
         }));
       }
@@ -310,53 +321,67 @@ export function TicketResultStep() {
     return (
       <div className="p-12 flex flex-col items-center justify-center text-center space-y-6 min-h-[400px]">
         <div className="relative w-20 h-20 flex items-center justify-center">
-          <div className="absolute inset-0 border-4 border-denso-gray-100 rounded-full" />
-          <div className="absolute inset-0 border-4 border-denso-amber rounded-full border-t-transparent animate-spin" />
-          <QrCode className="w-8 h-8 text-denso-amber animate-pulse" />
+          <div className="absolute inset-0 border-4 rounded-full" style={{ borderColor: '#EEF1F3' }} />
+          <div className="absolute inset-0 border-4 rounded-full border-t-transparent animate-spin" style={{ borderColor: '#DC0032' }} />
+          <QrCode className="w-8 h-8 animate-pulse" style={{ color: '#DC0032' }} />
         </div>
         <div>
-          <h3 className="font-display font-bold text-xl text-denso-slate mb-2">Memproses Data...</h3>
-          <p className="text-sm text-denso-slate-light">Sedang membuat QR Code tiket unik untuk Anda.</p>
+          <h3 className="font-display font-bold text-xl mb-2" style={{ color: '#4A565E' }}>Memproses Data…</h3>
+          <p className="text-sm" style={{ color: '#6B7882' }}>Sedang membuat QR Code tiket unik untuk Anda.</p>
         </div>
       </div>
     );
   }
 
   // ── Ticket card (compact web view) ─────────────────────────────────────────
-  const CompactTicketCard = ({ ticket }: { ticket: TicketInfo }) => (
-    <div className="relative overflow-hidden bg-white rounded-2xl border border-denso-gray-200 shadow-sm flex">
-      {/* Left accent bar */}
-      <div className="w-2 flex-shrink-0" style={{ background: ticket.color }} />
+  const CompactTicketCard = ({ ticket }: { ticket: TicketInfo }) => {
+    const Icon = ticket.icon;
+    return (
+      <div
+        className="relative overflow-hidden bg-white rounded-2xl flex"
+        style={{ border: '1px solid #EEF1F3', boxShadow: '0 1px 6px rgba(74,86,94,0.06)' }}
+      >
+        {/* Left accent bar */}
+        <div className="w-1.5 flex-shrink-0" style={{ background: ticket.color }} />
 
-      <div className="flex-1 flex items-center justify-between p-4 gap-4">
-        <div className="flex items-center gap-3">
-          {/* Icon circle */}
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-            style={{ background: ticket.color + '18' }}>
-            {ticket.emoji}
-          </div>
-          <div>
-            {ticket.ownerName && (
-              <p className="text-[10px] font-semibold text-denso-gray-400 uppercase tracking-wide mb-0.5">
-                {ticket.ownerName}
+        <div className="flex-1 flex items-center justify-between p-4 gap-4">
+          <div className="flex items-center gap-3">
+            {/* Icon */}
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: ticket.color + '14' }}
+            >
+              <Icon className="w-5 h-5" style={{ color: ticket.color }} strokeWidth={1.5} />
+            </div>
+            <div>
+              {ticket.ownerName && (
+                <p
+                  className="text-[10px] font-semibold uppercase tracking-wide mb-0.5"
+                  style={{ color: '#9AAAB3' }}
+                >
+                  {ticket.ownerName}
+                </p>
+              )}
+              <p className="font-display font-bold text-sm leading-tight" style={{ color: '#4A565E' }}>
+                {ticket.title}
               </p>
-            )}
-            <p className="font-display font-bold text-denso-slate text-sm leading-tight">{ticket.title}</p>
-            <p className="font-mono text-[10px] font-semibold text-denso-gray-400 tracking-widest mt-0.5">
-              {ticket.id}
-            </p>
+              <p className="font-mono text-[10px] font-semibold tracking-widest mt-0.5" style={{ color: '#9AAAB3' }}>
+                {ticket.id}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Small QR */}
-        <img
-          src={getQRUrl(ticket.id, 120)}
-          alt={`QR ${ticket.title}`}
-          className="w-14 h-14 rounded-lg border border-denso-gray-200 flex-shrink-0"
-        />
+          {/* QR code */}
+          <img
+            src={getQRUrl(ticket.id, 120)}
+            alt={`QR ${ticket.title}`}
+            className="w-14 h-14 rounded-lg flex-shrink-0"
+            style={{ border: '1px solid #EEF1F3' }}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const allTickets = [...tickets, ...iceCreamTickets];
 
@@ -364,19 +389,19 @@ export function TicketResultStep() {
     <div className="p-6 md:p-10" ref={ticketRef}>
       {/* Success header */}
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-denso-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="w-8 h-8 text-denso-success" />
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#DC003212' }}>
+          <CheckCircle2 className="w-8 h-8" style={{ color: '#DC0032' }} />
         </div>
-        <h2 className="text-2xl font-display font-bold text-denso-slate">Registrasi Berhasil!</h2>
-        <p className="text-denso-slate-light text-sm mt-2 max-w-md mx-auto">
-          Terima kasih <strong>{personalData.fullName}</strong>, tiket Anda telah diterbitkan.
+        <h2 className="text-2xl font-display font-bold" style={{ color: '#4A565E' }}>Registrasi Berhasil!</h2>
+        <p className="text-sm mt-2 max-w-md mx-auto" style={{ color: '#6B7882' }}>
+          Terima kasih <strong style={{ color: '#4A565E' }}>{personalData.fullName}</strong>, tiket Anda telah diterbitkan.
           Simpan dan tunjukkan QR Code saat check-in.
         </p>
       </div>
 
       {/* Compact ticket list */}
-      <div className="bg-[#F8F9FA] rounded-2xl p-5 border border-denso-gray-100 mb-6">
-        <h3 className="text-xs font-semibold text-denso-gray-500 uppercase tracking-widest mb-4 border-b border-denso-gray-200 pb-2">
+      <div className="rounded-2xl p-5 mb-6" style={{ background: '#F5F7F8', border: '1px solid #EEF1F3' }}>
+        <h3 className="text-xs font-semibold uppercase tracking-widest mb-4 pb-2" style={{ color: '#9AAAB3', borderBottom: '1px solid #EEF1F3' }}>
           Daftar E-Ticket ({allTickets.length} Tiket)
         </h3>
         <div className="space-y-3">
@@ -387,34 +412,53 @@ export function TicketResultStep() {
       </div>
 
       {/* Info hint */}
-      <p className="text-center text-xs text-denso-gray-400 mb-5">
-        💡 Klik <strong>Preview PDF</strong> untuk melihat tampilan tiket lengkap, atau <strong>Unduh PDF</strong> untuk menyimpan langsung.
+      <p className="text-center text-xs mb-5" style={{ color: '#9AAAB3' }}>
+        Klik <strong>Preview PDF</strong> untuk melihat tampilan tiket lengkap, atau <strong>Unduh PDF</strong> untuk menyimpan langsung.
       </p>
 
-      {/* Action buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Action buttons — 2×2 grid */}
+      <div className="grid grid-cols-2 gap-3">
         <RippleButton
           variant="outline"
+          size="md"
           icon={<Eye className="w-4 h-4" />}
           onClick={handlePreview}
+          fullWidth
         >
           Preview PDF
         </RippleButton>
+
         <RippleButton
           variant="outline"
-          icon={isDownloading
-            ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            : <Download className="w-4 h-4" />}
+          size="md"
+          icon={
+            isDownloading
+              ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              : <Download className="w-4 h-4" />
+          }
           onClick={handleDownloadPDF}
           disabled={isDownloading}
+          fullWidth
         >
-          {isDownloading ? 'Membuat PDF...' : 'Unduh PDF'}
+          {isDownloading ? 'Membuat…' : 'Unduh PDF'}
         </RippleButton>
-        <RippleButton variant="outline" icon={<Mail className="w-4 h-4" />}>
+
+        <RippleButton
+          variant="outline"
+          size="md"
+          icon={<Mail className="w-4 h-4" />}
+          fullWidth
+        >
           Kirim ke Email
         </RippleButton>
-        <RippleButton variant="primary" icon={<MessageCircle className="w-4 h-4" />}>
-          Kirim via WA
+
+        <RippleButton
+          variant="primary"
+          size="md"
+          icon={<MessageCircle className="w-4 h-4" />}
+          fullWidth
+        >
+          Kirim via WhatsApp
         </RippleButton>
       </div>
     </div>

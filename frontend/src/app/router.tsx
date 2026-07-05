@@ -17,15 +17,20 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 export const router = createBrowserRouter([
-  // ── Public routes ──────────────────────────────────────────────
+  // ── Public routes with header+footer ──────────────────────────
   {
     path: '/',
     element: <MainLayout />,
     children: [
-      { path: ROUTES.HOME,         element: <LandingPage /> },
-      { path: ROUTES.REGISTER,     element: <RegistrationPage /> },
-      { path: ROUTES.AUTH.LOGIN,   element: <PlaceholderPage title="Login" /> },
+      { path: ROUTES.HOME,       element: <LandingPage /> },
+      { path: ROUTES.AUTH.LOGIN, element: <PlaceholderPage title="Login" /> },
     ],
+  },
+
+  // ── Register — standalone, no header/footer ────────────────────
+  {
+    path: ROUTES.REGISTER,
+    element: <RegistrationPage />,
   },
 
   // ── Dashboard ──────────────────────────────────────────────────
@@ -39,10 +44,10 @@ export const router = createBrowserRouter([
     path: ROUTES.ADMIN.ROOT,
     element: <AdminLayout />,
     children: [
-      { index: true,                            element: <DashboardTab /> },
-      { path: ROUTES.ADMIN.PARTICIPANTS,        element: <EmployeeListTab /> },
-      { path: ROUTES.ADMIN.SCANNER,             element: <ScannerTab /> },
-      { path: ROUTES.ADMIN.SETTINGS,            element: <PlaceholderPage title="Pengaturan" /> },
+      { index: true,                       element: <DashboardTab /> },
+      { path: ROUTES.ADMIN.PARTICIPANTS,   element: <EmployeeListTab /> },
+      { path: ROUTES.ADMIN.SCANNER,        element: <ScannerTab /> },
+      { path: ROUTES.ADMIN.SETTINGS,       element: <PlaceholderPage title="Pengaturan" /> },
     ],
   },
 ]);
