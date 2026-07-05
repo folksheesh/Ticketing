@@ -76,6 +76,41 @@ function buildPDFHtml(
     return 'TIKET';
   };
 
+  // ── summary data rows ──
+  const infoRows = [
+    ['Nama Lengkap', personal.fullName],
+    ['NIK',          personal.nik],
+    ['Divisi',       personal.division],
+    ['Email',        personal.email],
+    ['No. HP',       personal.phone],
+    ['Ukuran Kaos',  personal.tshirtSize || '-'],
+    ['Kehadiran',    personal.maritalStatus === 'Family' ? 'Membawa Keluarga' : 'Sendiri'],
+  ].map(([k, v]) => `<tr>
+    <td class="si-key">${k}</td><td class="si-sep">:</td><td class="si-val">${v}</td>
+  </tr>`).join('');
+
+  let familySectionHtml = '';
+  if (personal.maritalStatus === 'Family') {
+    const spR = family.hasSpouse ? `
+      <tr><td class="si-key">Nama Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseName||'-'}</td></tr>
+      <tr><td class="si-key">Kaos Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseTshirtSize||'-'}</td></tr>` : '';
+
+    // Children as plain text rows, no table
+    const kidRows = (family.hasChildren && family.children.length > 0)
+      ? family.children.map((c, i) => `
+      <tr>
+        <td class="si-key">Anak ${i + 1}</td>
+        <td class="si-sep">:</td>
+        <td class="si-val">${c.name}, ${c.age} thn, Kaos ${c.tshirtSize||'-'}</td>
+      </tr>`).join('') : '';
+
+    familySectionHtml = `
+    <div class="section">
+      <div class="section-title"><span class="sdot" style="background:#0077CC;"></span>Data Keluarga</div>
+      <table class="info-table">${spR}${kidRows}</table>
+    </div>`;
+  }
+
   // ── Build pages: First page = header + info ONLY, then 1 ticket per page ──
   const firstPageHtml = `
 <div class="page">
@@ -174,41 +209,6 @@ function buildPDFHtml(
   </div>
 </div>`;
   }).join('');
-
-  // ── summary data rows ──
-  const infoRows = [
-    ['Nama Lengkap', personal.fullName],
-    ['NIK',          personal.nik],
-    ['Divisi',       personal.division],
-    ['Email',        personal.email],
-    ['No. HP',       personal.phone],
-    ['Ukuran Kaos',  personal.tshirtSize || '-'],
-    ['Kehadiran',    personal.maritalStatus === 'Family' ? 'Membawa Keluarga' : 'Sendiri'],
-  ].map(([k, v]) => `<tr>
-    <td class="si-key">${k}</td><td class="si-sep">:</td><td class="si-val">${v}</td>
-  </tr>`).join('');
-
-  let familySectionHtml = '';
-  if (personal.maritalStatus === 'Family') {
-    const spR = family.hasSpouse ? `
-      <tr><td class="si-key">Nama Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseName||'-'}</td></tr>
-      <tr><td class="si-key">Kaos Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseTshirtSize||'-'}</td></tr>` : '';
-
-    // Children as plain text rows, no table
-    const kidRows = (family.hasChildren && family.children.length > 0)
-      ? family.children.map((c, i) => `
-      <tr>
-        <td class="si-key">Anak ${i + 1}</td>
-        <td class="si-sep">:</td>
-        <td class="si-val">${c.name}, ${c.age} thn, Kaos ${c.tshirtSize||'-'}</td>
-      </tr>`).join('') : '';
-
-    familySectionHtml = `
-    <div class="section">
-      <div class="section-title"><span class="sdot" style="background:#0077CC;"></span>Data Keluarga</div>
-      <table class="info-table">${spR}${kidRows}</table>
-    </div>`;
-  }
 
   return `<!DOCTYPE html>
 <html lang="id"><head>
