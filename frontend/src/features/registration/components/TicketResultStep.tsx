@@ -14,54 +14,6 @@ const generateMockTicketId = (prefix: string) =>
 const getQRUrl = (data: string, size = 400) =>
   `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=1&format=png`;
 
-// Helper to convert image URL to data URI
-const loadImageAsDataURI = async (url: string): Promise<string> => {
-  try {
-    // Create image element and load it
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
-    return new Promise((resolve, reject) => {
-      img.onload = () => {
-        try {
-          // Create canvas and draw image
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          
-          if (!ctx) {
-            reject(new Error('Cannot get canvas context'));
-            return;
-          }
-          
-          ctx.drawImage(img, 0, 0);
-          
-          // Convert to data URI
-          const dataURI = canvas.toDataURL('image/png');
-          resolve(dataURI);
-        } catch (err) {
-          console.error('Canvas conversion error:', err);
-          reject(err);
-        }
-      };
-      
-      img.onerror = (err) => {
-        console.error('Image load error:', err);
-        reject(err);
-      };
-      
-      // Set a timeout
-      setTimeout(() => reject(new Error('Image load timeout')), 10000);
-      
-      img.src = url;
-    });
-  } catch (err) {
-    console.error('Failed to load image:', url, err);
-    return url; // Fallback to original URL
-  }
-};
-
 interface TicketInfo {
   title: string;
   id: string;
@@ -85,7 +37,6 @@ function buildPDFHtml(
   iceCreamTickets: TicketInfo[],
   personal: PersonalData,
   family: FamilyData,
-  qrDataMap?: Map<string, string>, // Optional map of ticket.id -> data URI
   isMobile = false // Flag to use mobile layout
 ) {
   const allTickets = [...tickets, ...iceCreamTickets];
@@ -107,19 +58,6 @@ function buildPDFHtml(
     return 'TIKET';
   };
 
-  // ── summary data rows ──
-  const infoRows = [
-    ['Nama Lengkap', personal.fullName],
-    ['NIK',          personal.nik],
-    ['Divisi',       personal.division],
-    ['Email',        personal.email],
-    ['No. HP',       personal.phone],
-    ['Ukuran Kaos',  personal.tshirtSize || '-'],
-    ['Kehadiran',    personal.maritalStatus === 'Family' ? 'Membawa Keluarga' : 'Sendiri'],
-  ].map(([k, v]) => `<tr>
-    <td class="si-key">${k}</td><td class="si-sep">:</td><td class="si-val">${v}</td>
-  </tr>`).join('');
-
   // Calculate food allocation
   let totalPeople = 1; // Diri sendiri
   if (personal.maritalStatus === 'Family') {
@@ -127,50 +65,8 @@ function buildPDFHtml(
     if (family.hasChildren) totalPeople += family.children.length; // Anak-anak
   }
 
-  let familySectionHtml = '';
-  if (personal.maritalStatus === 'Family') {
-    const spR = family.hasSpouse ? `
-      <tr><td class="si-key">Nama Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseName||'-'}</td></tr>
-      <tr><td class="si-key">Kaos Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseTshirtSize||'-'}</td></tr>` : '';
-
-    // Children as plain text rows, no table
-    const kidRows = (family.hasChildren && family.children.length > 0)
-      ? family.children.map((c, i) => `
-      <tr>
-        <td class="si-key">Anak ${i + 1}</td>
-        <td class="si-sep">:</td>
-        <td class="si-val">${c.name}, ${c.age} thn, Kaos ${c.tshirtSize||'-'}</td>
-      </tr>`).join('') : '';
-
-    familySectionHtml = `
-    <div class="section">
-      <div class="section-title"><span class="sdot" style="background:#0077CC;"></span>Data Keluarga</div>
-      <table class="info-table">${spR}${kidRows}</table>
-    </div>`;
-  }
-
-  // Food allocation summary
-  const foodAllocationHtml = `
-    <div class="section">
-      <div class="section-title"><span class="sdot" style="background:#16A34A;"></span>Alokasi Konsumsi</div>
-      <table class="info-table">
-        <tr>
-          <td class="si-key">Total Peserta</td>
-          <td class="si-sep">:</td>
-          <td class="si-val"><b>${totalPeople} orang</b></td>
-        </tr>
-        <tr>
-          <td class="si-key">Snack Pagi</td>
-          <td class="si-sep">:</td>
-          <td class="si-val">${totalPeople} porsi</td>
-        </tr>
-        <tr>
-          <td class="si-key">Makan Siang</td>
-          <td class="si-sep">:</td>
-          <td class="si-val">${totalPeople} porsi</td>
-        </tr>
-      </table>
-    </div>`;
+  // Count ice cream tickets (for kids <=12 years old)
+  const iceCreamCount = iceCreamTickets.length;
 
   // ── Build pages: First page = beautiful data summary, then 1 QR per page ──
   const firstPageHtml = `
@@ -206,48 +102,48 @@ function buildPDFHtml(
   </div>
 
   <!-- Main Content Grid -->
-  <div style="display:grid;grid-template-columns:${personal.maritalStatus === 'Family' ? '1fr 1fr' : '1fr'};gap:16px;margin-bottom:16px;">
+  <div style="display:${personal.maritalStatus === 'Family' ? 'grid' : 'block'};${personal.maritalStatus === 'Family' ? 'grid-template-columns:1fr 1fr;' : ''}gap:16px;margin-bottom:16px;">
     
     <!-- Data Karyawan Card -->
-    <div style="background:#FFF;border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #DC0032;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #F0F2F5;">
-        <div style="width:48px;height:48px;background:linear-gradient(135deg,#DC0032,#A8001E);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>
-        <div>
-          <div style="font-size:11px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Data Karyawan</div>
-          <div style="font-size:18px;font-weight:800;color:#1A2233;line-height:1.2;">${personal.fullName}</div>
+    <div style="background:#FFF;border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #DC0032;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #F0F2F5;">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#DC0032,#A8001E);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👤</div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:10px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Data Karyawan</div>
+          <div style="font-size:16px;font-weight:800;color:#1A2233;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${personal.fullName}</div>
         </div>
       </div>
       <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;width:90px;vertical-align:top;">NIK</td>
-          <td style="padding:10px 0;color:#CDD4D8;vertical-align:top;">:</td>
-          <td style="padding:10px 0;font-size:12px;color:#1A2233;font-weight:700;vertical-align:top;">${personal.nik}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;width:80px;vertical-align:top;">NIK</td>
+          <td style="padding:8px 0;color:#CDD4D8;vertical-align:top;width:8px;">:</td>
+          <td style="padding:8px 0;font-size:11px;color:#1A2233;font-weight:700;vertical-align:top;">${personal.nik}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">Divisi</td>
-          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:10px 8px;font-size:12px;color:#1A2233;font-weight:700;">${personal.division}</td>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">Divisi</td>
+          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:8px 6px;font-size:11px;color:#1A2233;font-weight:700;">${personal.division}</td>
         </tr>
         <tr>
-          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;">Email</td>
-          <td style="padding:10px 0;color:#CDD4D8;">:</td>
-          <td style="padding:10px 0;font-size:11px;color:#1A2233;font-weight:600;">${personal.email}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Email</td>
+          <td style="padding:8px 0;color:#CDD4D8;">:</td>
+          <td style="padding:8px 0;font-size:10px;color:#1A2233;font-weight:600;word-break:break-all;">${personal.email}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">No. HP</td>
-          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:10px 8px;font-size:12px;color:#1A2233;font-weight:700;">${personal.phone}</td>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">No. HP</td>
+          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:8px 6px;font-size:11px;color:#1A2233;font-weight:700;">${personal.phone}</td>
         </tr>
         <tr>
-          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
-          <td style="padding:10px 0;color:#CDD4D8;">:</td>
-          <td style="padding:10px 0;font-size:12px;color:#1A2233;font-weight:700;">${personal.tshirtSize || '-'}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
+          <td style="padding:8px 0;color:#CDD4D8;">:</td>
+          <td style="padding:8px 0;font-size:11px;color:#1A2233;font-weight:700;">${personal.tshirtSize || '-'}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">Status</td>
-          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:10px 8px;">
-            <span style="display:inline-block;background:${personal.maritalStatus === 'Family' ? '#DBEAFE' : '#F3F4F6'};color:${personal.maritalStatus === 'Family' ? '#1E40AF' : '#4B5563'};font-size:10px;font-weight:700;padding:4px 12px;border-radius:12px;">${personal.maritalStatus === 'Family' ? '👨‍👩‍👧 Keluarga' : '👤 Sendiri'}</span>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">Status</td>
+          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:8px 6px;">
+            <span style="display:inline-block;background:${personal.maritalStatus === 'Family' ? '#DBEAFE' : '#F3F4F6'};color:${personal.maritalStatus === 'Family' ? '#1E40AF' : '#4B5563'};font-size:9px;font-weight:700;padding:4px 10px;border-radius:12px;">${personal.maritalStatus === 'Family' ? '👨‍👩‍👧 Keluarga' : '👤 Sendiri'}</span>
           </td>
         </tr>
       </table>
@@ -255,32 +151,32 @@ function buildPDFHtml(
 
     ${personal.maritalStatus === 'Family' ? `
     <!-- Data Keluarga Card -->
-    <div style="background:#FFF;border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #0077CC;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #F0F2F5;">
-        <div style="width:48px;height:48px;background:linear-gradient(135deg,#0077CC,#005A9C);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">👨‍👩‍👧</div>
+    <div style="background:#FFF;border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:4px solid #0077CC;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #F0F2F5;">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#0077CC,#005A9C);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👨‍👩‍👧</div>
         <div>
-          <div style="font-size:11px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Data Keluarga</div>
-          <div style="font-size:18px;font-weight:800;color:#1A2233;line-height:1.2;">${totalPeople} Anggota</div>
+          <div style="font-size:10px;color:#8896A8;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Data Keluarga</div>
+          <div style="font-size:16px;font-weight:800;color:#1A2233;line-height:1.2;">${totalPeople} Anggota</div>
         </div>
       </div>
       <table style="width:100%;border-collapse:collapse;">
         ${family.hasSpouse ? `
         <tr>
-          <td style="padding:10px 0;font-size:10px;color:#8896A8;font-weight:600;width:90px;vertical-align:top;">Pasangan</td>
-          <td style="padding:10px 0;color:#CDD4D8;vertical-align:top;">:</td>
-          <td style="padding:10px 0;font-size:12px;color:#1A2233;font-weight:700;vertical-align:top;">${family.spouseName || '-'}</td>
+          <td style="padding:8px 0;font-size:10px;color:#8896A8;font-weight:600;width:80px;vertical-align:top;">Pasangan</td>
+          <td style="padding:8px 0;color:#CDD4D8;vertical-align:top;width:8px;">:</td>
+          <td style="padding:8px 0;font-size:11px;color:#1A2233;font-weight:700;vertical-align:top;">${family.spouseName || '-'}</td>
         </tr>
         <tr style="background:#F8F9FB;">
-          <td style="padding:10px 8px;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
-          <td style="padding:10px 4px;color:#CDD4D8;">:</td>
-          <td style="padding:10px 8px;font-size:12px;color:#1A2233;font-weight:700;">${family.spouseTshirtSize || '-'}</td>
+          <td style="padding:8px 6px;font-size:10px;color:#8896A8;font-weight:600;">Kaos</td>
+          <td style="padding:8px 4px;color:#CDD4D8;">:</td>
+          <td style="padding:8px 6px;font-size:11px;color:#1A2233;font-weight:700;">${family.spouseTshirtSize || '-'}</td>
         </tr>
         ` : ''}
         ${family.hasChildren && family.children.length > 0 ? family.children.map((c, i) => `
-        <tr${i % 2 === 0 ? '' : ' style="background:#F8F9FB;"'}>
-          <td style="padding:10px ${i % 2 === 0 ? '0' : '8px'};font-size:10px;color:#8896A8;font-weight:600;vertical-align:top;">Anak ${i + 1}</td>
-          <td style="padding:10px ${i % 2 === 0 ? '0' : '4px'};color:#CDD4D8;vertical-align:top;">:</td>
-          <td style="padding:10px ${i % 2 === 0 ? '0' : '8px'};font-size:11px;color:#1A2233;font-weight:600;vertical-align:top;">${c.name}, ${c.age} thn<br/><span style="font-size:10px;color:#6B7882;">Kaos: ${c.tshirtSize || '-'}</span></td>
+        <tr${(family.hasSpouse ? i : i + 1) % 2 === 0 ? ' style="background:#F8F9FB;"' : ''}>
+          <td style="padding:8px ${(family.hasSpouse ? i : i + 1) % 2 === 0 ? '6px' : '0'};font-size:10px;color:#8896A8;font-weight:600;vertical-align:top;">Anak ${i + 1}</td>
+          <td style="padding:8px ${(family.hasSpouse ? i : i + 1) % 2 === 0 ? '4px' : '0'};color:#CDD4D8;vertical-align:top;">:</td>
+          <td style="padding:8px ${(family.hasSpouse ? i : i + 1) % 2 === 0 ? '6px' : '0'};font-size:10px;color:#1A2233;font-weight:600;vertical-align:top;">${c.name}, ${c.age} thn<br/><span style="font-size:9px;color:#6B7882;">Kaos: ${c.tshirtSize || '-'}</span></td>
         </tr>
         `).join('') : ''}
       </table>
@@ -300,7 +196,7 @@ function buildPDFHtml(
         </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr${iceCreamCount > 0 ? ' 1fr' : ''};gap:12px;">
       <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FEF3C7;">
         <div style="font-size:11px;color:#92400E;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">☕ Snack Pagi</div>
         <div style="font-size:28px;font-weight:900;color:#B45309;line-height:1;">${totalPeople}</div>
@@ -311,6 +207,13 @@ function buildPDFHtml(
         <div style="font-size:28px;font-weight:900;color:#DC2626;line-height:1;">${totalPeople}</div>
         <div style="font-size:10px;color:#991B1B;font-weight:600;margin-top:4px;">Porsi</div>
       </div>
+      ${iceCreamCount > 0 ? `
+      <div style="background:#FFF;border-radius:12px;padding:16px;border:2px solid #FCE7F3;">
+        <div style="font-size:11px;color:#831843;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🍦 Es Krim</div>
+        <div style="font-size:28px;font-weight:900;color:#BE185D;line-height:1;">${iceCreamCount}</div>
+        <div style="font-size:10px;color:#831843;font-weight:600;margin-top:4px;">Porsi</div>
+      </div>
+      ` : ''}
     </div>
   </div>
 
@@ -335,7 +238,7 @@ function buildPDFHtml(
 
   // ── Each ticket gets its own page with centered layout ──
   const ticketPages = allTickets.map((t, idx) => {
-    const qrSrc = qrDataMap?.get(t.id) || getQRUrl(t.id, 500);
+    const qrSrc = getQRUrl(t.id, 400);
     
     return `
 <div class="page page-break">
@@ -382,12 +285,12 @@ function buildPDFHtml(
     </div>
 
     <!-- QR Code Card -->
-    <div style="background:linear-gradient(135deg, #FFF 0%, #F8F9FB 100%);border-radius:12px;padding:32px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${t.color}20;">
-      <div style="font-size:11px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">&#128242; Scan QR Code</div>
-      <div style="display:inline-block;padding:12px;background:#FFF;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
-        <img src="${qrSrc}" style="width:${isMobile ? '140px' : '120px'};height:${isMobile ? '140px' : '120px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR"/>
+    <div style="background:linear-gradient(135deg, #FFF 0%, #F8F9FB 100%);border-radius:12px;padding:${isMobile ? '24px' : '28px'};text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${t.color}20;">
+      <div style="font-size:11px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">&#128242; Scan QR Code</div>
+      <div style="display:inline-block;padding:10px;background:#FFF;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
+        <img src="${qrSrc}" style="width:${isMobile ? '180px' : '160px'};height:${isMobile ? '180px' : '160px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR" crossorigin="anonymous"/>
       </div>
-      <div style="font-size:9px;color:#B0BAC7;font-weight:500;margin-top:16px;line-height:1.5;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
+      <div style="font-size:9px;color:#B0BAC7;font-weight:500;margin-top:14px;line-height:1.5;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
     </div>
 
   </div>
@@ -527,7 +430,7 @@ export function TicketResultStep() {
 
   const handlePreview = () => {
     const isMobile = isMobileDevice();
-    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, undefined, isMobile);
+    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, isMobile);
     const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
     
     // Open in new window with exact PDF dimensions
@@ -578,20 +481,10 @@ export function TicketResultStep() {
         import('jspdf'), import('html2canvas'),
       ]);
 
-      const allTickets = [...tickets, ...iceCreamTickets];
       const isMobile = isMobileDevice();
       const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
 
-      // Pre-load all QR codes as data URIs to avoid CORS issues on mobile
-      const qrDataMap = new Map<string, string>();
-      await Promise.all(
-        allTickets.map(async (ticket) => {
-          const dataURI = await loadImageAsDataURI(getQRUrl(ticket.id, 500));
-          qrDataMap.set(ticket.id, dataURI);
-        })
-      );
-
-      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrDataMap, isMobile);
+      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, isMobile);
 
       // Use an isolated iframe to avoid global CSS interference
       const iframe = document.createElement('iframe');
@@ -606,55 +499,45 @@ export function TicketResultStep() {
       iframeDoc.close();
 
       // Wait for content to load
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-      // Wait for all images to load (data URIs should load instantly)
+      // Wait for all images (QR codes) to load
       await new Promise<void>(resolve => {
         const imgs = iframeDoc.querySelectorAll('img');
-        console.log('Total images found:', imgs.length);
         
         if (!imgs.length) { 
-          console.log('No images found, continuing...');
-          setTimeout(resolve, 200); 
+          setTimeout(resolve, 300); 
           return; 
         }
         
-        let done = 0;
+        let loaded = 0;
         const total = imgs.length;
         
-        imgs.forEach((img, idx) => {
+        const checkComplete = () => {
+          loaded++;
+          if (loaded >= total) {
+            setTimeout(resolve, 500); // Extra settle time
+          }
+        };
+        
+        imgs.forEach((img) => {
           const el = img as HTMLImageElement;
-          console.log(`Image ${idx}: src=${el.src.substring(0, 50)}... complete=${el.complete} naturalHeight=${el.naturalHeight}`);
-          
-          const finish = () => { 
-            done++;
-            console.log(`Image ${idx} loaded (${done}/${total})`);
-            if (done >= total) resolve(); 
-          };
           
           if (el.complete && el.naturalHeight > 0) {
-            finish();
+            checkComplete();
           } else {
-            const t = setTimeout(() => {
-              console.log(`Image ${idx} timeout`);
-              finish();
-            }, 5000);
+            const timeout = setTimeout(() => checkComplete(), 5000);
             el.onload = () => { 
-              console.log(`Image ${idx} onload success`);
-              clearTimeout(t); 
-              finish(); 
+              clearTimeout(timeout); 
+              checkComplete(); 
             };
             el.onerror = () => { 
-              console.log(`Image ${idx} onerror`);
-              clearTimeout(t); 
-              finish(); 
+              clearTimeout(timeout); 
+              checkComplete(); 
             };
           }
         });
       });
-
-      console.log('All images loaded, waiting additional 800ms...');
-      await new Promise(resolve => setTimeout(resolve, 800));
 
       // Process each .page div separately to create proper page breaks
       const pages = iframeDoc.querySelectorAll('.page');
@@ -669,8 +552,8 @@ export function TicketResultStep() {
 
         const canvas = await html2canvas(pageEl, {
           scale: 2,
-          useCORS: false,
-          allowTaint: true,
+          useCORS: true,
+          allowTaint: false,
           backgroundColor: '#F0F2F5',
           width: pageWidth,
           windowWidth: pageWidth,
