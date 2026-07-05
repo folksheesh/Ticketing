@@ -12,7 +12,24 @@ const generateMockTicketId = (prefix: string) =>
   `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
 
 const getQRUrl = (data: string, size = 400) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=1&format=svg`;
+  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=1&format=png`;
+
+// Helper to convert image URL to data URI
+const loadImageAsDataURI = async (url: string): Promise<string> => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.error('Failed to load image:', url, err);
+    return url; // Fallback to original URL
+  }
+};
 
 interface TicketInfo {
   title: string;
@@ -30,7 +47,8 @@ function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
   personal: PersonalData,
-  family: FamilyData
+  family: FamilyData,
+  qrDataMap?: Map<string, string> // Optional map of ticket.id -> data URI
 ) {
   const allTickets = [...tickets, ...iceCreamTickets];
 
@@ -51,7 +69,11 @@ function buildPDFHtml(
   };
 
   // ── ticket stripe HTML ──
-  const ticketStripes = allTickets.map((t, idx) => `
+  const ticketStripes = allTickets.map((t, idx) => {
+    // Use data URI if available, otherwise use regular URL
+    const qrSrc = qrDataMap?.get(t.id) || getQRUrl(t.id, 500);
+    
+    return `
   <div class="ticket-wrap">
     <div class="ticket-left" style="background:${t.color};">
       <div>
@@ -88,10 +110,11 @@ function buildPDFHtml(
     </div>
     <div class="ticket-tear" style="border-color:${t.color}40;"></div>
     <div class="ticket-right">
-      <img src="${getQRUrl(t.id, 500)}" class="tr-qr" alt="QR"/>
+      <img src="${qrSrc}" class="tr-qr" alt="QR" crossorigin="anonymous"/>
       <div class="tr-scan">SCAN QR</div>
     </div>
-  </div>`).join('');
+  </div>`;
+  }).join('');
 
   // ── summary data rows ──
   const infoRows = [
@@ -280,7 +303,18 @@ export function TicketResultStep() {
         import('jspdf'), import('html2canvas'),
       ]);
 
-      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
+      const allTickets = [...tickets, ...iceCreamTickets];
+
+      // Pre-load all QR codes as data URIs to avoid CORS issues on mobile
+      const qrDataMap = new Map<string, string>();
+      await Promise.all(
+        allTickets.map(async (ticket) => {
+          const dataURI = await loadImageAsDataURI(getQRUrl(ticket.id, 500));
+          qrDataMap.set(ticket.id, dataURI);
+        })
+      );
+
+      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrDataMap);
 
       // Use an isolated iframe to avoid global CSS interference
       const iframe = document.createElement('iframe');
@@ -299,7 +333,7 @@ export function TicketResultStep() {
       const scrollH = iframeDoc.body.scrollHeight || 1200;
       iframe.style.height = scrollH + 'px';
 
-      // Wait for all QR images to load
+      // Wait for all images to load (data URIs should load instantly, but wait to be safe)
       await new Promise<void>(resolve => {
         const imgs = iframeDoc.querySelectorAll('img');
         if (!imgs.length) { setTimeout(resolve, 200); return; }
@@ -311,7 +345,7 @@ export function TicketResultStep() {
           if (el.complete && el.naturalHeight > 0) {
             finish();
           } else {
-            const t = setTimeout(finish, 6000);
+            const t = setTimeout(finish, 3000);
             el.onload = () => { clearTimeout(t); finish(); };
             el.onerror = () => { clearTimeout(t); finish(); };
           }
@@ -319,17 +353,16 @@ export function TicketResultStep() {
       });
 
       // Extra settle time
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(iframeDoc.body, {
         scale: 2,
-        useCORS: true,
+        useCORS: false, // Not needed since we're using data URIs
         allowTaint: true,
         backgroundColor: '#F0F2F5',
         width: A4_W,
         windowWidth: A4_W,
         logging: false,
-        imageTimeout: 10000,
       });
 
       document.body.removeChild(iframe);
