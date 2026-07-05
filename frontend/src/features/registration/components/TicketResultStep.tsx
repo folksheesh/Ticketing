@@ -12,7 +12,7 @@ const generateMockTicketId = (prefix: string) =>
   `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
 
 const getQRUrl = (data: string, size = 400) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}&color=DC0032&bgcolor=ffffff&qzone=1&format=png`;
+  `https://quickchart.io/qr?text=${encodeURIComponent(data)}&size=${size}&margin=2&ecLevel=M&format=png`;
 
 interface TicketInfo {
   title: string;
@@ -288,7 +288,7 @@ function buildPDFHtml(
     <div style="background:linear-gradient(135deg, #FFF 0%, #F8F9FB 100%);border-radius:12px;padding:${isMobile ? '24px' : '28px'};text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${t.color}20;">
       <div style="font-size:11px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">&#128242; Scan QR Code</div>
       <div style="display:inline-block;padding:10px;background:#FFF;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
-        <img src="${qrSrc}" style="width:${isMobile ? '180px' : '160px'};height:${isMobile ? '180px' : '160px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR" crossorigin="anonymous"/>
+        <img src="${qrSrc}" style="width:${isMobile ? '180px' : '160px'};height:${isMobile ? '180px' : '160px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR"/>
       </div>
       <div style="font-size:9px;color:#B0BAC7;font-weight:500;margin-top:14px;line-height:1.5;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
     </div>
@@ -309,45 +309,45 @@ function buildPDFHtml(
 <title>E-Ticket — ${personal.fullName}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:${pageWidth}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+html,body{width:${pageWidth}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}
 .page{width:${pageWidth}px;background:#F0F2F5;padding:${isMobile ? '20px 16px' : '28px 36px 32px'};}
 
 /* HEADER */
-.hdr{display:flex;align-items:center;justify-content:space-between;background:#1A2233;border-radius:14px;padding:${isMobile ? '16px 20px' : '18px 28px'};margin-bottom:16px;${isMobile ? 'flex-direction:column;gap:12px;text-align:center;' : ''}}
-.hdr-logo{font-size:${isMobile ? '26px' : '30px'};font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-1.5px;line-height:1;}
-.hdr-tag{font-size:8.5px;color:#8896A8;font-weight:500;text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
-.hdr-event{font-size:${isMobile ? '13px' : '14px'};font-weight:700;color:#FFF;line-height:1.2;text-align:${isMobile ? 'center' : 'right'};}
-.hdr-date{font-size:10px;color:#8896A8;margin-top:3px;text-align:${isMobile ? 'center' : 'right'};}
-.hdr-badge{display:inline-block;background:#DC0032;color:#FFF;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;margin-top:6px;}
+.hdr{display:flex;align-items:center;justify-content:space-between;background:#1A2233 !important;border-radius:14px;padding:${isMobile ? '16px 20px' : '18px 28px'};margin-bottom:16px;${isMobile ? 'flex-direction:column;gap:12px;text-align:center;' : ''}}
+.hdr-logo{font-size:${isMobile ? '26px' : '30px'};font-weight:900;font-style:italic;color:#FFFFFF !important;letter-spacing:-1.5px;line-height:1;}
+.hdr-tag{font-size:8.5px;color:#8896A8 !important;font-weight:500;text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
+.hdr-event{font-size:${isMobile ? '13px' : '14px'};font-weight:700;color:#FFF !important;line-height:1.2;text-align:${isMobile ? 'center' : 'right'};}
+.hdr-date{font-size:10px;color:#8896A8 !important;margin-top:3px;text-align:${isMobile ? 'center' : 'right'};}
+.hdr-badge{display:inline-block;background:#DC0032 !important;color:#FFF !important;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;margin-top:6px;}
 
 /* INFO CARD */
-.icard{background:#FFF;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
-.icard-hdr{background:linear-gradient(90deg,#DC0032 0%,#A8001E 100%);padding:9px 20px;display:flex;align-items:center;gap:8px;}
+.icard{background:#FFF !important;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.icard-hdr{background:linear-gradient(90deg,#DC0032 0%,#A8001E 100%) !important;padding:9px 20px;display:flex;align-items:center;gap:8px;}
 .icard-icon{font-size:13px;}
-.icard-title{font-size:10px;font-weight:800;color:#FFF;text-transform:uppercase;letter-spacing:1.5px;}
+.icard-title{font-size:10px;font-weight:800;color:#FFF !important;text-transform:uppercase;letter-spacing:1.5px;}
 .icard-body{padding:14px 20px;display:flex;gap:24px;${isMobile ? 'flex-direction:column;gap:16px;' : ''}}
 .section{flex:1;}
 .section+.section{${isMobile ? 'border-top:1px solid #EBEDF0;padding-top:16px;' : 'border-left:1px solid #EBEDF0;padding-left:24px;'}}
-.section-title{font-size:8.5px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
+.section-title{font-size:8.5px;font-weight:700;color:#8896A8 !important;text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
 .sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
 .info-table{width:100%;border-collapse:collapse;}
-.si-key{font-size:10.5px;color:#8896A8;font-weight:600;padding:2.5px 0;width:${isMobile ? '90px' : '100px'};vertical-align:top;}
-.si-sep{color:#CDD4D8;padding:2.5px 6px;vertical-align:top;}
-.si-val{font-size:11px;color:#1A2233;font-weight:600;padding:2.5px 0;vertical-align:top;}
+.si-key{font-size:10.5px;color:#8896A8 !important;font-weight:600;padding:2.5px 0;width:${isMobile ? '90px' : '100px'};vertical-align:top;}
+.si-sep{color:#CDD4D8 !important;padding:2.5px 6px;vertical-align:top;}
+.si-val{font-size:11px;color:#1A2233 !important;font-weight:600;padding:2.5px 0;vertical-align:top;}
 
 /* DIVIDER */
 .div-row{display:flex;align-items:center;gap:10px;margin:14px 0 10px;}
 .div-line{flex:1;height:1px;background:#D0D5DD;}
-.div-txt{font-size:8.5px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+.div-txt{font-size:8.5px;font-weight:700;color:#8896A8 !important;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
 
 /* TICKET - Mobile: Vertical Stack, Desktop: Horizontal */
-.ticket-wrap{display:flex;${isMobile ? 'flex-direction:column;' : ''}background:#FFF;border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);${isMobile ? 'height:auto;' : 'height:112px;'}}
+.ticket-wrap{display:flex;${isMobile ? 'flex-direction:column;' : ''}background:#FFF !important;border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);${isMobile ? 'height:auto;' : 'height:112px;'}}
 .ticket-left{width:${isMobile ? '100%' : '196px'};flex-shrink:0;padding:${isMobile ? '18px 20px' : '14px 16px'};display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
 .ticket-left::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
-.tl-cat{font-size:7px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:3px;}
-.tl-title{font-size:${isMobile ? '14.5px' : '13.5px'};font-weight:800;color:#FFF;line-height:1.15;letter-spacing:-.3px;}
-.tl-event{font-size:8px;color:rgba(255,255,255,.6);margin-top:4px;}
-.tl-date{font-size:8px;color:rgba(255,255,255,.75);margin-top:2px;font-weight:600;}
+.tl-cat{font-size:7px;font-weight:700;color:rgba(255,255,255,.7) !important;text-transform:uppercase;letter-spacing:1.8px;margin-bottom:3px;}
+.tl-title{font-size:${isMobile ? '14.5px' : '13.5px'};font-weight:800;color:#FFF !important;line-height:1.15;letter-spacing:-.3px;}
+.tl-event{font-size:8px;color:rgba(255,255,255,.6) !important;margin-top:4px;}
+.tl-date{font-size:8px;color:rgba(255,255,255,.75) !important;margin-top:2px;font-weight:600;}
 .tl-num{font-size:32px;font-weight:900;color:rgba(255,255,255,.1);line-height:1;font-style:italic;${isMobile ? 'position:static;text-align:right;margin-top:8px;' : 'position:absolute;bottom:7px;right:11px;'}}
 .ticket-mid{${isMobile ? 'width:100%;' : 'flex:1;'}padding:${isMobile ? '16px 20px' : '12px 16px'};display:flex;flex-direction:column;justify-content:center;}
 .tm-row{display:flex;gap:16px;}
@@ -433,17 +433,23 @@ export function TicketResultStep() {
     const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, isMobile);
     const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
     
-    // Open in new window with exact PDF dimensions
-    const pw = window.open('', '_blank', `width=${pageWidth + 50},height=900`);
+    // Open in new window with exact PDF dimensions, centered
+    const pw = window.open('', '_blank', `width=${pageWidth + 50},height=900,left=${(screen.width - pageWidth - 50) / 2},top=50`);
     if (pw) { 
       pw.document.write(html); 
       pw.document.close();
       
-      // Add print button to preview window
+      // Add print button and center content styling
       const style = pw.document.createElement('style');
       style.textContent = `
         @media screen {
-          body { overflow-y: scroll; }
+          body { 
+            overflow-y: scroll; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+          }
           .print-btn {
             position: fixed;
             top: 20px;
@@ -459,9 +465,12 @@ export function TicketResultStep() {
             z-index: 9999;
           }
           .print-btn:hover { background: #B8002A; }
+          .page { margin-bottom: 20px; }
         }
         @media print {
           .print-btn { display: none; }
+          body { padding: 0; align-items: flex-start; }
+          .page { margin-bottom: 0; }
         }
       `;
       pw.document.head.appendChild(style);
