@@ -15,7 +15,7 @@ const schema = z.object({
   children: z.array(z.object({
     id:         z.string(),
     name:       z.string().min(2, 'Nama anak harus diisi'),
-    age:        z.preprocess(val => val === '' || val === null || val === undefined ? undefined : Number(val), z.number({ required_error: 'Umur harus diisi' }).min(0).max(50, 'Umur tidak valid')),
+    age:        z.preprocess(val => val === '' || val === null || val === undefined ? undefined : Number(val), z.number({ error: 'Umur harus diisi' }).min(0).max(50, 'Umur tidak valid')),
     tshirtSize: z.enum(['S','M','L','XL','XXL','3XL'] as const).optional(),
   })),
 }).superRefine((data, ctx) => {
