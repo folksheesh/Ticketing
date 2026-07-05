@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import {
   ScanQrCode, CheckCircle2, XCircle, AlertTriangle,
-  RefreshCw, Keyboard, User, Ticket, Clock
+  RefreshCw, Keyboard, Clock, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useAdminStore } from '../store/useAdminStore';
 import type { TicketStatus } from '../types';
@@ -25,11 +25,12 @@ const STATUS_LABEL: Record<TicketStatus, string> = {
 };
 
 export function ScannerTab() {
-  const { scanResult, scanError, scanTicket, updateTicketStatus, clearScan } = useAdminStore();
+  const { scanResult, scanError, scanTicket, updateTicketStatus, clearScan, employees } = useAdminStore();
   const [scanning, setScanning] = useState(false);
   const [manualId, setManualId] = useState('');
   const [mode, setMode] = useState<'camera' | 'manual'>('camera');
   const [cameraError, setCameraError] = useState('');
+  const [showIds, setShowIds] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const startScanner = async () => {
@@ -164,20 +165,42 @@ export function ScannerTab() {
             </button>
           </form>
 
-          {/* Quick-test IDs */}
-          <div className="mt-4">
-            <p className="text-xs text-denso-gray-400 mb-2 font-semibold">Coba ID sample:</p>
-            <div className="flex flex-wrap gap-2">
-              {['REG-1001', 'SNK-2002', 'ICE-3004'].map(id => (
-                <button
-                  key={id}
-                  onClick={() => { scanTicket(id); }}
-                  className="font-mono text-xs px-3 py-1.5 bg-denso-gray-100 hover:bg-denso-navy hover:text-white text-denso-slate rounded-lg transition-colors"
-                >
-                  {id}
-                </button>
-              ))}
+          {/* Quick-test: show real IDs from store */}
+          <div className="mt-4 border-t border-denso-gray-100 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-denso-gray-400 font-semibold">ID Tiket Tersedia di Sistem:</p>
+              <button
+                onClick={() => setShowIds(v => !v)}
+                className="text-xs text-denso-navy font-semibold flex items-center gap-1"
+              >
+                {showIds ? <><ChevronUp className="w-3 h-3"/>Sembunyikan</> : <><ChevronDown className="w-3 h-3"/>Tampilkan</>}
+              </button>
             </div>
+            {showIds && (
+              <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
+                {employees.map(emp => (
+                  <div key={emp.id}>
+                    <p className="text-[10px] font-bold text-denso-gray-400 uppercase mb-1">{emp.fullName}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {emp.tickets.map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => { scanTicket(t.id); }}
+                          className={cn(
+                            'font-mono text-[10px] px-2.5 py-1.5 rounded-lg transition-colors border',
+                            t.status === 'active'
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+                              : 'bg-gray-50 border-gray-200 text-gray-400 line-through'
+                          )}
+                        >
+                          {t.id}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

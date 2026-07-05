@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Employee, Ticket, TicketStatus } from '../types';
 
-// ── Seed mock data ────────────────────────────────────────────────────────────
+// ── Seed mock data ─────────────────────────────────────────────────────────
 const makeTickets = (prefix: string, withIcecream = false): Ticket[] => {
   const base: Ticket[] = [
     { id: `REG-${prefix}1`, type: 'entry',    label: 'Tiket Masuk & Souvenir', status: 'active' },
@@ -63,54 +63,115 @@ MOCK_EMPLOYEES[1].tickets[0].status = 'used';
 MOCK_EMPLOYEES[1].tickets[0].scannedAt = '2025-07-01T13:00:00Z';
 MOCK_EMPLOYEES[1].tickets[0].scannedBy = 'Admin';
 
+// ── Types ──────────────────────────────────────────────────────────────────
+export interface RegisterEmployeePayload {
+  fullName: string;
+  nik: string;
+  division: string;
+  email: string;
+  phone: string;
+  tshirtSize: string;
+  maritalStatus: 'Single' | 'Family';
+  spouseName?: string;
+  spouseTshirtSize?: string;
+  children: { name: string; age: number; tshirtSize?: string }[];
+  tickets: { id: string; type: 'entry' | 'snack' | 'lunch' | 'icecream'; label: string }[];
+}
+
 interface AdminStore {
   employees: Employee[];
   scanResult: { ticket: Ticket; employee: Employee } | null;
   scanError: string | null;
 
-  // Actions
+  registerEmployee: (payload: RegisterEmployeePayload) => void;
   scanTicket: (ticketId: string) => void;
   updateTicketStatus: (employeeId: string, ticketId: string, status: TicketStatus) => void;
   clearScan: () => void;
 }
 
-export const useAdminStore = create<AdminStore>((set, get) => ({
-  employees: MOCK_EMPLOYEES,
-  scanResult: null,
-  scanError: null,
+import { persist } from 'zustand/middleware';
 
-  scanTicket: (ticketId: string) => {
-    const { employees } = get();
-    for (const emp of employees) {
-      const ticket = emp.tickets.find(t => t.id === ticketId);
-      if (ticket) {
-        set({ scanResult: { ticket, employee: emp }, scanError: null });
-        return;
-      }
-    }
-    set({ scanResult: null, scanError: `Tiket "${ticketId}" tidak ditemukan.` });
-  },
+export const useAdminStore = create<AdminStore>()(
+  persist(
+    (set, get) => ({
+      employees: MOCK_EMPLOYEES,
+      scanResult: null,
+      scanError: null,
 
-  updateTicketStatus: (employeeId, ticketId, status) => {
-    set(state => ({
-      employees: state.employees.map(emp => {
-        if (emp.id !== employeeId) return emp;
-        const updatedTickets = emp.tickets.map(t =>
-          t.id === ticketId
-            ? { ...t, status, scannedAt: new Date().toISOString(), scannedBy: 'Admin' }
-            : t
-        );
-        const allEntryUsed = updatedTickets.find(t => t.type === 'entry')?.status === 'used';
-        return { ...emp, tickets: updatedTickets, checkedIn: allEntryUsed || emp.checkedIn };
-      }),
-      scanResult: state.scanResult
-        ? {
-            ...state.scanResult,
-            ticket: { ...state.scanResult.ticket, status, scannedAt: new Date().toISOString() },
+      registerEmployee: (payload) => {
+        const { employees } = get();
+        const exists = employees.find(e => e.nik === payload.nik);
+        if (exists) return;
+
+        const family: Employee['family'] = [];
+        if (payload.spouseName) {
+          family.push({ name: payload.spouseName, relation: 'spouse', tshirtSize: payload.spouseTshirtSize });
+        }
+        payload.children.forEach(c => {
+          family.push({ name: c.name, relation: 'child', age: c.age, tshirtSize: c.tshirtSize });
+        });
+
+        const newEmployee: Employee = {
+          id: `EMP-${Date.now()}`,
+          fullName: payload.fullName,
+          nik: payload.nik,
+          division: payload.division,
+          email: payload.email,
+          phone: payload.phone,
+          tshirtSize: payload.tshirtSize,
+          maritalStatus: payload.maritalStatus,
+          registeredAt: new Date().toISOString(),
+          checkedIn: false,
+          family,
+          tickets: payload.tickets.map(t => ({
+            ...t,
+            status: 'active' as TicketStatus,
+          })),
+        };
+
+        set(state => ({ employees: [newEmployee, ...state.employees] }));
+      },
+
+      scanTicket: (rawId: string) => {
+        const ticketId = rawId.trim().replace(/\s+/g, '-').toUpperCase();
+        const { employees } = get();
+        for (const emp of employees) {
+          const ticket = emp.tickets.find(
+            t => t.id.toUpperCase() === ticketId || t.id.toUpperCase().replace(/-/g, '') === ticketId.replace(/-/g, '')
+          );
+          if (ticket) {
+            set({ scanResult: { ticket, employee: emp }, scanError: null });
+            return;
           }
-        : null,
-    }));
-  },
+        }
+        set({ scanResult: null, scanError: `Tiket "${ticketId}" tidak ditemukan dalam sistem.` });
+      },
 
-  clearScan: () => set({ scanResult: null, scanError: null }),
-}));
+      updateTicketStatus: (employeeId, ticketId, status) => {
+        set(state => ({
+          employees: state.employees.map(emp => {
+            if (emp.id !== employeeId) return emp;
+            const updatedTickets = emp.tickets.map(t =>
+              t.id === ticketId
+                ? { ...t, status, scannedAt: new Date().toISOString(), scannedBy: 'Admin' }
+                : t
+            );
+            const entryUsed = updatedTickets.find(t => t.type === 'entry')?.status === 'used';
+            return { ...emp, tickets: updatedTickets, checkedIn: entryUsed || emp.checkedIn };
+          }),
+          scanResult: state.scanResult
+            ? {
+                ...state.scanResult,
+                ticket: { ...state.scanResult.ticket, status, scannedAt: new Date().toISOString() },
+              }
+            : null,
+        }));
+      },
+
+      clearScan: () => set({ scanResult: null, scanError: null }),
+    }),
+    {
+      name: 'denso-admin-storage',
+    }
+  )
+);

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { QrCode, Download, Mail, MessageCircle, IceCream, Utensils, Coffee, CheckCircle2, Eye } from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
+import { useAdminStore } from '../../admin/store/useAdminStore';
 import { RippleButton } from '../../../components/atoms/RippleButton';
 import { cn } from '../../../lib/cn';
+import type { PersonalData, FamilyData } from '../types';
 
 const generateMockTicketId = (prefix: string) =>
   `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -19,7 +21,12 @@ interface TicketInfo {
 }
 
 // ─── PDF ticket HTML template ────────────────────────────────────────────────
-function buildPDFHtml(tickets: TicketInfo[], iceCreamTickets: TicketInfo[], personal: { fullName: string; nik: string; division: string }) {
+function buildPDFHtml(
+  tickets: TicketInfo[],
+  iceCreamTickets: TicketInfo[],
+  personal: PersonalData,
+  family: FamilyData
+) {
   const allTickets = [...tickets, ...iceCreamTickets];
 
   const cards = allTickets
@@ -86,11 +93,70 @@ function buildPDFHtml(tickets: TicketInfo[], iceCreamTickets: TicketInfo[], pers
   .id-label{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px}
   .id-val{font-family:monospace;font-size:14px;font-weight:800;letter-spacing:2px}
   @media print{body{background:white;padding:0}.ticket{break-inside:avoid;box-shadow:none;border:1px solid #e2e8f0;max-width:100%;margin-bottom:20px}}
+  .rekap-container{background:white;border-radius:20px;padding:24px;box-shadow:0 8px 32px rgba(0,32,96,.12);max-width:460px;margin:0 auto 32px;page-break-inside:avoid;}
+  .rekap-container h2{font-size:15px;color:#002060;margin-bottom:16px;border-bottom:1px solid #e2e8f0;padding-bottom:8px;font-weight:800;text-align:left;}
+  .rekap-section{margin-bottom:16px;}
+  .rekap-section:last-child{margin-bottom:0;}
+  .rekap-section h3{font-size:13px;color:#0f172a;margin-bottom:8px;font-weight:700;}
+  .rekap-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .rekap-table td{padding:4px 0;vertical-align:top;color:#334155;}
+  .rekap-table td:first-child{width:140px;font-weight:600;color:#64748b;}
+  .rekap-table-child{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+  .rekap-table-child th{padding:6px;background:#f8fafc;font-size:10px;text-align:left;color:#64748b;border-bottom:1px solid #e2e8f0;font-weight:600;}
+  .rekap-table-child td{padding:6px;border-bottom:1px solid #e2e8f0;color:#334155;}
+  @media print{
+    .rekap-container{box-shadow:none;border:1px solid #e2e8f0;max-width:100%;margin-bottom:20px;}
+  }
 </style>
 </head><body>
 <h1>🎪 DENSO Family Gathering 2025</h1>
 <p class="sub-head">E-Ticket Resmi · Tunjukkan QR Code kepada petugas saat check-in</p>
 ${cards}
+
+<div class="rekap-container">
+  <h2>Rekap Data Registrasi</h2>
+  <div class="rekap-section">
+    <h3>Data Peserta</h3>
+    <table class="rekap-table">
+      <tr><td>Nama Lengkap</td><td>: ${personal.fullName}</td></tr>
+      <tr><td>NIK</td><td>: ${personal.nik}</td></tr>
+      <tr><td>Divisi</td><td>: ${personal.division}</td></tr>
+      <tr><td>Email</td><td>: ${personal.email}</td></tr>
+      <tr><td>No. HP</td><td>: ${personal.phone}</td></tr>
+      <tr><td>Ukuran Kaos</td><td>: ${personal.tshirtSize || '-'}</td></tr>
+      <tr><td>Status Marital</td><td>: ${personal.maritalStatus}</td></tr>
+    </table>
+  </div>
+  ${personal.maritalStatus === 'Family' ? `
+    <div class="rekap-section">
+      <h3>Data Keluarga</h3>
+      ${family.hasSpouse ? `
+      <table class="rekap-table">
+        <tr><td>Nama Pasangan</td><td>: ${family.spouseName}</td></tr>
+        <tr><td>Ukuran Kaos Pasangan</td><td>: ${family.spouseTshirtSize || '-'}</td></tr>
+      </table>
+      ` : ''}
+      ${family.hasChildren && family.children.length > 0 ? `
+      <table class="rekap-table-child">
+        <tr>
+          <th>Nama Anak</th>
+          <th>Usia</th>
+          <th>Ukuran Kaos</th>
+        </tr>
+        ${family.children.map(c => `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.age} Tahun</td>
+            <td>${c.tshirtSize || '-'}</td>
+          </tr>
+        `).join('')}
+      </table>
+      ` : ''}
+      ${!family.hasSpouse && (!family.hasChildren || family.children.length === 0) ? '<p style="font-size:11px;color:#64748b;margin-top:4px;">Tidak ada data keluarga yang diisi.</p>' : ''}
+    </div>
+  ` : ''}
+</div>
+
 <script>
   window.onload=function(){
     const imgs=document.querySelectorAll('img');
@@ -114,35 +180,61 @@ export function TicketResultStep() {
   const [isDownloading, setIsDownloading] = useState(false);
   const ticketRef = useRef<HTMLDivElement>(null);
 
+  const registerEmployee = useAdminStore(s => s.registerEmployee);
+
   useEffect(() => {
-    const t = setTimeout(() => {
-      setTickets([
+    const timer = setTimeout(() => {
+      const mainTickets: TicketInfo[] = [
         { title: 'Tiket Masuk & Souvenir', id: generateMockTicketId('REG'), color: '#002060', emoji: '🎫' },
         { title: 'Kupon Snack Pagi',        id: generateMockTicketId('SNK'), color: '#B45309', emoji: '☕' },
         { title: 'Kupon Makan Siang',        id: generateMockTicketId('LNC'), color: '#C2410C', emoji: '🍽️' },
-      ]);
+      ];
+
+      let iceTickets: TicketInfo[] = [];
       if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
         const kids = familyData.children.filter(c => c.age <= 12);
-        setIceCreamTickets(kids.map(kid => ({
+        iceTickets = kids.map(kid => ({
           title: 'Kupon Es Krim',
           id: generateMockTicketId('ICE'),
           color: '#9D174D',
           emoji: '🍦',
           ownerName: kid.name,
-        })));
+        }));
       }
+
+      setTickets(mainTickets);
+      setIceCreamTickets(iceTickets);
+
+      // Sync to admin store so scanner can find these tickets
+      registerEmployee({
+        fullName: personalData.fullName,
+        nik: personalData.nik,
+        division: personalData.division,
+        email: personalData.email,
+        phone: personalData.phone,
+        tshirtSize: personalData.tshirtSize as string,
+        maritalStatus: personalData.maritalStatus as 'Single' | 'Family',
+        spouseName: familyData.spouseName,
+        spouseTshirtSize: familyData.spouseTshirtSize as string | undefined,
+        children: familyData.children.map(c => ({ name: c.name, age: c.age, tshirtSize: c.tshirtSize as string })),
+        tickets: [
+          ...mainTickets.map(t => ({
+            id: t.id,
+            type: (t.title.includes('Masuk') ? 'entry' : t.title.includes('Snack') ? 'snack' : 'lunch') as 'entry' | 'snack' | 'lunch',
+            label: t.title,
+          })),
+          ...iceTickets.map(t => ({ id: t.id, type: 'icecream' as const, label: t.title })),
+        ],
+      });
+
       setIsGenerating(false);
     }, 2000);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [personalData, familyData]);
 
   // Preview → buka di window baru
   const handlePreview = () => {
-    const html = buildPDFHtml(tickets, iceCreamTickets, {
-      fullName: personalData.fullName,
-      nik: personalData.nik,
-      division: personalData.division,
-    });
+    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
     const pw = window.open('', '_blank', 'width=560,height=900');
     if (pw) { pw.document.write(html); pw.document.close(); }
   };
@@ -157,11 +249,7 @@ export function TicketResultStep() {
       ]);
 
       // Render hidden iframe dengan konten tiket
-      const html = buildPDFHtml(tickets, iceCreamTickets, {
-        fullName: personalData.fullName,
-        nik: personalData.nik,
-        division: personalData.division,
-      });
+      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
 
       // Buat container tersembunyi
       const container = document.createElement('div');
