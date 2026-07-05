@@ -174,7 +174,6 @@ function buildPDFHtml(
   </div>
 </div>`;
   }).join('');
-  }).join('');
 
   // ── summary data rows ──
   const infoRows = [
