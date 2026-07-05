@@ -27,14 +27,14 @@ export function RegistrationLayout() {
      */
     <div
       className="flex flex-col lg:flex-row"
-      style={{ height: '100dvh', overflow: 'hidden' }}
+      style={{ minHeight: '100svh' }}
     >
       {/* ══════════════════════════════════════════════════════════
           LEFT PANEL  — branding + photo (desktop only)
       ══════════════════════════════════════════════════════════ */}
       <div
         className="hidden lg:flex lg:w-[42%] xl:w-[38%] flex-col relative overflow-hidden flex-shrink-0"
-        style={{ background: '#DC0032' }}
+        style={{ background: '#DC0032', minHeight: '100svh', position: 'sticky', top: 0 }}
       >
         {/* Photo — fills the panel, darkened with an overlay */}
         <div className="absolute inset-0">
