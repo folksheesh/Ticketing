@@ -280,7 +280,7 @@ export function FamilyDataStep() {
             {/* Spouse size */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5">
-                <Shirt width={14} height={14} style={{ color: '#9AAAB3' }} strokeWidth={1.6} />
+                <ShirtIcon width={14} height={14} style={{ color: '#9AAAB3' }} strokeWidth={1.6} />
                 <label className="text-xs font-semibold" style={{ color: '#4A565E' }}>Ukuran Baju Pasangan</label>
               </div>
               <input type="hidden" {...register('spouseTshirtSize')} />
@@ -363,7 +363,7 @@ export function FamilyDataStep() {
 
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5">
-                      <Shirt width={13} height={13} style={{ color: '#9AAAB3' }} strokeWidth={1.6} />
+                      <ShirtIcon width={13} height={13} style={{ color: '#9AAAB3' }} strokeWidth={1.6} />
                       <label className="text-xs font-semibold" style={{ color: '#4A565E' }}>Ukuran Baju</label>
                     </div>
                     <input type="hidden" {...register(`children.${i}.tshirtSize`)} />
