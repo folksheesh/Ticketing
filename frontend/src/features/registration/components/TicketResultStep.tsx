@@ -196,7 +196,7 @@ function buildPDFHtml(
     <div style="background:linear-gradient(135deg, #FFF 0%, #F8F9FB 100%);border-radius:12px;padding:32px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2px solid ${t.color}20;">
       <div style="font-size:11px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">&#128242; Scan QR Code</div>
       <div style="display:inline-block;padding:12px;background:#FFF;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
-        <img src="${qrSrc}" style="width:${isMobile ? '140px' : '120px'};height:${isMobile ? '140px' : '120px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR" crossorigin="anonymous"/>
+        <img src="${qrSrc}" style="width:${isMobile ? '140px' : '120px'};height:${isMobile ? '140px' : '120px'};display:block;border-radius:8px;border:3px solid ${t.color};" alt="QR"/>
       </div>
       <div style="font-size:9px;color:#B0BAC7;font-weight:500;margin-top:16px;line-height:1.5;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
     </div>
@@ -378,28 +378,55 @@ export function TicketResultStep() {
       iframeDoc.close();
 
       // Wait for content to load
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Wait for all images to load
+      // Wait for all images to load (data URIs should load instantly)
       await new Promise<void>(resolve => {
         const imgs = iframeDoc.querySelectorAll('img');
-        if (!imgs.length) { setTimeout(resolve, 200); return; }
+        console.log('Total images found:', imgs.length);
+        
+        if (!imgs.length) { 
+          console.log('No images found, continuing...');
+          setTimeout(resolve, 200); 
+          return; 
+        }
+        
         let done = 0;
         const total = imgs.length;
-        imgs.forEach(img => {
+        
+        imgs.forEach((img, idx) => {
           const el = img as HTMLImageElement;
-          const finish = () => { if (++done >= total) resolve(); };
+          console.log(`Image ${idx}: src=${el.src.substring(0, 50)}... complete=${el.complete} naturalHeight=${el.naturalHeight}`);
+          
+          const finish = () => { 
+            done++;
+            console.log(`Image ${idx} loaded (${done}/${total})`);
+            if (done >= total) resolve(); 
+          };
+          
           if (el.complete && el.naturalHeight > 0) {
             finish();
           } else {
-            const t = setTimeout(finish, 3000);
-            el.onload = () => { clearTimeout(t); finish(); };
-            el.onerror = () => { clearTimeout(t); finish(); };
+            const t = setTimeout(() => {
+              console.log(`Image ${idx} timeout`);
+              finish();
+            }, 5000);
+            el.onload = () => { 
+              console.log(`Image ${idx} onload success`);
+              clearTimeout(t); 
+              finish(); 
+            };
+            el.onerror = () => { 
+              console.log(`Image ${idx} onerror`);
+              clearTimeout(t); 
+              finish(); 
+            };
           }
         });
       });
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('All images loaded, waiting additional 800ms...');
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // Process each .page div separately to create proper page breaks
       const pages = iframeDoc.querySelectorAll('.page');
