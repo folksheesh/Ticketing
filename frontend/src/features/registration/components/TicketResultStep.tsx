@@ -17,13 +17,44 @@ const getQRUrl = (data: string, size = 400) =>
 // Helper to convert image URL to data URI
 const loadImageAsDataURI = async (url: string): Promise<string> => {
   try {
-    const response = await fetch(url);
-    const blob = await response.blob();
+    // Create image element and load it
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+      img.onload = () => {
+        try {
+          // Create canvas and draw image
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Cannot get canvas context'));
+            return;
+          }
+          
+          ctx.drawImage(img, 0, 0);
+          
+          // Convert to data URI
+          const dataURI = canvas.toDataURL('image/png');
+          resolve(dataURI);
+        } catch (err) {
+          console.error('Canvas conversion error:', err);
+          reject(err);
+        }
+      };
+      
+      img.onerror = (err) => {
+        console.error('Image load error:', err);
+        reject(err);
+      };
+      
+      // Set a timeout
+      setTimeout(() => reject(new Error('Image load timeout')), 10000);
+      
+      img.src = url;
     });
   } catch (err) {
     console.error('Failed to load image:', url, err);
@@ -89,6 +120,13 @@ function buildPDFHtml(
     <td class="si-key">${k}</td><td class="si-sep">:</td><td class="si-val">${v}</td>
   </tr>`).join('');
 
+  // Calculate food allocation
+  let totalPeople = 1; // Diri sendiri
+  if (personal.maritalStatus === 'Family') {
+    if (family.hasSpouse) totalPeople++; // Pasangan
+    if (family.hasChildren) totalPeople += family.children.length; // Anak-anak
+  }
+
   let familySectionHtml = '';
   if (personal.maritalStatus === 'Family') {
     const spR = family.hasSpouse ? `
@@ -111,6 +149,29 @@ function buildPDFHtml(
     </div>`;
   }
 
+  // Food allocation summary
+  const foodAllocationHtml = `
+    <div class="section">
+      <div class="section-title"><span class="sdot" style="background:#16A34A;"></span>Alokasi Konsumsi</div>
+      <table class="info-table">
+        <tr>
+          <td class="si-key">Total Peserta</td>
+          <td class="si-sep">:</td>
+          <td class="si-val"><b>${totalPeople} orang</b></td>
+        </tr>
+        <tr>
+          <td class="si-key">Snack Pagi</td>
+          <td class="si-sep">:</td>
+          <td class="si-val">${totalPeople} porsi</td>
+        </tr>
+        <tr>
+          <td class="si-key">Makan Siang</td>
+          <td class="si-sep">:</td>
+          <td class="si-val">${totalPeople} porsi</td>
+        </tr>
+      </table>
+    </div>`;
+
   // ── Build pages: First page = header + info ONLY, then 1 ticket per page ──
   const firstPageHtml = `
 <div class="page">
@@ -127,6 +188,7 @@ function buildPDFHtml(
         <table class="info-table">${infoRows}</table>
       </div>
       ${familySectionHtml}
+      ${personal.maritalStatus === 'Family' ? foodAllocationHtml : ''}
     </div>
   </div>
 
@@ -339,8 +401,47 @@ export function TicketResultStep() {
   const handlePreview = () => {
     const isMobile = isMobileDevice();
     const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, undefined, isMobile);
-    const pw = window.open('', '_blank', 'width=600,height=900');
-    if (pw) { pw.document.write(html); pw.document.close(); }
+    const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
+    
+    // Open in new window with exact PDF dimensions
+    const pw = window.open('', '_blank', `width=${pageWidth + 50},height=900`);
+    if (pw) { 
+      pw.document.write(html); 
+      pw.document.close();
+      
+      // Add print button to preview window
+      const style = pw.document.createElement('style');
+      style.textContent = `
+        @media screen {
+          body { overflow-y: scroll; }
+          .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #DC0032;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(220, 0, 50, 0.3);
+            z-index: 9999;
+          }
+          .print-btn:hover { background: #B8002A; }
+        }
+        @media print {
+          .print-btn { display: none; }
+        }
+      `;
+      pw.document.head.appendChild(style);
+      
+      const btn = pw.document.createElement('button');
+      btn.className = 'print-btn';
+      btn.textContent = '🖨️ Print PDF';
+      btn.onclick = () => pw.print();
+      pw.document.body.insertBefore(btn, pw.document.body.firstChild);
+    }
   };
 
   const handleDownloadPDF = async () => {
