@@ -42,15 +42,23 @@ interface TicketInfo {
 // ─── PDF Template ─────────────────────────────────────────────────────────────
 // A4 = 794px wide at 96dpi — render at exact width so jsPDF fills perfectly
 const A4_W = 794;
+const A4_MOBILE_W = 600; // Slimmer width for mobile portrait
+
+// Detect if mobile device
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+};
 
 function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
   personal: PersonalData,
   family: FamilyData,
-  qrDataMap?: Map<string, string> // Optional map of ticket.id -> data URI
+  qrDataMap?: Map<string, string>, // Optional map of ticket.id -> data URI
+  isMobile = false // Flag to use mobile layout
 ) {
   const allTickets = [...tickets, ...iceCreamTickets];
+  const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
 
   const ticketLabel = (t: TicketInfo) => {
     if (t.icon === Ticket)          return 'Tiket Masuk & Souvenir';
@@ -157,98 +165,65 @@ function buildPDFHtml(
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
 <title>E-Ticket — ${personal.fullName}</title>
 <style>
-@media screen {
-  /* Mobile responsive adjustments for preview */
-  @media (max-width: 768px) {
-    html, body { width: 100% !important; }
-    .page { 
-      width: 100% !important; 
-      padding: 16px !important;
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-    .hdr { 
-      flex-direction: column; 
-      gap: 12px; 
-      text-align: center;
-      padding: 14px 16px !important;
-    }
-    .hdr-event, .hdr-date, .hdr-badge { text-align: center; }
-    .icard-body { 
-      flex-direction: column !important; 
-      gap: 16px !important;
-    }
-    .section + .section { 
-      border-left: none !important; 
-      border-top: 1px solid #EBEDF0;
-      padding-left: 0 !important;
-      padding-top: 16px;
-    }
-    .ticket-wrap {
-      flex-direction: column !important;
-      height: auto !important;
-    }
-    .ticket-left {
-      width: 100% !important;
-      padding: 16px !important;
-    }
-    .tl-num { 
-      position: static !important;
-      text-align: right;
-      margin-top: 8px;
-    }
-    .ticket-mid {
-      width: 100% !important;
-      padding: 16px !important;
-    }
-    .ticket-tear {
-      width: 100% !important;
-      height: 0 !important;
-      border-left: none !important;
-      border-top: 2px dashed !important;
-      margin: 0 !important;
-    }
-    .ticket-right {
-      width: 100% !important;
-      padding: 20px !important;
-    }
-    .tr-qr {
-      width: 120px !important;
-      height: 120px !important;
-    }
-    .footer {
-      flex-direction: column !important;
-      gap: 8px;
-      text-align: center !important;
-    }
-    .ft { text-align: center !important; }
-  }
-}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:${pageWidth}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.page{width:${pageWidth}px;background:#F0F2F5;padding:${isMobile ? '20px 16px' : '28px 36px 32px'};}
 
-/* Print styles - maintain original A4 layout */
-@media print {
-  html, body { width: ${A4_W}px !important; }
-  .page { width: ${A4_W}px !important; padding: 28px 36px 32px !important; }
-  .ticket-wrap { 
-    flex-direction: row !important; 
-    height: 112px !important;
-  }
-  .ticket-left { width: 196px !important; }
-  .ticket-mid { flex: 1 !important; }
-  .ticket-right { width: 122px !important; }
-  .icard-body { 
-    flex-direction: row !important; 
-    gap: 24px !important;
-  }
-  .section + .section { 
-    border-left: 1px solid #EBEDF0 !important;
-    border-top: none !important;
-    padding-left: 24px !important;
-    padding-top: 0 !important;
-  }
-}
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;background:#1A2233;border-radius:14px;padding:${isMobile ? '16px 20px' : '18px 28px'};margin-bottom:16px;${isMobile ? 'flex-direction:column;gap:12px;text-align:center;' : ''}}
+.hdr-logo{font-size:${isMobile ? '26px' : '30px'};font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-1.5px;line-height:1;}
+.hdr-tag{font-size:8.5px;color:#8896A8;font-weight:500;text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
+.hdr-event{font-size:${isMobile ? '13px' : '14px'};font-weight:700;color:#FFF;line-height:1.2;text-align:${isMobile ? 'center' : 'right'};}
+.hdr-date{font-size:10px;color:#8896A8;margin-top:3px;text-align:${isMobile ? 'center' : 'right'};}
+.hdr-badge{display:inline-block;background:#DC0032;color:#FFF;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;margin-top:6px;}
+
+/* INFO CARD */
+.icard{background:#FFF;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.icard-hdr{background:linear-gradient(90deg,#DC0032 0%,#A8001E 100%);padding:9px 20px;display:flex;align-items:center;gap:8px;}
+.icard-icon{font-size:13px;}
+.icard-title{font-size:10px;font-weight:800;color:#FFF;text-transform:uppercase;letter-spacing:1.5px;}
+.icard-body{padding:14px 20px;display:flex;gap:24px;${isMobile ? 'flex-direction:column;gap:16px;' : ''}}
+.section{flex:1;}
+.section+.section{${isMobile ? 'border-top:1px solid #EBEDF0;padding-top:16px;' : 'border-left:1px solid #EBEDF0;padding-left:24px;'}}
+.section-title{font-size:8.5px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
+.sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.info-table{width:100%;border-collapse:collapse;}
+.si-key{font-size:10.5px;color:#8896A8;font-weight:600;padding:2.5px 0;width:${isMobile ? '90px' : '100px'};vertical-align:top;}
+.si-sep{color:#CDD4D8;padding:2.5px 6px;vertical-align:top;}
+.si-val{font-size:11px;color:#1A2233;font-weight:600;padding:2.5px 0;vertical-align:top;}
+
+/* DIVIDER */
+.div-row{display:flex;align-items:center;gap:10px;margin:14px 0 10px;}
+.div-line{flex:1;height:1px;background:#D0D5DD;}
+.div-txt{font-size:8.5px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+
+/* TICKET - Mobile: Vertical Stack, Desktop: Horizontal */
+.ticket-wrap{display:flex;${isMobile ? 'flex-direction:column;' : ''}background:#FFF;border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);${isMobile ? 'height:auto;' : 'height:112px;'}}
+.ticket-left{width:${isMobile ? '100%' : '196px'};flex-shrink:0;padding:${isMobile ? '18px 20px' : '14px 16px'};display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
+.ticket-left::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
+.tl-cat{font-size:7px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:3px;}
+.tl-title{font-size:${isMobile ? '14.5px' : '13.5px'};font-weight:800;color:#FFF;line-height:1.15;letter-spacing:-.3px;}
+.tl-event{font-size:8px;color:rgba(255,255,255,.6);margin-top:4px;}
+.tl-date{font-size:8px;color:rgba(255,255,255,.75);margin-top:2px;font-weight:600;}
+.tl-num{font-size:32px;font-weight:900;color:rgba(255,255,255,.1);line-height:1;font-style:italic;${isMobile ? 'position:static;text-align:right;margin-top:8px;' : 'position:absolute;bottom:7px;right:11px;'}}
+.ticket-mid{${isMobile ? 'width:100%;' : 'flex:1;'}padding:${isMobile ? '16px 20px' : '12px 16px'};display:flex;flex-direction:column;justify-content:center;}
+.tm-row{display:flex;gap:16px;}
+.tm-cell{flex:1;}
+.tm-label{font-size:7px;font-weight:700;color:#9AAAB3;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;}
+.tm-val{font-size:${isMobile ? '11.5px' : '12px'};font-weight:700;color:#1A2233;line-height:1.2;}
+.tm-id{font-family:monospace;font-size:${isMobile ? '10px' : '10.5px'};letter-spacing:1.5px;font-weight:800;}
+.tm-barline{height:2.5px;border-radius:2px;margin:9px 0 6px;}
+.tm-note{font-size:${isMobile ? '7.5px' : '8px'};color:#B0BAC7;font-weight:500;}
+.ticket-tear{${isMobile ? 'width:100%;height:0;border-left:none;border-top:2px dashed;margin:0;' : 'width:0;border-left:2px dashed;margin:12px 0;'}flex-shrink:0;}
+.ticket-right{width:${isMobile ? '100%' : '122px'};flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#F8F9FB;padding:${isMobile ? '20px' : '10px 12px'};}
+.tr-qr{width:${isMobile ? '110px' : '88px'};height:${isMobile ? '110px' : '88px'};display:block;border-radius:7px;border:2.5px solid #DC0032;padding:2px;background:white;}
+.tr-scan{font-size:7px;font-weight:800;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;}
+
+/* FOOTER */
+.footer{margin-top:16px;border-top:1px solid #D0D5DD;padding-top:10px;display:flex;${isMobile ? 'flex-direction:column;gap:8px;' : 'justify-content:space-between;'}align-items:center;}
+.ft{font-size:9px;color:#8896A8;font-weight:500;${isMobile ? 'text-align:center;' : ''}}
+.ft b{color:#1A2233;font-weight:700;}
 </style>
-<style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:${A4_W}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .page{width:${A4_W}px;background:#F0F2F5;padding:28px 36px 32px;}
@@ -384,7 +359,8 @@ export function TicketResultStep() {
   }, [personalData, familyData]);
 
   const handlePreview = () => {
-    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData);
+    const isMobile = isMobileDevice();
+    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, undefined, isMobile);
     const pw = window.open('', '_blank', 'width=600,height=900');
     if (pw) { pw.document.write(html); pw.document.close(); }
   };
@@ -397,6 +373,8 @@ export function TicketResultStep() {
       ]);
 
       const allTickets = [...tickets, ...iceCreamTickets];
+      const isMobile = isMobileDevice();
+      const pageWidth = isMobile ? A4_MOBILE_W : A4_W;
 
       // Pre-load all QR codes as data URIs to avoid CORS issues on mobile
       const qrDataMap = new Map<string, string>();
@@ -407,11 +385,11 @@ export function TicketResultStep() {
         })
       );
 
-      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrDataMap);
+      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrDataMap, isMobile);
 
       // Use an isolated iframe to avoid global CSS interference
       const iframe = document.createElement('iframe');
-      iframe.style.cssText = `position:fixed;top:-9999px;left:-9999px;width:${A4_W}px;height:1px;border:none;visibility:hidden;`;
+      iframe.style.cssText = `position:fixed;top:-9999px;left:-9999px;width:${pageWidth}px;height:1px;border:none;visibility:hidden;`;
       document.body.appendChild(iframe);
 
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -453,8 +431,8 @@ export function TicketResultStep() {
         useCORS: false, // Not needed since we're using data URIs
         allowTaint: true,
         backgroundColor: '#F0F2F5',
-        width: A4_W,
-        windowWidth: A4_W,
+        width: pageWidth,
+        windowWidth: pageWidth,
         logging: false,
       });
 
