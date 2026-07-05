@@ -391,6 +391,7 @@ export function TicketResultStep() {
           id: generateMockTicketId('SNK'), 
           color: '#B45309', 
           icon: Coffee,
+          capacity: totalPeople,
         },
         { 
           title: 'Kupon Makan Siang', 
