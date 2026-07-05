@@ -23,6 +23,9 @@ interface TicketInfo {
 }
 
 // ─── PDF Template ─────────────────────────────────────────────────────────────
+// A4 = 794px wide at 96dpi — render at exact width so jsPDF fills perfectly
+const A4_W = 794;
+
 function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
@@ -32,194 +35,187 @@ function buildPDFHtml(
   const allTickets = [...tickets, ...iceCreamTickets];
 
   const ticketLabel = (t: TicketInfo) => {
+    if (t.icon === Ticket)          return 'Tiket Masuk & Souvenir';
+    if (t.icon === Coffee)          return 'Kupon Snack Pagi';
+    if (t.icon === UtensilsCrossed) return 'Kupon Makan Siang';
+    if (t.icon === IceCream2)       return 'Kupon Es Krim';
+    return 'Tiket';
+  };
+
+  const ticketCatLabel = (t: TicketInfo) => {
     if (t.icon === Ticket)          return 'TIKET MASUK';
-    if (t.icon === Coffee)          return 'SNACK PAGI';
-    if (t.icon === UtensilsCrossed) return 'MAKAN SIANG';
-    if (t.icon === IceCream2)       return 'ES KRIM';
+    if (t.icon === Coffee)          return 'FOOD &amp; BEVERAGE';
+    if (t.icon === UtensilsCrossed) return 'FOOD &amp; BEVERAGE';
+    if (t.icon === IceCream2)       return 'KIDS SPECIAL';
     return 'TIKET';
   };
 
-  const childRows = (family.hasChildren && family.children.length > 0)
-    ? family.children.map(c => `<tr><td>${c.name}</td><td>${c.age} thn</td><td>${c.tshirtSize || '-'}</td></tr>`).join('')
-    : '';
-
-  // Summary card HTML
-  const summaryHtml = `
-<div class="summary">
-  <div class="summary-head">
-    <div class="summary-head-title">📋 Rekap Data Registrasi</div>
-  </div>
-  <div class="summary-body">
-    <div class="summary-section">
-      <div class="summary-section-title">Data Karyawan</div>
-      <div class="summary-row"><span class="summary-key">Nama Lengkap</span><span class="summary-val">${personal.fullName}</span></div>
-      <div class="summary-row"><span class="summary-key">NIK</span><span class="summary-val">${personal.nik}</span></div>
-      <div class="summary-row"><span class="summary-key">Divisi</span><span class="summary-val">${personal.division}</span></div>
-      <div class="summary-row"><span class="summary-key">Email</span><span class="summary-val">${personal.email}</span></div>
-      <div class="summary-row"><span class="summary-key">No. HP</span><span class="summary-val">${personal.phone}</span></div>
-      <div class="summary-row"><span class="summary-key">Ukuran Kaos</span><span class="summary-val">${personal.tshirtSize || '-'}</span></div>
-      <div class="summary-row"><span class="summary-key">Status</span><span class="summary-val">${personal.maritalStatus === 'Family' ? 'Membawa Keluarga' : 'Sendiri'}</span></div>
+  // ── ticket stripe HTML ──
+  const ticketStripes = allTickets.map((t, idx) => `
+  <div class="ticket-wrap">
+    <div class="ticket-left" style="background:${t.color};">
+      <div>
+        <div class="tl-cat">${ticketCatLabel(t)}</div>
+        <div class="tl-title">${ticketLabel(t)}</div>
+        <div class="tl-event">DENSO Family Gathering 2026</div>
+        <div class="tl-date">&#128197; 15 September 2026</div>
+      </div>
+      <div class="tl-num">${String(idx + 1).padStart(2, '0')}</div>
     </div>
-    ${personal.maritalStatus === 'Family' ? `
-    <div class="summary-section">
-      <div class="summary-section-title">Data Keluarga</div>
-      ${family.hasSpouse ? `
-        <div class="summary-row"><span class="summary-key">Nama Pasangan</span><span class="summary-val">${family.spouseName}</span></div>
-        <div class="summary-row"><span class="summary-key">Ukuran Kaos Pasangan</span><span class="summary-val">${family.spouseTshirtSize || '-'}</span></div>
-      ` : ''}
-      ${childRows ? `
-        <div style="margin-top:12px;">
-          <div style="font-size:10px;font-weight:600;color:#6B7882;margin-bottom:8px;">Daftar Anak:</div>
-          <table class="child-table">
-            <tr><th>Nama Anak</th><th>Usia</th><th>Ukuran Kaos</th></tr>
-            ${childRows}
-          </table>
-        </div>` : ''}
-    </div>` : ''}
-  </div>
-</div>`;
-
-  // Ticket cards HTML
-  const ticketCards = allTickets.map(t => `
-    <div class="ticket">
-      <div class="ticket-head" style="background:${t.color};">
-        <div class="ticket-head-left">
-          <div class="event-label">DENSO Family Gathering 2026</div>
-          <div class="ticket-type">${ticketLabel(t)}</div>
-          <div class="ticket-title">${t.title}</div>
+    <div class="ticket-mid">
+      <div class="tm-row">
+        <div class="tm-cell">
+          <div class="tm-label">NAMA</div>
+          <div class="tm-val">${t.ownerName ?? personal.fullName}</div>
         </div>
-        <div class="ticket-head-right">
-          <div class="denso-mark">D</div>
+        <div class="tm-cell">
+          <div class="tm-label">NIK</div>
+          <div class="tm-val">${personal.nik}</div>
         </div>
       </div>
-      <div class="ticket-body">
-        <div class="ticket-body-left">
-          <div class="info-row">
-            <span class="info-label">Nama</span>
-            <span class="info-val">${t.ownerName ?? personal.fullName}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">NIK</span>
-            <span class="info-val">${personal.nik}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Divisi</span>
-            <span class="info-val">${personal.division}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Tanggal</span>
-            <span class="info-val">15 September 2026</span>
-          </div>
-          <div class="ticket-id-block">
-            <div class="ticket-id-label">ID TIKET</div>
-            <div class="ticket-id-val" style="color:${t.color}">${t.id}</div>
-          </div>
+      <div class="tm-row" style="margin-top:10px;">
+        <div class="tm-cell">
+          <div class="tm-label">DIVISI</div>
+          <div class="tm-val">${personal.division}</div>
         </div>
-        <div class="ticket-divider">
-          <div class="notch top"></div>
-          <div class="dashed-line"></div>
-          <div class="notch bot"></div>
-        </div>
-        <div class="ticket-body-right">
-          <img src="${getQRUrl(t.id, 400)}" class="qr-img" alt="QR Code" />
-          <div class="qr-hint">Scan untuk verifikasi</div>
+        <div class="tm-cell">
+          <div class="tm-label">ID TIKET</div>
+          <div class="tm-val tm-id" style="color:${t.color};">${t.id}</div>
         </div>
       </div>
-    </div>`).join('');
+      <div class="tm-barline" style="background:${t.color}25;"></div>
+      <div class="tm-note">Tunjukkan QR kepada petugas &#183; Berlaku sekali pakai</div>
+    </div>
+    <div class="ticket-tear" style="border-color:${t.color}40;"></div>
+    <div class="ticket-right">
+      <img src="${getQRUrl(t.id, 500)}" class="tr-qr" alt="QR"/>
+      <div class="tr-scan">SCAN QR</div>
+    </div>
+  </div>`).join('');
 
-  return `<!DOCTYPE html><html lang="id"><head>
+  // ── summary data rows ──
+  const infoRows = [
+    ['Nama Lengkap', personal.fullName],
+    ['NIK',          personal.nik],
+    ['Divisi',       personal.division],
+    ['Email',        personal.email],
+    ['No. HP',       personal.phone],
+    ['Ukuran Kaos',  personal.tshirtSize || '-'],
+    ['Kehadiran',    personal.maritalStatus === 'Family' ? 'Membawa Keluarga' : 'Sendiri'],
+  ].map(([k, v]) => `<tr>
+    <td class="si-key">${k}</td><td class="si-sep">:</td><td class="si-val">${v}</td>
+  </tr>`).join('');
+
+  let familySectionHtml = '';
+  if (personal.maritalStatus === 'Family') {
+    const spR = family.hasSpouse ? `
+      <tr><td class="si-key">Nama Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseName||'-'}</td></tr>
+      <tr><td class="si-key">Kaos Pasangan</td><td class="si-sep">:</td><td class="si-val">${family.spouseTshirtSize||'-'}</td></tr>` : '';
+
+    // Children as plain text rows, no table
+    const kidRows = (family.hasChildren && family.children.length > 0)
+      ? family.children.map((c, i) => `
+      <tr>
+        <td class="si-key">Anak ${i + 1}</td>
+        <td class="si-sep">:</td>
+        <td class="si-val">${c.name}, ${c.age} thn, Kaos ${c.tshirtSize||'-'}</td>
+      </tr>`).join('') : '';
+
+    familySectionHtml = `
+    <div class="section">
+      <div class="section-title"><span class="sdot" style="background:#0077CC;"></span>Data Keluarga</div>
+      <table class="info-table">${spR}${kidRows}</table>
+    </div>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="id"><head>
 <meta charset="UTF-8"/>
-<title>E-Ticket – ${personal.fullName} · DENSO Family Gathering 2026</title>
+<title>E-Ticket — ${personal.fullName}</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#FFFFFF;padding:0;margin:0;color:#2C353B;}
-html{background:#FFFFFF;}
-
-.page-header{max-width:540px;margin:16px auto 16px;text-align:center;padding:12px 16px;}
-.page-header-logo{font-size:42px;font-weight:900;font-style:italic;color:#DC0032;letter-spacing:-2px;margin-bottom:4px;line-height:1;}
-.page-header-sub{font-size:11px;color:#6B7882;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;}
-.page-header-instruction{margin-top:12px;font-size:11px;color:#4A565E;background:#FFFAF9;border-radius:8px;padding:10px 14px;border:1px solid #DC003220;line-height:1.5;}
-
-/* ── Summary card (REKAP) ── */
-.summary{max-width:540px;margin:12px auto;background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #EEEFF3;page-break-inside:avoid;}
-.summary-head{background:linear-gradient(135deg,#DC0032 0%,#B8001A 100%);padding:12px 16px;color:white;display:flex;align-items:center;gap:10px;}
-.summary-head-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;}
-.summary-body{padding:14px 16px;}
-.summary-section{margin-bottom:16px;}
-.summary-section:last-child{margin-bottom:0;}
-.summary-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#DC0032;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #DC003215;}
-.summary-row{display:flex;margin-bottom:5px;font-size:11px;line-height:1.4;}
-.summary-key{width:130px;flex-shrink:0;color:#6B7882;font-weight:600;}
-.summary-val{flex:1;color:#1F2937;font-weight:500;word-wrap:break-word;}
-table.child-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px;border:1px solid #EEEFF3;}
-table.child-table th{background:#DC0032;color:white;padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-table.child-table td{padding:7px 10px;border-bottom:1px solid #EEEFF3;color:#1F2937;font-weight:500;background:white;}
-table.child-table tr:last-child td{border-bottom:none;}
-table.child-table tr:nth-child(even) td{background:#FAFBFC;}
-
-/* ── Ticket card ── */
-.ticket{max-width:540px;margin:12px auto;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #EEEFF3;page-break-inside:avoid;background:#FFFFFF;}
-
-.ticket-head{padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start;color:white;}
-.ticket-head-left{}
-.event-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.8;margin-bottom:2px;}
-.ticket-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;opacity:.9;margin-bottom:2px;}
-.ticket-title{font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.1;}
-.denso-mark{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;font-style:italic;color:white;border:2px solid rgba(255,255,255,.25);}
-
-.ticket-body{background:#fff;display:flex;align-items:stretch;}
-.ticket-body-left{flex:1;padding:12px 12px 12px 16px;display:flex;flex-direction:column;gap:6px;}
-.info-row{display:flex;flex-direction:column;gap:1.5px;}
-.info-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#6B7882;}
-.info-val{font-size:12px;font-weight:600;color:#1F2937;line-height:1.2;word-wrap:break-word;}
-.ticket-id-block{margin-top:auto;padding-top:8px;border-top:1px solid #EEEFF3;}
-.ticket-id-label{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6B7882;margin-bottom:2px;}
-.ticket-id-val{font-family:monospace;font-size:11px;font-weight:800;letter-spacing:1.5px;}
-
-.ticket-divider{width:1px;background:#EEEFF3;position:relative;flex-shrink:0;margin:10px 0;}
-.notch{width:14px;height:14px;border-radius:50%;background:#FFFFFF;position:absolute;left:50%;transform:translateX(-50%);border:1px solid #EEEFF3;}
-.notch.top{top:-7px;}.notch.bot{bottom:-7px;}
-.dashed-line{position:absolute;top:14px;bottom:14px;left:50%;border-left:1.5px dashed #CDD4D8;}
-
-.ticket-body-right{width:130px;flex-shrink:0;padding:12px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
-.qr-img{width:110px;height:110px;display:block;border-radius:8px;border:2.5px solid #DC0032;padding:2px;background:white;image-rendering:pixelated;}
-.qr-hint{font-size:8px;color:#6B7882;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.8px;line-height:1.2;}
-
-@media print{
-  body{background:#FFFFFF;padding:0;margin:0;}
-  html{background:#FFFFFF;}
-  .ticket,.summary{box-shadow:none;border:1px solid #DDD;max-width:100%;margin:8px 0;}
-  .page-header-instruction{page-break-after:avoid;}
-  .summary{page-break-after:avoid;}
-}
+html,body{width:${A4_W}px;background:#F0F2F5;font-family:'Segoe UI',Arial,sans-serif;color:#1A2233;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.page{width:${A4_W}px;background:#F0F2F5;padding:28px 36px 32px;}
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;background:#1A2233;border-radius:14px;padding:18px 28px;margin-bottom:16px;}
+.hdr-logo{font-size:30px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-1.5px;line-height:1;}
+.hdr-tag{font-size:8.5px;color:#8896A8;font-weight:500;text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
+.hdr-event{font-size:14px;font-weight:700;color:#FFF;line-height:1.2;text-align:right;}
+.hdr-date{font-size:10px;color:#8896A8;margin-top:3px;text-align:right;}
+.hdr-badge{display:inline-block;background:#DC0032;color:#FFF;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;margin-top:6px;}
+/* INFO CARD */
+.icard{background:#FFF;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.icard-hdr{background:linear-gradient(90deg,#DC0032 0%,#A8001E 100%);padding:9px 20px;display:flex;align-items:center;gap:8px;}
+.icard-icon{font-size:13px;}
+.icard-title{font-size:10px;font-weight:800;color:#FFF;text-transform:uppercase;letter-spacing:1.5px;}
+.icard-body{padding:14px 20px;display:flex;gap:24px;}
+.section{flex:1;}
+.section+.section{border-left:1px solid #EBEDF0;padding-left:24px;}
+.section-title{font-size:8.5px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
+.sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.info-table{width:100%;border-collapse:collapse;}
+.si-key{font-size:10.5px;color:#8896A8;font-weight:600;padding:2.5px 0;width:100px;vertical-align:top;}
+.si-sep{color:#CDD4D8;padding:2.5px 6px;vertical-align:top;}
+.si-val{font-size:11px;color:#1A2233;font-weight:600;padding:2.5px 0;vertical-align:top;}
+/* DIVIDER */
+.div-row{display:flex;align-items:center;gap:10px;margin:14px 0 10px;}
+.div-line{flex:1;height:1px;background:#D0D5DD;}
+.div-txt{font-size:8.5px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+/* TICKET */
+.ticket-wrap{display:flex;background:#FFF;border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);height:112px;}
+.ticket-left{width:196px;flex-shrink:0;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
+.ticket-left::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
+.tl-cat{font-size:7px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:3px;}
+.tl-title{font-size:13.5px;font-weight:800;color:#FFF;line-height:1.15;letter-spacing:-.3px;}
+.tl-event{font-size:8px;color:rgba(255,255,255,.6);margin-top:4px;}
+.tl-date{font-size:8px;color:rgba(255,255,255,.75);margin-top:2px;font-weight:600;}
+.tl-num{font-size:32px;font-weight:900;color:rgba(255,255,255,.1);line-height:1;font-style:italic;position:absolute;bottom:7px;right:11px;}
+.ticket-mid{flex:1;padding:12px 16px;display:flex;flex-direction:column;justify-content:center;}
+.tm-row{display:flex;gap:16px;}
+.tm-cell{flex:1;}
+.tm-label{font-size:7px;font-weight:700;color:#9AAAB3;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;}
+.tm-val{font-size:12px;font-weight:700;color:#1A2233;line-height:1.2;}
+.tm-id{font-family:monospace;font-size:10.5px;letter-spacing:1.5px;font-weight:800;}
+.tm-barline{height:2.5px;border-radius:2px;margin:9px 0 6px;}
+.tm-note{font-size:8px;color:#B0BAC7;font-weight:500;}
+.ticket-tear{width:0;border-left:2px dashed;margin:12px 0;flex-shrink:0;}
+.ticket-right{width:122px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#F8F9FB;padding:10px 12px;}
+.tr-qr{width:88px;height:88px;display:block;border-radius:7px;border:2.5px solid #DC0032;padding:2px;background:white;}
+.tr-scan{font-size:7px;font-weight:800;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;}
+/* FOOTER */
+.footer{margin-top:16px;border-top:1px solid #D0D5DD;padding-top:10px;display:flex;justify-content:space-between;align-items:center;}
+.ft{font-size:9px;color:#8896A8;font-weight:500;}
+.ft b{color:#1A2233;font-weight:700;}
 </style>
-</head><body>
+</head>
+<body><div class="page">
 
-<div class="page-header">
-  <div class="page-header-logo">DENSO</div>
-  <div class="page-header-sub">Crafting the Core</div>
-  <div class="page-header-instruction">
-    📋 Tunjukkan QR Code kepada petugas di setiap pos. Setiap tiket hanya berlaku sekali scan.
+<div class="hdr">
+  <div><div class="hdr-logo">DENSO</div><div class="hdr-tag">Crafting the Core</div></div>
+  <div><div class="hdr-event">Family Gathering 2026</div><div class="hdr-date">Minggu, 15 September 2026</div><div style="text-align:right;"><div class="hdr-badge">E-Ticket Resmi</div></div></div>
+</div>
+
+<div class="icard">
+  <div class="icard-hdr"><span class="icard-icon">&#128203;</span><span class="icard-title">Rekap Data Registrasi</span></div>
+  <div class="icard-body">
+    <div class="section">
+      <div class="section-title"><span class="sdot" style="background:#DC0032;"></span>Data Karyawan</div>
+      <table class="info-table">${infoRows}</table>
+    </div>
+    ${familySectionHtml}
   </div>
 </div>
 
-${summaryHtml}
+<div class="div-row"><div class="div-line"></div><div class="div-txt">&#127903; Tiket Anda (${allTickets.length} tiket)</div><div class="div-line"></div></div>
 
-${ticketCards}
+${ticketStripes}
 
-<script>
-  window.onload=function(){
-    var imgs=document.querySelectorAll('img');
-    var n=0;
-    if(!imgs.length){window.print();return;}
-    imgs.forEach(function(img){
-      var done=function(){if(++n===imgs.length)window.print();};
-      if(img.complete)done();else{img.onload=done;img.onerror=done;}
-    });
-  };
-<\/script>
-</body></html>`;
+<div class="footer">
+  <div class="ft">Diterbitkan untuk <b>${personal.fullName}</b> &nbsp;&#183;&nbsp; NIK ${personal.nik}</div>
+  <div class="ft" style="text-align:right;"><b>DENSO Indonesia</b> &nbsp;&#183;&nbsp; Dokumen resmi, harap simpan dengan baik</div>
+</div>
+
+</div></body></html>`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -288,7 +284,7 @@ export function TicketResultStep() {
 
       // Use an isolated iframe to avoid global CSS interference
       const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:620px;height:1px;border:none;visibility:hidden;';
+      iframe.style.cssText = `position:fixed;top:-9999px;left:-9999px;width:${A4_W}px;height:1px;border:none;visibility:hidden;`;
       document.body.appendChild(iframe);
 
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -329,9 +325,9 @@ export function TicketResultStep() {
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#FFFFFF',
-        width: 600,
-        windowWidth: 620,
+        backgroundColor: '#F0F2F5',
+        width: A4_W,
+        windowWidth: A4_W,
         logging: false,
         imageTimeout: 10000,
       });
