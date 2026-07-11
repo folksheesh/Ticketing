@@ -93,8 +93,8 @@ export function RegistrationLayout() {
           RIGHT PANEL  — single scroll container
       ══════════════════════════════════════════════════════════ */}
       <div
-        className="flex-1 overflow-y-auto panel-scroll"
-        style={{ background: '#F5F7F8', overscrollBehavior: 'contain' }}
+        className="flex-1 panel-scroll"
+        style={{ background: '#F5F7F8' }}
         tabIndex={-1}
       >
         <div className="max-w-2xl mx-auto px-5 sm:px-8 py-7 lg:py-8 flex flex-col">
