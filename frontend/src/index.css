@@ -336,6 +336,12 @@ input[type='number'] {
 }
 
 /* ── Custom thin scrollbar for the registration right panel ── */
+.panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #CDD4D8 transparent;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
 .panel-scroll::-webkit-scrollbar {
   width: 5px;
 }
@@ -348,11 +354,6 @@ input[type='number'] {
 }
 .panel-scroll::-webkit-scrollbar-thumb:hover {
   background: #9AAAB3;
-}
-/* Firefox */
-.panel-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #CDD4D8 transparent;
 }
 
 /* Backwards-compat alias used in old components */

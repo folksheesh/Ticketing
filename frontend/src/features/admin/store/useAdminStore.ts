@@ -100,9 +100,6 @@ export const useAdminStore = create<AdminStore>()(
 
       registerEmployee: (payload) => {
         const { employees } = get();
-        const exists = employees.find(e => e.nik === payload.nik);
-        if (exists) return;
-
         const family: Employee['family'] = [];
         if (payload.spouseName) {
           family.push({ name: payload.spouseName, relation: 'spouse', tshirtSize: payload.spouseTshirtSize });
@@ -111,8 +108,35 @@ export const useAdminStore = create<AdminStore>()(
           family.push({ name: c.name, relation: 'child', age: c.age, tshirtSize: c.tshirtSize });
         });
 
+        const normalizedTickets = payload.tickets.map(t => ({
+          ...t,
+          status: 'active' as TicketStatus,
+        }));
+
+        const existingEmployee = employees.find(e => e.nik === payload.nik);
+        if (existingEmployee) {
+          const updatedEmployee: Employee = {
+            ...existingEmployee,
+            fullName: payload.fullName,
+            division: payload.division,
+            email: payload.email,
+            phone: payload.phone,
+            tshirtSize: payload.tshirtSize,
+            maritalStatus: payload.maritalStatus,
+            registeredAt: new Date().toISOString(),
+            family,
+            tickets: normalizedTickets,
+            checkedIn: false,
+          };
+
+          set(state => ({
+            employees: state.employees.map(emp => (emp.nik === payload.nik ? updatedEmployee : emp)),
+          }));
+          return;
+        }
+
         const newEmployee: Employee = {
-          id: `EMP-${Date.now()}`,
+          id: `EMP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           fullName: payload.fullName,
           nik: payload.nik,
           division: payload.division,
@@ -123,10 +147,7 @@ export const useAdminStore = create<AdminStore>()(
           registeredAt: new Date().toISOString(),
           checkedIn: false,
           family,
-          tickets: payload.tickets.map(t => ({
-            ...t,
-            status: 'active' as TicketStatus,
-          })),
+          tickets: normalizedTickets,
         };
 
         set(state => ({ employees: [newEmployee, ...state.employees] }));

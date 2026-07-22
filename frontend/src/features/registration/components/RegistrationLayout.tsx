@@ -26,15 +26,15 @@ export function RegistrationLayout() {
      * and overflow-hidden on the wrapper prevents double scrollbars.
      */
     <div
-      className="flex flex-col lg:flex-row"
-      style={{ minHeight: '100svh' }}
+      className="flex flex-col lg:flex-row min-h-0"
+      style={{ minHeight: '100dvh' }}
     >
       {/* ══════════════════════════════════════════════════════════
           LEFT PANEL  — branding + photo (desktop only)
       ══════════════════════════════════════════════════════════ */}
       <div
-        className="hidden lg:flex lg:w-[42%] xl:w-[38%] flex-col relative overflow-hidden flex-shrink-0"
-        style={{ background: '#DC0032', minHeight: '100svh', position: 'sticky', top: 0 }}
+        className="hidden lg:flex lg:w-[42%] xl:w-[38%] flex-col relative overflow-hidden flex-shrink-0 min-h-0"
+        style={{ background: '#DC0032', minHeight: '100dvh', position: 'sticky', top: 0 }}
       >
         {/* Photo — fills the panel, darkened with an overlay */}
         <div className="absolute inset-0">
@@ -93,8 +93,8 @@ export function RegistrationLayout() {
           RIGHT PANEL  — single scroll container
       ══════════════════════════════════════════════════════════ */}
       <div
-        className="flex-1 overflow-y-auto panel-scroll"
-        style={{ background: '#F5F7F8', overscrollBehavior: 'contain' }}
+        className="flex-1 overflow-y-auto overflow-x-hidden panel-scroll min-h-0"
+        style={{ background: '#F5F7F8', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
         tabIndex={-1}
       >
         <div className="max-w-2xl mx-auto px-5 sm:px-8 py-7 lg:py-8 flex flex-col">
