@@ -353,6 +353,15 @@ input[type='number'] {
 .panel-scroll {
   scrollbar-width: thin;
   scrollbar-color: #CDD4D8 transparent;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* Ensure mobile overflow containers scroll naturally with one finger */
+.overflow-y-auto,
+.overflow-auto {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 /* Backwards-compat alias used in old components */
