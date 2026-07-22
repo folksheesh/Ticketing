@@ -206,7 +206,7 @@ function DivisionDropdown({
             </div>
 
             {/* Options */}
-            <ul className="max-h-44 overflow-y-auto py-1">
+            <ul className="max-h-44 overflow-y-auto py-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filtered.length === 0 ? (
                 <li className="px-4 py-3 text-sm text-center" style={{ color: '#9AAAB3' }}>
                   Tidak ditemukan

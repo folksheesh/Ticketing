@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import { useEffect } from 'react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { PersonalDataStep } from './PersonalDataStep';
 import { FamilyDataStep } from './FamilyDataStep';
@@ -19,6 +20,19 @@ export function RegistrationLayout() {
   const { currentStep, personalData } = useRegistrationStore();
   const isSingle = personalData.maritalStatus === 'Single';
 
+  useEffect(() => {
+    const setAppHeight = () => {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    setAppHeight();
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
+    return () => {
+      window.removeEventListener('resize', setAppHeight);
+      window.removeEventListener('orientationchange', setAppHeight);
+    };
+  }, []);
+
   return (
     /*
      * The page is placed inside <MainLayout> which adds a fixed header (pt-20).
@@ -26,8 +40,8 @@ export function RegistrationLayout() {
      * and overflow-hidden on the wrapper prevents double scrollbars.
      */
     <div
-      className="flex flex-col lg:flex-row min-h-0"
-      style={{ height: '100dvh', minHeight: '100dvh', overflow: 'hidden' }}
+      className="flex flex-col lg:flex-row min-h-screen min-h-0"
+      style={{ height: 'var(--app-height, 100vh)', minHeight: 'var(--app-height, 100vh)', overflow: 'hidden', position: 'relative' }}
     >
       {/* ══════════════════════════════════════════════════════════
           LEFT PANEL  — branding + photo (desktop only)
