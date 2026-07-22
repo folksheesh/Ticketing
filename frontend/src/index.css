@@ -335,6 +335,16 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Custom thin scrollbar for the registration right panel ── */
 .panel-scroll {
   scrollbar-width: thin;

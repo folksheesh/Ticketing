@@ -27,7 +27,7 @@ export function RegistrationLayout() {
      */
     <div
       className="flex flex-col lg:flex-row min-h-0"
-      style={{ minHeight: '100dvh' }}
+      style={{ height: '100dvh', minHeight: '100dvh', overflow: 'hidden' }}
     >
       {/* ══════════════════════════════════════════════════════════
           LEFT PANEL  — branding + photo (desktop only)
@@ -94,7 +94,13 @@ export function RegistrationLayout() {
       ══════════════════════════════════════════════════════════ */}
       <div
         className="flex-1 overflow-y-auto overflow-x-hidden panel-scroll min-h-0"
-        style={{ background: '#F5F7F8', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+        style={{
+          background: '#F5F7F8',
+          height: '100%',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
+        }}
         tabIndex={-1}
       >
         <div className="max-w-2xl mx-auto px-5 sm:px-8 py-7 lg:py-8 flex flex-col">
