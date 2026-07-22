@@ -100,7 +100,7 @@ export const useAdminStore = create<AdminStore>()(
 
       registerEmployee: (payload) => {
         const { employees } = get();
-        const exists = employees.find(e => e.nik === payload.nik);
+        const exists = employees.some(e => e.nik.trim().toLowerCase() === payload.nik.trim().toLowerCase());
         if (exists) return;
 
         const family: Employee['family'] = [];
@@ -112,7 +112,7 @@ export const useAdminStore = create<AdminStore>()(
         });
 
         const newEmployee: Employee = {
-          id: `EMP-${Date.now()}`,
+          id: `EMP-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
           fullName: payload.fullName,
           nik: payload.nik,
           division: payload.division,
