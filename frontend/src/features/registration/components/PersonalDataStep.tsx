@@ -123,11 +123,13 @@ function DivisionDropdown({
 
   // Close on outside click
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: Event) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('pointerdown', handler);
+    return () => {
+      document.removeEventListener('pointerdown', handler);
+    };
   }, []);
 
   const select = (v: string) => { onChange(v); setOpen(false); setQuery(''); };
@@ -138,6 +140,8 @@ function DivisionDropdown({
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         style={{
           ...base,
           padding: '0.72rem 2.5rem 0.72rem 2.75rem',

@@ -370,96 +370,103 @@ export function TicketResultStep() {
   const registerEmployee = useAdminStore(s => s.registerEmployee);
 
   useEffect(() => {
+    let isMounted = true;
+
+    // Calculate total people and ticket payload immediately so the data is stored on mobile before any delayed UI render.
+    let totalPeople = 1;
+    if (personalData.maritalStatus === 'Family') {
+      if (familyData.hasSpouse) totalPeople++;
+      if (familyData.hasChildren) totalPeople += familyData.children.length;
+    }
+
+    const mainTickets: TicketInfo[] = [
+      {
+        title: 'Tiket Registrasi',
+        id: generateMockTicketId('REG'),
+        color: '#DC0032',
+        icon: Ticket,
+        capacity: totalPeople,
+      },
+      {
+        title: 'Kupon Snack Pagi',
+        id: generateMockTicketId('SNK'),
+        color: '#B45309',
+        icon: Coffee,
+        capacity: totalPeople,
+      },
+      {
+        title: 'Kupon Makan Siang',
+        id: generateMockTicketId('LNC'),
+        color: '#C2410C',
+        icon: UtensilsCrossed,
+        capacity: totalPeople,
+      },
+    ];
+
+    const souvenirT: TicketInfo = {
+      title: 'Souvenir Karyawan',
+      id: generateMockTicketId('SOU'),
+      color: '#0077CC',
+      icon: Package,
+    };
+
+    let iceTickets: TicketInfo[] = [];
+    if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
+      const kids = familyData.children.filter(c => c.age <= 12);
+      iceTickets = kids.map(() => ({
+        title: 'Kupon Es Krim',
+        id: generateMockTicketId('ICE'),
+        color: '#9D174D',
+        icon: IceCream2,
+        ownerName: personalData.fullName,
+      }));
+    }
+
+    let goodieBagT: TicketInfo[] = [];
+    if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
+      goodieBagT = familyData.children.map(() => ({
+        title: 'Goodie Bag Anak',
+        id: generateMockTicketId('GOD'),
+        color: '#7C3AED',
+        icon: Gift,
+        ownerName: personalData.fullName,
+      }));
+    }
+
+    registerEmployee({
+      fullName: personalData.fullName,
+      nik: personalData.nik,
+      division: personalData.division,
+      email: personalData.email,
+      phone: personalData.phone,
+      tshirtSize: personalData.tshirtSize as string,
+      maritalStatus: personalData.maritalStatus as 'Single' | 'Family',
+      spouseName: familyData.spouseName,
+      spouseTshirtSize: familyData.spouseTshirtSize as string | undefined,
+      children: familyData.children.map(c => ({ name: c.name, age: c.age, tshirtSize: c.tshirtSize as string })),
+      tickets: [
+        ...mainTickets.map(t => ({
+          id: t.id,
+          type: (t.title.includes('Registrasi') ? 'entry' : t.title.includes('Snack') ? 'snack' : 'lunch') as 'entry' | 'snack' | 'lunch',
+          label: t.title,
+        })),
+        ...iceTickets.map(t => ({ id: t.id, type: 'icecream' as const, label: t.title })),
+      ],
+    });
+
     const timer = setTimeout(() => {
-      // Calculate total people
-      let totalPeople = 1;
-      if (personalData.maritalStatus === 'Family') {
-        if (familyData.hasSpouse) totalPeople++;
-        if (familyData.hasChildren) totalPeople += familyData.children.length;
-      }
-
-      const mainTickets: TicketInfo[] = [
-        { 
-          title: 'Tiket Registrasi',  
-          id: generateMockTicketId('REG'), 
-          color: '#DC0032', 
-          icon: Ticket,
-          capacity: totalPeople,
-        },
-        { 
-          title: 'Kupon Snack Pagi',  
-          id: generateMockTicketId('SNK'), 
-          color: '#B45309', 
-          icon: Coffee,
-          capacity: totalPeople,
-        },
-        { 
-          title: 'Kupon Makan Siang', 
-          id: generateMockTicketId('LNC'), 
-          color: '#C2410C', 
-          icon: UtensilsCrossed,
-          capacity: totalPeople,
-        },
-      ];
-
-      // Souvenir - 1 per karyawan
-      const souvenirT: TicketInfo = {
-        title: 'Souvenir Karyawan',
-        id: generateMockTicketId('SOU'),
-        color: '#0077CC',
-        icon: Package,
-      };
-
-      // Ice Cream - untuk anak <=12, gunakan nama karyawan
-      let iceTickets: TicketInfo[] = [];
-      if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
-        const kids = familyData.children.filter(c => c.age <= 12);
-        iceTickets = kids.map(() => ({
-          title: 'Kupon Es Krim', 
-          id: generateMockTicketId('ICE'),
-          color: '#9D174D', 
-          icon: IceCream2, 
-          ownerName: personalData.fullName, // gunakan nama karyawan
-        }));
-      }
-
-      // Goodie Bag - untuk setiap anak, gunakan nama karyawan
-      let goodieBagT: TicketInfo[] = [];
-      if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
-        goodieBagT = familyData.children.map(() => ({
-          title: 'Goodie Bag Anak',
-          id: generateMockTicketId('GOD'),
-          color: '#7C3AED',
-          icon: Gift,
-          ownerName: personalData.fullName, // gunakan nama karyawan
-        }));
-      }
-
+      if (!isMounted) return;
       setTickets(mainTickets);
       setSouvenirTicket(souvenirT);
       setIceCreamTickets(iceTickets);
       setGoodieBagTickets(goodieBagT);
-
-      registerEmployee({
-        fullName: personalData.fullName, nik: personalData.nik,
-        division: personalData.division, email: personalData.email,
-        phone: personalData.phone, tshirtSize: personalData.tshirtSize as string,
-        maritalStatus: personalData.maritalStatus as 'Single' | 'Family',
-        spouseName: familyData.spouseName,
-        spouseTshirtSize: familyData.spouseTshirtSize as string | undefined,
-        children: familyData.children.map(c => ({ name: c.name, age: c.age, tshirtSize: c.tshirtSize as string })),
-        tickets: [
-          ...mainTickets.map(t => ({
-            id: t.id,
-            type: (t.title.includes('Registrasi') ? 'entry' : t.title.includes('Snack') ? 'snack' : 'lunch') as 'entry' | 'snack' | 'lunch',
-            label: t.title,
-          })),
-          ...iceTickets.map(t => ({ id: t.id, type: 'icecream' as const, label: t.title })),
-        ],
-      });
       setIsGenerating(false);
     }, 1800);
-    return () => clearTimeout(timer);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [personalData, familyData, registerEmployee]);
 
   // ── Pre-generate all QR codes as data URIs ──
