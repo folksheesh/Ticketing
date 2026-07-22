@@ -115,11 +115,28 @@ function DivisionDropdown({
 }: { value: string; onChange: (v: string) => void; error?: boolean }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const filtered = DIVISIONS.filter(d =>
     d.toLowerCase().includes(query.toLowerCase())
   );
+
+  const updatePanelPosition = () => {
+    const button = buttonRef.current;
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    const availableHeight = window.innerHeight - rect.bottom - 16;
+    setPanelStyle({
+      position: 'fixed',
+      left: `${rect.left}px`,
+      top: `${rect.bottom}px`,
+      width: `${rect.width}px`,
+      maxHeight: `${Math.max(120, Math.min(264, availableHeight))}px`,
+      zIndex: 9999,
+    });
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -132,12 +149,35 @@ function DivisionDropdown({
     };
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    updatePanelPosition();
+    window.addEventListener('resize', updatePanelPosition);
+    window.addEventListener('scroll', updatePanelPosition, { passive: true });
+    return () => {
+      window.removeEventListener('resize', updatePanelPosition);
+      window.removeEventListener('scroll', updatePanelPosition);
+    };
+  }, [open]);
+
   const select = (v: string) => { onChange(v); setOpen(false); setQuery(''); };
+
+  useEffect(() => {
+    if (!open) return;
+    const preventScroll = (e: TouchEvent) => e.stopPropagation();
+    document.body.style.overflow = 'hidden';
+    document.body.addEventListener('touchmove', preventScroll, { passive: false });
+    return () => {
+      document.body.style.overflow = '';
+      document.body.removeEventListener('touchmove', preventScroll);
+    };
+  }, [open]);
 
   return (
     <div ref={ref} className="relative">
       {/* Trigger */}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
@@ -171,12 +211,12 @@ function DivisionDropdown({
             animate={{ opacity: 1, y: 0, scaleY: 1 }}
             exit={{ opacity: 0, y: -6, scaleY: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 right-0 mt-1.5 rounded-2xl overflow-hidden"
+            className="rounded-2xl overflow-hidden"
             style={{
+              ...panelStyle,
               background: '#FFFFFF',
               border: '1.5px solid #EEF1F3',
               boxShadow: '0 8px 24px rgba(74,86,94,0.12)',
-              zIndex: 50,
               transformOrigin: 'top',
             }}
           >
