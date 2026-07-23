@@ -12,7 +12,7 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 /* Key moments get the red treatment */
-const HIGHLIGHTED = new Set(['07:00', '08:30', '14:30', '16:00']);
+const HIGHLIGHTED = new Set(['07.30 – 08.30', '08.30 – 09.00', '14.00 – 14.45', '14.45 – 16.00']);
 
 export function ScheduleSection() {
   const [ref, isVisible] = useIntersection<HTMLElement>({ threshold: 0.08 });

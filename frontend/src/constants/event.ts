@@ -42,14 +42,16 @@ export function getAgeFromBirthDate(birthDate: Date): number {
 }
 
 export const SCHEDULE = [
-  { time: '07:00', title: 'Gate Open & Registration', description: 'Check-in and welcome refreshments', icon: 'DoorOpen' },
-  { time: '08:30', title: 'Opening Ceremony', description: 'Welcome speech by Board of Directors', icon: 'Mic2' },
-  { time: '09:30', title: 'Family Games', description: 'Interactive games and competitions for all ages', icon: 'Gamepad2' },
-  { time: '11:30', title: 'Lunch Break', description: 'Buffet lunch with family-friendly menu', icon: 'UtensilsCrossed' },
-  { time: '13:00', title: 'Entertainment Show', description: 'Live music performances and talent show', icon: 'Music' },
-  { time: '14:30', title: 'Lucky Draw', description: 'Exciting prizes including electronics and travel packages', icon: 'Gift' },
-  { time: '15:30', title: 'Souvenir Collection', description: 'Collect your exclusive family gathering souvenirs', icon: 'Package' },
-  { time: '16:00', title: 'Closing Ceremony', description: 'Thank you and see you next year!', icon: 'PartyPopper' },
+  { time: '07.30 – 08.30', title: 'Registrasi & Kedatangan Peserta', description: 'Check-in dan kedatangan peserta', icon: 'DoorOpen' },
+  { time: '08.30 – 09.00', title: 'Opening Ceremony', description: 'Pembukaan acara resmi', icon: 'Mic2' },
+  { time: '09.00 – 09.20', title: 'Sambutan Pimpinan', description: 'Sambutan dari pimpinan perusahaan', icon: 'Mic2' },
+  { time: '09.20 – 09.40', title: 'Grand Opening Ceremony', description: 'Puncak pembukaan acara', icon: 'PartyPopper' },
+  { time: '09.40 – 11.55', title: 'Entertainment, Lucky Draw & Employee Performance', description: 'Acara hiburan, lucky draw, dan penampilan karyawan', icon: 'Music' },
+  { time: '11.55 – 13.00', title: 'ISHOMA (Istirahat, Sholat & Makan)', description: 'Istirahat, sholat, dan makan siang', icon: 'UtensilsCrossed' },
+  { time: '13.00 – 13.30', title: 'Grand Prize & Pengumuman Pemenang Employee Contest', description: 'Pengumuman grand prize dan pemenang employee contest', icon: 'Gift' },
+  { time: '13.30 – 13.55', title: 'UMKM Karyawan Showcase', description: 'Pameran UMKM karyawan', icon: 'Package' },
+  { time: '14.00 – 14.45', title: 'Special Guest Performance', description: 'Penampilan tamu istimewa', icon: 'Music' },
+  { time: '14.45 – 16.00', title: 'Penutupan & Pengambilan Souvenir', description: 'Acara penutupan dan pengambilan souvenir', icon: 'PartyPopper' },
 ] as const;
 
 export const FAQ_ITEMS = [
