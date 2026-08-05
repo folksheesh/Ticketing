@@ -271,7 +271,7 @@ function buildPDFHtml(
           ${row('NIK', personal.nik, '#F8F9FB')}
           ${row('Divisi', personal.division)}
           ${row('Tanggal', '13 September 2026', '#F8F9FB')}
-          ${row('Lokasi', 'Lapangan DENSO Fajar Plant')}
+          ${row('Lokasi', 'Bumi Perkemahan Pramuka Cibubur')}
           ${t.capacity ? row('Berlaku untuk', `${t.capacity} orang`, '#F8F9FB') : ''}
         </table>
       </td>
