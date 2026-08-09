@@ -395,8 +395,7 @@ export function TicketResultStep() {
 
     let iceTickets: TicketInfo[] = [];
     if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
-      const kids = familyData.children.filter(c => c.age <= 12);
-      iceTickets = kids.map(() => ({
+      iceTickets = familyData.children.map(() => ({
         title: 'Kupon Es Krim',
         id: generateMockTicketId('ICE'),
         color: '#9D174D',

@@ -6,6 +6,7 @@ import { PersonalDataStep } from './PersonalDataStep';
 import { FamilyDataStep } from './FamilyDataStep';
 import { TicketResultStep } from './TicketResultStep';
 import { Logo } from '../../../components/atoms/Logo';
+import { BazaarIllustration } from '../../../components/atoms/BazaarIllustration';
 
 /* ─── Step metadata ─────────────────────────────────────────────────────── */
 const STEPS = [
@@ -55,31 +56,9 @@ export function RegistrationLayout() {
           top: 0,
         }}
       >
-        {/* Photo — fills the panel, darkened with an overlay */}
+        {/* Custom SVG Illustration */}
         <div className="absolute inset-0">
-          <img
-            /*
-             * Replace this src with the uploaded party photo once it's
-             * saved to src/assets/party.jpg — then import it and use
-             * the module URL here.
-             *
-             * The image below is a placeholder sourced from Unsplash
-             * (celebration / crowd category, free to use).
-             * Swap it with your actual image to remove the network dep.
-             */
-            src="https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=900&auto=format&fit=crop&q=80"
-            alt="Family Gathering"
-            className="w-full h-full object-cover"
-            draggable={false}
-          />
-          {/* Gradient overlay: red → blue tint */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'linear-gradient(to bottom, rgba(228, 33, 31, 0.62) 0%, rgba(30, 63, 143, 0.85) 100%)',
-            }}
-          />
+          <BazaarIllustration className="w-full h-full object-cover" />
         </div>
 
         {/* Content sits above the overlay */}

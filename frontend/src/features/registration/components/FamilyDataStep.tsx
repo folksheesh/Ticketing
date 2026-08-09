@@ -312,7 +312,7 @@ export function FamilyDataStep() {
           {/* ── Anak ── */}
           <ToggleCard
             title="Membawa Anak?"
-            subtitle="Anak ≤12 tahun mendapat kupon es krim"
+            subtitle="Setiap anak mendapat kupon es krim"
             checked={hasChildren}
             onChange={v => setValue('hasChildren', v)}
           >
