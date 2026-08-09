@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import {
   QrCode, Download, Mail, MessageCircle, CheckCircle2, Eye,
-  Ticket, Coffee, UtensilsCrossed, IceCream2, Gift, Package, type LucideIcon,
+  Ticket, Coffee, UtensilsCrossed, IceCream2, type LucideIcon,
 } from 'lucide-react';
 import { useRegistrationStore } from '../store/useRegistrationStore';
 import { useAdminStore } from '../../admin/store/useAdminStore';

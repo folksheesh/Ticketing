@@ -148,13 +148,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 /* ─── Section card with toggle ───────────────────────────────────────────── */
 function ToggleCard({
   title, subtitle, checked, onChange, children,
-}: {
-  title: string;
-  subtitle: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  children?: React.ReactNode;
-}) {
+}: { title: string; subtitle?: string; checked: boolean; onChange: (v: boolean) => void; children?: React.ReactNode }) {
   return (
     <div
       className="rounded-2xl overflow-hidden transition-all duration-300"
