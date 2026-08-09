@@ -92,20 +92,25 @@ export function BazaarIllustration({ className = '' }: { className?: string }) {
 
       {/* ── Spaced out floating elements (Notes, Drinks, Ice Cream) ── */}
       
-      {/* Left side column */}
-      <use href="#music-note-2" transform="translate(80, 450) rotate(15) scale(2.2)" />
-      <use href="#icon-drink" transform="translate(180, 650) rotate(-10) scale(2)" />
-      <use href="#music-note-1" transform="translate(90, 800) rotate(-15) scale(1.8)" />
+      {/* Top Left Area */}
+      <use href="#music-note-2" transform="translate(120, 300) rotate(15) scale(2.2)" />
+      <use href="#icon-icecream" transform="translate(250, 200) rotate(-20) scale(1.5)" />
 
-      {/* Center-ish elements (kept away from the middle text) */}
-      <use href="#icon-icecream" transform="translate(320, 850) rotate(-20) scale(1.8)" />
-      <use href="#music-note-1" transform="translate(500, 880) rotate(25) scale(1.5)" />
+      {/* Top Right Area */}
+      <use href="#music-note-1" transform="translate(680, 250) rotate(-15) scale(2)" />
+      <use href="#icon-drink" transform="translate(550, 320) rotate(20) scale(1.8)" />
 
-      {/* Right side column */}
-      <use href="#music-note-1" transform="translate(680, 350) rotate(-5) scale(1.7)" />
-      <use href="#icon-icecream" transform="translate(720, 550) rotate(15) scale(1.8)" />
-      <use href="#music-note-2" transform="translate(600, 680) rotate(-15) scale(2.5)" />
-      <use href="#icon-drink" transform="translate(740, 820) rotate(-20) scale(2)" />
+      {/* Mid Left Area */}
+      <use href="#music-note-1" transform="translate(50, 500) rotate(-10) scale(1.6)" />
+      <use href="#icon-drink" transform="translate(80, 700) rotate(15) scale(1.5)" />
+
+      {/* Mid Right Area */}
+      <use href="#music-note-2" transform="translate(720, 480) rotate(-15) scale(2.5)" />
+      <use href="#icon-icecream" transform="translate(650, 650) rotate(25) scale(1.8)" />
+      
+      {/* Extra floating notes */}
+      <use href="#music-note-1" transform="translate(380, 250) rotate(10) scale(1.5)" />
+      <use href="#music-note-2" transform="translate(750, 750) rotate(-5) scale(1.8)" />
 
       {/* ── Confetti & Stars ── */}
       <circle cx="300" cy="200" r="4" fill="white" opacity="0.2" />
