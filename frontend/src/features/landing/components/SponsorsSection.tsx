@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { useIntersection } from '../../../hooks/useIntersection';
-import { fadeInUp, staggerContainer } from '../../../lib/animations';
+import { BuntingGarland } from '../../../components/atoms/BuntingGarland';
 
 const SPONSORS = [
   { name: 'Denso Corporation',   tier: 'platinum' },
@@ -15,53 +14,61 @@ const SPONSORS = [
 
 const tierStyle: Record<string, { card: React.CSSProperties; text: React.CSSProperties }> = {
   platinum: {
-    card: { background: '#FFFFFF', border: '1px solid #DC003225' },
-    text: { color: '#DC0032', fontWeight: 700 },
+    card: {
+      background: 'var(--color-denso-white)',
+      border: '1px solid rgba(30, 63, 143, 0.2)',
+      boxShadow: '0 2px 12px rgba(30, 63, 143, 0.08)',
+    },
+    text: { color: 'var(--color-denso-blue)', fontWeight: 700 },
   },
   gold: {
-    card: { background: '#FFFFFF', border: '1px solid #4A565E18' },
-    text: { color: '#4A565E', fontWeight: 600 },
+    card: {
+      background: 'var(--color-denso-white)',
+      border: '1px solid rgba(228, 33, 31, 0.12)',
+    },
+    text: { color: 'var(--color-denso-red)', fontWeight: 600 },
   },
   silver: {
-    card: { background: '#F5F7F8', border: '1px solid #4A565E10' },
-    text: { color: '#6B7882', fontWeight: 500 },
+    card: {
+      background: 'var(--color-denso-paper)',
+      border: '1px solid rgba(30, 63, 143, 0.08)',
+    },
+    text: { color: 'var(--color-denso-slate-mid)', fontWeight: 500 },
   },
 };
 
 export function SponsorsSection() {
-  const [ref, isVisible] = useIntersection<HTMLElement>({ threshold: 0.1 });
-
   return (
     <section
-      ref={ref}
       className="relative section-padding overflow-hidden"
-      style={{ background: '#FFFFFF' }}
+      style={{ background: 'var(--color-denso-white)' }}
       aria-label="Sponsors and partners"
     >
+      {/* Bunting decoration at top */}
+      <div className="absolute top-0 left-0 right-0 pointer-events-none" aria-hidden="true">
+        <BuntingGarland width={1200} flagCount={14} droop={0.25} height={45} />
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate={isVisible ? 'animate' : 'initial'}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12 space-y-3"
         >
-          <motion.div
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12 space-y-3"
+          <p
+            className="text-xs font-display font-semibold uppercase tracking-widest"
+            style={{ color: 'var(--color-denso-blue)' }}
           >
-            <p
-              className="text-xs font-display font-semibold uppercase tracking-widest"
-              style={{ color: '#DC0032' }}
-            >
-              Didukung Oleh
-            </p>
-            <h2
-              className="font-display font-extrabold"
-              style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', color: '#4A565E' }}
-            >
-              Mitra <span style={{ color: '#DC0032' }}>Kami</span>
-            </h2>
-          </motion.div>
+            Didukung Oleh
+          </p>
+          <h2
+            className="font-display font-extrabold"
+            style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', color: 'var(--color-denso-slate)' }}
+          >
+            Mitra <span style={{ color: 'var(--color-denso-red)' }}>Kami</span>
+          </h2>
         </motion.div>
       </div>
 
@@ -69,11 +76,11 @@ export function SponsorsSection() {
       <div className="relative mt-4">
         <div
           className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(to right, #FFFFFF, transparent)' }}
+          style={{ background: 'linear-gradient(to right, var(--color-denso-white), transparent)' }}
         />
         <div
           className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(to left, #FFFFFF, transparent)' }}
+          style={{ background: 'linear-gradient(to left, var(--color-denso-white), transparent)' }}
         />
 
         <div className="flex animate-marquee">

@@ -647,13 +647,13 @@ export function TicketResultStep() {
     return (
       <div className="flex flex-col items-center justify-center text-center gap-5 p-12 min-h-[360px]">
         <div className="relative w-20 h-20 flex items-center justify-center">
-          <div className="absolute inset-0 border-4 rounded-full" style={{ borderColor: '#EEF1F3' }} />
-          <div className="absolute inset-0 border-4 rounded-full border-t-transparent animate-spin" style={{ borderColor: '#DC0032' }} />
-          <QrCode className="w-8 h-8 animate-pulse" style={{ color: '#DC0032' }} />
+          <div className="absolute inset-0 border-4 rounded-full" style={{ borderColor: 'var(--color-denso-slate-mist)' }} />
+          <div className="absolute inset-0 border-4 rounded-full border-t-transparent animate-spin" style={{ borderColor: 'var(--color-denso-red)' }} />
+          <QrCode className="w-8 h-8 animate-pulse" style={{ color: 'var(--color-denso-red)' }} />
         </div>
         <div>
-          <h3 className="font-display font-bold text-xl mb-1" style={{ color: '#4A565E' }}>Menerbitkan Tiket…</h3>
-          <p className="text-sm" style={{ color: '#6B7882' }}>Sedang membuat QR Code unik untuk Anda.</p>
+          <h3 className="font-display font-bold text-xl mb-1" style={{ color: 'var(--color-denso-slate)' }}>Menerbitkan Tiket…</h3>
+          <p className="text-sm" style={{ color: 'var(--color-denso-slate-mid)' }}>Sedang membuat QR Code unik untuk Anda.</p>
         </div>
       </div>
     );
@@ -672,13 +672,13 @@ export function TicketResultStep() {
 
         {/* Success header */}
         <div className="text-center">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: '#DC003212' }}>
-            <CheckCircle2 className="w-7 h-7" style={{ color: '#DC0032' }} />
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(228,33,31,0.07)' }}>
+            <CheckCircle2 className="w-7 h-7" style={{ color: 'var(--color-denso-red)' }} />
           </div>
-          <h2 className="font-display font-extrabold text-xl" style={{ color: '#4A565E' }}>Registrasi Berhasil!</h2>
-          <p className="font-sans text-sm mt-1.5 max-w-xs mx-auto" style={{ color: '#6B7882' }}>
+          <h2 className="font-display font-extrabold text-xl" style={{ color: 'var(--color-denso-slate)' }}>Registrasi Berhasil!</h2>
+          <p className="font-sans text-sm mt-1.5 max-w-xs mx-auto" style={{ color: 'var(--color-denso-slate-mid)' }}>
             Tiket Anda telah diterbitkan,{' '}
-            <span className="font-semibold" style={{ color: '#4A565E' }}>{personalData.fullName}</span>.
+            <span className="font-semibold" style={{ color: 'var(--color-denso-slate)' }}>{personalData.fullName}</span>.
           </p>
         </div>
 
@@ -688,7 +688,7 @@ export function TicketResultStep() {
             const Icon = ticket.icon;
             return (
               <div key={i} className="rounded-2xl overflow-hidden flex"
-                style={{ boxShadow: '0 2px 16px rgba(44,53,59,.10)', border: '1px solid #EEF1F3' }}>
+                style={{ boxShadow: '0 2px 16px rgba(30,63,143,.08)', border: '1px solid var(--color-denso-slate-mist)' }}>
                 <div className="w-2 flex-shrink-0" style={{ background: ticket.color }} />
                 <div className="flex-1 bg-white flex items-center gap-4 px-4 py-3.5">
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -698,10 +698,10 @@ export function TicketResultStep() {
                   <div className="flex-1 min-w-0">
                     {ticket.ownerName && (
                       <p className="font-sans text-[10px] font-semibold uppercase tracking-wider mb-0.5"
-                        style={{ color: '#9AAAB3' }}>{ticket.ownerName}</p>
+                        style={{ color: 'var(--color-denso-slate-soft)' }}>{ticket.ownerName}</p>
                     )}
-                    <p className="font-display font-bold text-sm" style={{ color: '#2C353B' }}>{ticket.title}</p>
-                    <p className="font-mono text-[10px] font-medium tracking-widest mt-0.5" style={{ color: '#CDD4D8' }}>
+                    <p className="font-display font-bold text-sm" style={{ color: 'var(--color-denso-slate-dark)' }}>{ticket.title}</p>
+                    <p className="font-mono text-[10px] font-medium tracking-widest mt-0.5" style={{ color: 'var(--color-denso-slate-pale)' }}>
                       {ticket.id}
                     </p>
                   </div>
@@ -713,13 +713,13 @@ export function TicketResultStep() {
           })}
         </div>
 
-        <p className="text-center font-sans text-xs" style={{ color: '#CDD4D8' }}>
+        <p className="text-center font-sans text-xs" style={{ color: 'var(--color-denso-slate-pale)' }}>
           {allTickets.length} tiket diterbitkan · Preview atau unduh untuk menyimpan
         </p>
       </div>
 
       {/* Footer actions */}
-      <div className="px-6 sm:px-8 py-4" style={{ borderTop: '1px solid #EEF1F3', background: '#FFFFFF' }}>
+      <div className="px-6 sm:px-8 py-4" style={{ borderTop: '1px solid var(--color-denso-slate-mist)', background: 'var(--color-denso-white)' }}>
         <div className="grid grid-cols-2 gap-2.5">
           <RippleButton variant="outline" size="sm" icon={<Eye className="w-4 h-4" />} onClick={handlePreview} fullWidth>
             Preview PDF

@@ -12,33 +12,34 @@ interface RippleButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> 
   loading?: boolean;
 }
 
-/* All styles defined as plain objects — no Tailwind color classes */
+/* All styles defined as plain objects — using CSS variables */
 function getVariantStyle(variant: string): CSSProperties {
   switch (variant) {
     case 'primary':
       return {
-        background: '#DC0032',
-        color: '#FFFFFF',
-        boxShadow: '0 4px 16px rgba(220,0,50,0.30)',
+        background: 'var(--color-denso-red)',
+        color: 'var(--color-denso-white)',
+        boxShadow: '0 4px 16px rgba(228, 33, 31, 0.30)',
         border: 'none',
       };
     case 'secondary':
       return {
-        background: '#4A565E',
-        color: '#FFFFFF',
+        background: 'var(--color-denso-blue)',
+        color: 'var(--color-denso-white)',
+        boxShadow: '0 4px 16px rgba(30, 63, 143, 0.25)',
         border: 'none',
       };
     case 'outline':
       return {
         background: 'transparent',
-        color: '#DC0032',
-        border: '2px solid #DC0032',
+        color: 'var(--color-denso-blue)',
+        border: '2px solid var(--color-denso-blue)',
       };
     case 'ghost':
     default:
       return {
         background: 'transparent',
-        color: '#6B7882',
+        color: 'var(--color-denso-slate-mid)',
         border: '1px solid transparent',
       };
   }

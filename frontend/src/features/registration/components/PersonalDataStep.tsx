@@ -36,18 +36,18 @@ const SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL'] as const;
 /* ─── Base input style ────────────────────────────────────────────────────── */
 const base: React.CSSProperties = {
   width: '100%',
-  background: '#F5F7F8',
+  background: 'var(--color-denso-slate-ghost)',
   border: '1.5px solid #CDD4D8',
   borderRadius: '0.75rem',
   padding: '0.72rem 2.5rem 0.72rem 2.75rem',
   fontFamily: 'inherit',
   fontSize: '0.875rem',
-  color: '#4A565E',
+  color: 'var(--color-denso-slate)',
   outline: 'none',
   transition: 'border-color 0.2s, box-shadow 0.2s, background 0.2s',
 };
-const focusStyle  = { borderColor: '#DC0032', boxShadow: '0 0 0 3px rgba(220,0,50,0.10)', background: '#FFFFFF' };
-const errorStyle  = { borderColor: '#DC0032', background: '#FFF8F9' };
+const focusStyle  = { borderColor: 'var(--color-denso-red)', boxShadow: '0 0 0 3px rgba(220,0,50,0.10)', background: 'var(--color-denso-white)' };
+const errorStyle  = { borderColor: 'var(--color-denso-red)', background: 'var(--color-denso-red-pale)' };
 
 /* ─── Shared Field wrapper ────────────────────────────────────────────────── */
 function Field({
@@ -64,16 +64,16 @@ function Field({
       animate={error ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
       transition={{ duration: 0.35 }}
     >
-      <label className="block text-sm font-semibold" style={{ color: '#4A565E' }}>{label}</label>
+      <label className="block text-sm font-semibold" style={{ color: 'var(--color-denso-slate)' }}>{label}</label>
       <div className="relative">
         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none" style={{ zIndex: 1 }}>
-          <Icon width={17} height={17} style={{ color: error ? '#DC0032' : '#9AAAB3' }} strokeWidth={1.6} />
+          <Icon width={17} height={17} style={{ color: error ? 'var(--color-denso-red)' : 'var(--color-denso-slate-soft)' }} strokeWidth={1.6} />
         </span>
         {children}
         {/* Right error icon */}
         {error && (
           <span className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
-            <AlertCircle width={15} height={15} style={{ color: '#DC0032' }} />
+            <AlertCircle width={15} height={15} style={{ color: 'var(--color-denso-red)' }} />
           </span>
         )}
       </div>
@@ -85,7 +85,7 @@ function Field({
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.2 }}
             className="text-xs font-medium pl-1 flex items-center gap-1"
-            style={{ color: '#DC0032' }}
+            style={{ color: 'var(--color-denso-red)' }}
           >
             {error.message}
           </motion.p>
@@ -191,7 +191,7 @@ function DivisionDropdown({
           ...(open ? focusStyle : {}),
         }}
       >
-        <span style={{ color: value ? '#4A565E' : '#9AAAB3' }}>
+        <span style={{ color: value ? 'var(--color-denso-slate)' : 'var(--color-denso-slate-soft)' }}>
           {value || 'Pilih atau ketik divisi…'}
         </span>
       </button>
@@ -199,7 +199,7 @@ function DivisionDropdown({
       {/* Chevron */}
       <span className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown width={16} height={16} style={{ color: '#9AAAB3' }} />
+          <ChevronDown width={16} height={16} style={{ color: 'var(--color-denso-slate-soft)' }} />
         </motion.span>
       </span>
 
@@ -214,18 +214,18 @@ function DivisionDropdown({
             className="rounded-2xl overflow-hidden"
             style={{
               ...panelStyle,
-              background: '#FFFFFF',
+              background: 'var(--color-denso-white)',
               border: '1.5px solid #EEF1F3',
               boxShadow: '0 8px 24px rgba(74,86,94,0.12)',
               transformOrigin: 'top',
             }}
           >
             {/* Search */}
-            <div className="p-2 border-b" style={{ borderColor: '#EEF1F3' }}>
+            <div className="p-2 border-b" style={{ borderColor: 'var(--color-denso-slate-mist)' }}>
               <div className="relative">
                 <Search width={14} height={14}
                   className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ color: '#9AAAB3' }}
+                  style={{ color: 'var(--color-denso-slate-soft)' }}
                 />
                 <input
                   autoFocus
@@ -235,11 +235,11 @@ function DivisionDropdown({
                   className="w-full rounded-xl text-sm"
                   style={{
                     padding: '0.5rem 0.75rem 0.5rem 2rem',
-                    background: '#F5F7F8',
+                    background: 'var(--color-denso-slate-ghost)',
                     border: '1px solid #EEF1F3',
                     outline: 'none',
                     fontFamily: 'inherit',
-                    color: '#4A565E',
+                    color: 'var(--color-denso-slate)',
                   }}
                 />
               </div>
@@ -248,7 +248,7 @@ function DivisionDropdown({
             {/* Options */}
             <ul className="max-h-44 overflow-y-auto py-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filtered.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-center" style={{ color: '#9AAAB3' }}>
+                <li className="px-4 py-3 text-sm text-center" style={{ color: 'var(--color-denso-slate-soft)' }}>
                   Tidak ditemukan
                 </li>
               ) : filtered.map(d => (
@@ -258,16 +258,16 @@ function DivisionDropdown({
                     onClick={() => select(d)}
                     className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors"
                     style={{
-                      background: value === d ? '#FFF0F3' : 'transparent',
-                      color: value === d ? '#DC0032' : '#4A565E',
+                      background: value === d ? 'var(--color-denso-red-pale)' : 'transparent',
+                      color: value === d ? 'var(--color-denso-red)' : 'var(--color-denso-slate)',
                       fontFamily: 'inherit',
                       fontWeight: value === d ? 600 : 400,
                     }}
-                    onMouseEnter={e => { if (value !== d) (e.currentTarget as HTMLButtonElement).style.background = '#F5F7F8'; }}
+                    onMouseEnter={e => { if (value !== d) (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-denso-slate-ghost)'; }}
                     onMouseLeave={e => { if (value !== d) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                   >
                     {d}
-                    {value === d && <Check width={14} height={14} style={{ color: '#DC0032' }} />}
+                    {value === d && <Check width={14} height={14} style={{ color: 'var(--color-denso-red)' }} />}
                   </button>
                 </li>
               ))}
@@ -308,8 +308,8 @@ function SizeSelector({
                 : error
                   ? '1.5px solid #DC003240'
                   : '1.5px solid #CDD4D8',
-              background: active ? '#DC0032' : error ? '#FFF8F9' : '#F5F7F8',
-              color: active ? '#FFFFFF' : error ? '#DC0032' : '#6B7882',
+              background: active ? 'var(--color-denso-red)' : error ? 'var(--color-denso-red-pale)' : 'var(--color-denso-slate-ghost)',
+              color: active ? 'var(--color-denso-white)' : error ? 'var(--color-denso-red)' : 'var(--color-denso-slate-mid)',
               cursor: 'pointer',
               boxShadow: active ? '0 2px 10px rgba(220,0,50,0.25)' : 'none',
             }}
@@ -362,15 +362,15 @@ export function PersonalDataStep() {
             <div className="flex items-center gap-2.5 mb-2">
               <span
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-display font-bold text-white flex-shrink-0"
-                style={{ background: '#DC0032' }}
+                style={{ background: 'var(--color-denso-red)' }}
               >
                 1
               </span>
-              <h2 className="font-display font-extrabold text-xl" style={{ color: '#4A565E' }}>
+              <h2 className="font-display font-extrabold text-xl" style={{ color: 'var(--color-denso-slate)' }}>
                 Data Pribadi
               </h2>
             </div>
-            <p className="font-sans text-sm" style={{ color: '#6B7882' }}>
+            <p className="font-sans text-sm" style={{ color: 'var(--color-denso-slate-mid)' }}>
               Informasi ini digunakan untuk pencetakan tiket dan pendataan acara.
             </p>
           </div>
@@ -418,9 +418,9 @@ export function PersonalDataStep() {
           {/* ── T-shirt size ── */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 mb-1">
-              <Shirt width={16} height={16} style={{ color: errors.tshirtSize ? '#DC0032' : '#9AAAB3' }} strokeWidth={1.6} />
-              <label className="text-sm font-semibold" style={{ color: '#4A565E' }}>Ukuran Kaos</label>
-              {errors.tshirtSize && <AlertCircle width={14} height={14} style={{ color: '#DC0032', marginLeft: 'auto' }} />}
+              <Shirt width={16} height={16} style={{ color: errors.tshirtSize ? 'var(--color-denso-red)' : 'var(--color-denso-slate-soft)' }} strokeWidth={1.6} />
+              <label className="text-sm font-semibold" style={{ color: 'var(--color-denso-slate)' }}>Ukuran Kaos</label>
+              {errors.tshirtSize && <AlertCircle width={14} height={14} style={{ color: 'var(--color-denso-red)', marginLeft: 'auto' }} />}
             </div>
             <input type="hidden" {...register('tshirtSize')} />
             <SizeSelector
@@ -431,7 +431,7 @@ export function PersonalDataStep() {
             <AnimatePresence>
               {errors.tshirtSize && (
                 <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }} className="text-xs font-medium pl-1" style={{ color: '#DC0032' }}>
+                  transition={{ duration: 0.2 }} className="text-xs font-medium pl-1" style={{ color: 'var(--color-denso-red)' }}>
                   {errors.tshirtSize.message}
                 </motion.p>
               )}
@@ -440,7 +440,7 @@ export function PersonalDataStep() {
 
           {/* ── Marital status ── */}
           <div>
-            <label className="block text-sm font-semibold mb-2.5" style={{ color: '#4A565E' }}>Status Kehadiran</label>
+            <label className="block text-sm font-semibold mb-2.5" style={{ color: 'var(--color-denso-slate)' }}>Status Kehadiran</label>
             <div className="flex gap-3">
               {(['Single', 'Family'] as const).map((val) => {
                 const active = watchedStatus === val;
@@ -453,18 +453,18 @@ export function PersonalDataStep() {
                       className="relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 select-none"
                       style={{
                         border: active ? '2px solid #DC0032' : hasErr ? '2px solid #DC003240' : '2px solid #CDD4D8',
-                        background: active ? '#FFF0F3' : hasErr ? '#FFF8F9' : '#F5F7F8',
+                        background: active ? 'var(--color-denso-red-pale)' : hasErr ? 'var(--color-denso-red-pale)' : 'var(--color-denso-slate-ghost)',
                       }}
                     >
                       <Icon width={20} height={20} strokeWidth={1.5}
-                        style={{ color: active ? '#DC0032' : hasErr ? '#DC003280' : '#9AAAB3', flexShrink: 0 }} />
+                        style={{ color: active ? 'var(--color-denso-red)' : hasErr ? 'rgba(228,33,31,0.5)' : 'var(--color-denso-slate-soft)', flexShrink: 0 }} />
                       <div className="min-w-0">
-                        <p className="font-display font-bold text-sm leading-tight" style={{ color: active ? '#DC0032' : '#4A565E' }}>{val}</p>
-                        <p className="font-sans text-xs leading-tight mt-0.5" style={{ color: '#9AAAB3' }}>
+                        <p className="font-display font-bold text-sm leading-tight" style={{ color: active ? 'var(--color-denso-red)' : 'var(--color-denso-slate)' }}>{val}</p>
+                        <p className="font-sans text-xs leading-tight mt-0.5" style={{ color: 'var(--color-denso-slate-soft)' }}>
                           {val === 'Single' ? 'Datang sendiri' : 'Bawa keluarga'}
                         </p>
                       </div>
-                      {active && <span className="absolute top-2.5 right-2.5 w-3 h-3 rounded-full" style={{ background: '#DC0032' }} />}
+                      {active && <span className="absolute top-2.5 right-2.5 w-3 h-3 rounded-full" style={{ background: 'var(--color-denso-red)' }} />}
                     </div>
                   </label>
                 );
@@ -473,7 +473,7 @@ export function PersonalDataStep() {
             <AnimatePresence>
               {errors.maritalStatus && (
                 <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }} className="text-xs font-medium pl-1 mt-2" style={{ color: '#DC0032' }}>
+                  transition={{ duration: 0.2 }} className="text-xs font-medium pl-1 mt-2" style={{ color: 'var(--color-denso-red)' }}>
                   {errors.maritalStatus.message}
                 </motion.p>
               )}
@@ -484,7 +484,7 @@ export function PersonalDataStep() {
         {/* ── Footer — naturally at bottom, content padded above it ── */}
         <div
           className="flex justify-end px-7 sm:px-8 py-4"
-          style={{ borderTop: '1px solid #EEF1F3', background: '#FFFFFF' }}
+          style={{ borderTop: '1px solid #EEF1F3', background: 'var(--color-denso-white)' }}
         >
           <RippleButton type="submit" size="sm" icon={<ArrowRight className="w-4 h-4" />} iconPosition="right">
             Lanjut

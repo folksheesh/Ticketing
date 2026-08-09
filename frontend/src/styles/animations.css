@@ -22,8 +22,8 @@ input:-webkit-autofill:active {
 }
 .glass-card-hover:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 20px 40px -10px rgba(0, 61, 122, 0.14);
-  background: rgba(254, 250, 244, 0.96);
+  box-shadow: 0 20px 40px -10px rgba(30, 63, 143, 0.14);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 /* Scroll reveal */
@@ -35,4 +35,19 @@ input:-webkit-autofill:active {
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Reduced motion fallbacks */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+  .glass-card-hover:hover {
+    transform: none;
+  }
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

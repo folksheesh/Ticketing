@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { HeroBanner } from './components/HeroBanner';
+import { BazaarPreviewSection } from './components/BazaarPreviewSection';
 import { CountdownSection } from './components/CountdownSection';
 import { ScheduleSection } from './components/ScheduleSection';
 import { TimelineSection } from './components/TimelineSection';
@@ -17,6 +18,7 @@ export function LandingPage() {
       className="flex flex-col"
     >
       <HeroBanner />
+      <BazaarPreviewSection />
       <CountdownSection />
       <TimelineSection />
       <ScheduleSection />

@@ -35,7 +35,7 @@ const sizeMap = {
  */
 export function Logo({ className, size = 'md', onDark = false }: LogoProps) {
   const { h, w } = sizeMap[size];
-  const color = onDark ? '#FFFFFF' : '#DC0032';
+  const color = onDark ? '#FFFFFF' : '#E4211F';
 
   return (
     <div

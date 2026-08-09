@@ -1,52 +1,52 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Nunito:ital,wght@1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Nunito:ital,wght@1,900&family=Archivo+Black&family=Caveat:wght@400;500;600;700&display=swap');
 
 /* ===================================================
-   DENSO Design System — Red / White / Slate
-   Primary accent : #DC0032  (Denso Red)
-   Base           : #FFFFFF  (White)
-   Neutral text   : #4A565E  (Slate)
+   DENSOnesia Bazzar Design System — Tricolor
+   Red        : #E4211F  (Denso Red — logo, CTA, accent)
+   Royal Blue : #1E3F8F  (Headlines, pills, nav, footer)
+   Pale Sky   : #A9C9EC  (Illustration, decorative, wash)
+   White      : #FFFFFF  (Base canvas)
    =================================================== */
 
 @theme {
-  /* ── Brand Red ── */
-  --color-denso-red:        #DC0032;
-  --color-denso-red-dark:   #A80026;
-  --color-denso-red-light:  #FF1A47;
-  --color-denso-red-pale:   #FFF0F3;
-  --color-denso-red-muted:  #FFD6DE;
+  /* ── Brand Red — DENSO logo / headline / CTA ── */
+  --color-denso-red:        #E4211F;
+  --color-denso-red-dark:   #B4171A;
+  --color-denso-red-light:  #F04B44;
+  --color-denso-red-pale:   #FFEDEC;
+  --color-denso-red-muted:  #FBD3D2;
 
-  /* ── Neutral slate (text / UI chrome) ── */
-  --color-denso-slate:      #4A565E;
-  --color-denso-slate-dark: #2C353B;
-  --color-denso-slate-mid:  #6B7882;
-  --color-denso-slate-soft: #8E9BA3;
-  --color-denso-slate-pale: #CDD4D8;
-  --color-denso-slate-mist: #EEF1F3;
-  --color-denso-slate-ghost:#F5F7F8;
+  /* ── Royal Blue — poster's second headline color,
+       "Family Gathering 2026", date pill, corner swoosh,
+       nav bar, footer. Carries equal visual weight to red. ── */
+  --color-denso-blue:        #1E3F8F;
+  --color-denso-blue-dark:   #12285E;
+  --color-denso-blue-light:  #3D64B8;
+  --color-denso-blue-pale:   #E3EBFA;
 
-  /* ── White base ── */
+  /* ── Pale Sky Blue — skyline silhouette, decorative circles,
+       dot/stripe ornaments. Soft, textural. ── */
+  --color-denso-sky:         #A9C9EC;
+  --color-denso-sky-light:   #D3E6F9;
+  --color-denso-sky-dark:    #7FA8D9;
+
+  /* ── Deep Navy — gradient endpoint ONLY (corner swoosh/wave depth).
+       Never a flat full-section fill. ── */
+  --color-denso-navy-deep:   #0B2560;
+
+  /* ── Neutral Slate (body text / UI chrome) ── */
+  --color-denso-slate:       #4A565E;
+  --color-denso-slate-dark:  #2C353B;
+  --color-denso-slate-mid:   #6B7882;
+  --color-denso-slate-soft:  #8E9BA3;
+  --color-denso-slate-pale:  #CDD4D8;
+  --color-denso-slate-mist:  #EEF1F3;
+  --color-denso-slate-ghost: #F5F7F8;
+
+  /* ── White Base ── */
   --color-denso-white: #FFFFFF;
-
-  /* ── Legacy colour aliases so no component breaks ── */
-  --color-denso-blue:        #DC0032;
-  --color-denso-blue-dark:   #A80026;
-  --color-denso-blue-light:  #FF1A47;
-  --color-denso-navy:        #2C353B;
-  --color-denso-navy-dark:   #1A2126;
-  --color-denso-navy-mid:    #4A565E;
-  --color-denso-navy-light:  #EEF1F3;
-  --color-denso-amber:       #DC0032;
-  --color-denso-amber-deep:  #A80026;
-  --color-denso-amber-pale:  #FFF0F3;
-  --color-denso-amber-glow:  #FFF5F7;
-  --color-denso-sky:         #DC0032;
-  --color-denso-cyan:        #A80026;
-  --color-denso-cyan-light:  #FFD6DE;
-  --color-denso-teal:        #DC0032;
-  --color-denso-cream:       #FFFFFF;
-  --color-denso-paper:       #F5F7F8;
-  --color-denso-mist:        #EEF1F3;
+  --color-denso-paper: #F8FAFC;
 
   /* ── Neutral grays (warm-neutral, matches #4A565E family) ── */
   --color-denso-gray-50:  #F5F7F8;
@@ -63,10 +63,12 @@
   /* ── Semantic ── */
   --color-denso-success: #16A34A;
   --color-denso-warning: #D97706;
-  --color-denso-error:   #DC0032;
-  --color-denso-info:    #2563EB;
+  --color-denso-error:   #E4211F;
+  --color-denso-info:    #1E3F8F;
 
   /* ── Typography ── */
+  --font-hero:    'Archivo Black', 'Impact', 'Arial Black', sans-serif;
+  --font-script:  'Caveat', 'Segoe Script', cursive;
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-sans:    'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
@@ -81,13 +83,16 @@
   --radius-5xl: 2.5rem;
 
   /* ── Shadows ── */
-  --shadow-glass:        0 8px 32px rgba(44, 53, 59, 0.08);
-  --shadow-card:         0 2px 16px rgba(44, 53, 59, 0.07);
-  --shadow-card-hover:   0 8px 32px rgba(44, 53, 59, 0.13);
-  --shadow-button:       0 4px 14px rgba(220, 0, 50, 0.30);
-  --shadow-button-hover: 0 6px 20px rgba(220, 0, 50, 0.42);
-  --shadow-red:          0 4px 20px rgba(220, 0, 50, 0.28);
-  --shadow-glow:         0 0 40px rgba(220, 0, 50, 0.10);
+  --shadow-glass:        0 8px 32px rgba(30, 63, 143, 0.08);
+  --shadow-card:         0 2px 16px rgba(30, 63, 143, 0.07);
+  --shadow-card-hover:   0 8px 32px rgba(30, 63, 143, 0.13);
+  --shadow-button:       0 4px 14px rgba(228, 33, 31, 0.30);
+  --shadow-button-hover: 0 6px 20px rgba(228, 33, 31, 0.42);
+  --shadow-red:          0 4px 20px rgba(228, 33, 31, 0.28);
+  --shadow-blue:         0 4px 20px rgba(30, 63, 143, 0.28);
+  --shadow-blue-hover:   0 6px 28px rgba(30, 63, 143, 0.38);
+  --shadow-glow:         0 0 40px rgba(228, 33, 31, 0.10);
+  --shadow-glow-blue:    0 0 40px rgba(30, 63, 143, 0.10);
 
   /* ── Easing ── */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -102,6 +107,9 @@
   --animate-gradient-shift: gradient-shift 8s ease infinite;
   --animate-spin-slow:      spin 24s linear infinite;
   --animate-marquee:        marquee 30s linear infinite;
+  --animate-sway:           sway 4s ease-in-out infinite;
+  --animate-twinkle:        twinkle 3s ease-in-out infinite;
+  --animate-confetti-fall:  confetti-fall 6s linear infinite;
 }
 
 /* ===== Keyframes ===== */
@@ -117,8 +125,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(220, 0, 50, 0.08); }
-  50%       { box-shadow: 0 0 40px rgba(220, 0, 50, 0.22); }
+  0%, 100% { box-shadow: 0 0 20px rgba(228, 33, 31, 0.08); }
+  50%       { box-shadow: 0 0 40px rgba(228, 33, 31, 0.22); }
 }
 
 @keyframes gradient-shift {
@@ -163,6 +171,31 @@
   75%       { border-radius: 60% 40% 60% 30% / 60% 40% 30% 60%; }
 }
 
+/* Bunting flag gentle sway — slow, small amplitude, breezy feel */
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(1.5deg); }
+  75%      { transform: rotate(-1.5deg); }
+}
+
+/* String light twinkle — subtle warm glow pulse */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+/* Confetti — gentle falling drift */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10%) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
+}
+
+/* Confetti sway — slight horizontal drift while falling */
+@keyframes confetti-sway {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(15px); }
+}
+
 /* ===== Base ===== */
 
 html {
@@ -187,15 +220,15 @@ h1, h2, h3, h4, h5 {
 
 /* Focus */
 :focus-visible {
-  outline: 2px solid var(--color-denso-red);
+  outline: 2px solid var(--color-denso-blue);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
 /* Selection */
 ::selection {
-  background-color: var(--color-denso-red-muted);
-  color: var(--color-denso-red-dark);
+  background-color: var(--color-denso-blue-pale);
+  color: var(--color-denso-blue-dark);
 }
 
 /* Scrollbar */
@@ -235,30 +268,31 @@ h1, h2, h3, h4, h5 {
 
 /* Red accent gradient */
 .text-gradient {
-  background: linear-gradient(135deg, #DC0032, #A80026);
+  background: linear-gradient(135deg, var(--color-denso-red), var(--color-denso-red-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Alias variants — same red, defined independently (no @apply) */
+/* Blue gradient text */
+.text-gradient-blue {
+  background: linear-gradient(135deg, var(--color-denso-blue), var(--color-denso-blue-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Sky gradient text */
 .text-gradient-sky {
-  background: linear-gradient(135deg, #DC0032, #A80026);
+  background: linear-gradient(135deg, var(--color-denso-sky-dark), var(--color-denso-blue-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.text-gradient-amber {
-  background: linear-gradient(135deg, #DC0032, #A80026);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Slate → red */
+/* Red → Blue tricolor gradient text */
 .text-gradient-primary {
-  background: linear-gradient(135deg, #2C353B, #DC0032);
+  background: linear-gradient(135deg, var(--color-denso-red), var(--color-denso-blue));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -266,20 +300,27 @@ h1, h2, h3, h4, h5 {
 
 /* ── Backgrounds ── */
 .bg-gradient-denso {
-  background: linear-gradient(135deg, #DC0032, #A80026);
+  background: linear-gradient(135deg, var(--color-denso-red), var(--color-denso-blue));
 }
 
 .bg-gradient-hero {
-  /* Crisp white, very subtle warm edge */
-  background: #FFFFFF;
+  background: radial-gradient(ellipse at top, var(--color-denso-sky-light) 0%, var(--color-denso-white) 60%);
 }
 
 .bg-gradient-card {
-  background: linear-gradient(180deg, #FFFFFF 0%, #F5F7F8 100%);
+  background: linear-gradient(180deg, var(--color-denso-white) 0%, var(--color-denso-paper) 100%);
 }
 
-.bg-gradient-amber {
-  background: linear-gradient(135deg, #DC0032, #A80026);
+.bg-gradient-cta {
+  background: linear-gradient(90deg, var(--color-denso-red) 0%, var(--color-denso-red-dark) 100%);
+}
+
+.bg-gradient-pill {
+  background: linear-gradient(90deg, var(--color-denso-blue) 0%, var(--color-denso-blue-dark) 100%);
+}
+
+.bg-gradient-swoosh {
+  background: linear-gradient(135deg, var(--color-denso-red) 0%, var(--color-denso-blue) 55%, var(--color-denso-navy-deep) 100%);
 }
 
 /* ── Ripple ── */
@@ -312,10 +353,18 @@ h1, h2, h3, h4, h5 {
 
 /* ── Red glow on CTA ── */
 .red-glow {
-  box-shadow: 0 4px 20px rgba(220, 0, 50, 0.30);
+  box-shadow: 0 4px 20px rgba(228, 33, 31, 0.30);
 }
 .red-glow:hover {
-  box-shadow: 0 6px 28px rgba(220, 0, 50, 0.46);
+  box-shadow: 0 6px 28px rgba(228, 33, 31, 0.46);
+}
+
+/* ── Blue glow ── */
+.blue-glow {
+  box-shadow: 0 4px 20px rgba(30, 63, 143, 0.30);
+}
+.blue-glow:hover {
+  box-shadow: 0 6px 28px rgba(30, 63, 143, 0.46);
 }
 
 /* ── No scrollbar ── */
@@ -348,7 +397,7 @@ body {
 /* ── Custom thin scrollbar for the registration right panel ── */
 .panel-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #CDD4D8 transparent;
+  scrollbar-color: var(--color-denso-slate-pale) transparent;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
@@ -359,17 +408,21 @@ body {
   background: transparent;
 }
 .panel-scroll::-webkit-scrollbar-thumb {
-  background: #CDD4D8;
+  background: var(--color-denso-slate-pale);
   border-radius: 99px;
 }
 .panel-scroll::-webkit-scrollbar-thumb:hover {
-  background: #9AAAB3;
+  background: var(--color-denso-slate-soft);
 }
 
-/* Backwards-compat alias used in old components */
-.amber-glow {
-  box-shadow: 0 4px 20px rgba(220, 0, 50, 0.30);
-}
-.amber-glow:hover {
-  box-shadow: 0 6px 28px rgba(220, 0, 50, 0.46);
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

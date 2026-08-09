@@ -1,19 +1,17 @@
 import { motion } from 'framer-motion';
 import { FlipDigit } from '../../../components/atoms/AnimatedCounter';
 import { useCountdown } from '../../../hooks/useCountdown';
-import { useIntersection } from '../../../hooks/useIntersection';
-import { fadeInUp, staggerContainer } from '../../../lib/animations';
 import { EVENT_CONFIG } from '../../../constants/event';
 
 export function CountdownSection() {
   const { days, hours, minutes, seconds, isExpired } = useCountdown(EVENT_CONFIG.date);
-  const [ref, isVisible] = useIntersection<HTMLElement>({ threshold: 0.2 });
 
   return (
     <section
-      ref={ref}
       className="relative section-padding overflow-hidden"
-      style={{ background: '#DC0032' }}
+      style={{
+        background: 'linear-gradient(135deg, var(--color-denso-blue) 0%, var(--color-denso-navy-deep) 100%)',
+      }}
       aria-label="Event countdown"
     >
       {/* Decorative arc rings — white, very subtle */}
@@ -31,14 +29,26 @@ export function CountdownSection() {
         </svg>
       </div>
 
+      {/* Red accent dots */}
+      <div className="absolute top-12 left-[15%] w-3 h-3 rounded-full opacity-30 pointer-events-none" style={{ background: 'var(--color-denso-red)' }} aria-hidden="true" />
+      <div className="absolute bottom-16 right-[20%] w-2 h-2 rounded-full opacity-25 pointer-events-none" style={{ background: 'var(--color-denso-red-light)' }} aria-hidden="true" />
+
       <motion.div
-        variants={staggerContainer}
         initial="initial"
-        animate={isVisible ? 'animate' : 'initial'}
+        whileInView="animate"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={{
+          initial: {},
+          animate: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
+        }}
         className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
       >
         {/* Label */}
-        <motion.div variants={fadeInUp} transition={{ duration: 0.6 }} className="space-y-3 mb-12">
+        <motion.div
+          variants={{ initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } }}
+          transition={{ duration: 0.6 }}
+          className="space-y-3 mb-12"
+        >
           <p className="text-xs font-display font-semibold uppercase tracking-widest text-white/70">
             Tandai Kalendermu
           </p>
@@ -56,9 +66,18 @@ export function CountdownSection() {
         </motion.div>
 
         {/* Countdown digits */}
-        <motion.div variants={fadeInUp} transition={{ duration: 0.6, delay: 0.2 }}>
+        <motion.div
+          variants={{ initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           {isExpired ? (
-            <div className="bg-white/15 rounded-3xl p-8 backdrop-blur-sm border border-white/20">
+            <div
+              className="rounded-3xl p-8 backdrop-blur-sm"
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.2)',
+              }}
+            >
               <p className="text-2xl font-display font-bold text-white">🎉 Acara Telah Dimulai!</p>
             </div>
           ) : (
