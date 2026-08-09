@@ -62,6 +62,10 @@ export function HeroBanner() {
         }}
       />
 
+      {/* Bunting garland across the top */}
+      <div className="absolute top-16 left-0 right-0 pointer-events-none z-10" aria-hidden="true">
+        <BuntingGarland width={1600} flagCount={18} droop={0.4} height={70} />
+      </div>
 
       {/* Skyline silhouette — pale sky blue, parallax */}
       <motion.div
@@ -99,24 +103,6 @@ export function HeroBanner() {
             animate="animate"
             className="space-y-6"
           >
-            {/* Ribbon badge */}
-            <motion.div
-              variants={fadeUp}
-              transition={{ duration: 0.5, delay: 0.05 }}
-            >
-              <span
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-display font-semibold uppercase tracking-widest"
-                style={{
-                  background: 'var(--color-denso-blue-pale)',
-                  color: 'var(--color-denso-blue)',
-                  border: '1px solid var(--color-denso-blue)',
-                  borderColor: 'rgba(30, 63, 143, 0.2)',
-                }}
-              >
-                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--color-denso-red)' }} />
-                DENSO Indonesia Group
-              </span>
-            </motion.div>
 
             {/* Headline */}
             <motion.div variants={fadeUp} transition={{ duration: 0.6, delay: 0.12 }}>
