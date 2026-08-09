@@ -32,9 +32,6 @@ export function HeroBanner() {
   // Parallax for skyline — subtle Y shift
   const skylineY = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
-  const dateStr = EVENT_CONFIG.date.toLocaleDateString('id-ID', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
 
   return (
     <section
