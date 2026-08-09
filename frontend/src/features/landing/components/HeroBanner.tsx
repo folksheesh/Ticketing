@@ -62,10 +62,6 @@ export function HeroBanner() {
         }}
       />
 
-      {/* Bunting garland across the top */}
-      <div className="absolute top-16 left-0 right-0 pointer-events-none z-10" aria-hidden="true">
-        <BuntingGarland width={1600} flagCount={18} droop={0.4} height={70} />
-      </div>
 
       {/* Skyline silhouette — pale sky blue, parallax */}
       <motion.div
