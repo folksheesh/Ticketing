@@ -236,7 +236,7 @@ export function HeroBanner() {
               
               {/* Circus Tent SVG */}
               <div className="relative z-10 w-[400px] h-[400px]">
-                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-2xl">
+                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-2xl overflow-visible">
                   <defs>
                     <g id="circus-tent">
                       {/* Base Shadow */}
@@ -291,11 +291,11 @@ export function HeroBanner() {
                   <path d="M345 176 Q340 210 355 240" fill="none" stroke="var(--color-denso-slate-mid)" strokeWidth="1.5" />
 
                   {/* --- The Tents --- */}
-                  {/* Left Back Tent */}
-                  <use href="#circus-tent" transform="translate(90, 310) scale(0.6) translate(-200, -350)" opacity="0.9" />
+                  {/* Left Back Tent - Pushed Further Left */}
+                  <use href="#circus-tent" transform="translate(45, 305) scale(0.6) translate(-200, -350)" opacity="0.9" />
                   
-                  {/* Right Back Tent */}
-                  <use href="#circus-tent" transform="translate(300, 325) scale(0.65) translate(-200, -350)" opacity="0.95" />
+                  {/* Right Back Tent - Pushed Further Right */}
+                  <use href="#circus-tent" transform="translate(365, 320) scale(0.65) translate(-200, -350)" opacity="0.95" />
                   
                   {/* Main Front Tent */}
                   <use href="#circus-tent" />
