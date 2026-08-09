@@ -427,6 +427,7 @@ export function TicketResultStep() {
 
     const timer = setTimeout(() => {
       if (!isMounted) return;
+      setTickets(mainTickets);
       setIceCreamTickets(iceTickets);
       setIsGenerating(false);
     }, 1800);
