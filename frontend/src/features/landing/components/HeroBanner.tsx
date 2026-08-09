@@ -165,11 +165,11 @@ export function HeroBanner() {
               className="font-sans font-light leading-relaxed max-w-md"
               style={{ fontSize: '1.05rem', color: 'var(--color-denso-slate-mid)' }}
             >
-              Satu hari penuh kebersamaan bersama keluarga Denso.{' '}
+              Satu hari penuh kebersamaan bersama keluarga besar DENSO.{' '}
               <span className="font-semibold" style={{ color: 'var(--color-denso-slate)' }}>
-                15.000 karyawan
+                Nikmati hiburan, bazar UMKM, dan ragam aktivitas seru
               </span>{' '}
-              dan keluarga mereka, satu perayaan bersama.
+              dalam satu perayaan tak terlupakan.
             </motion.p>
 
             {/* Date pill */}
@@ -224,109 +224,127 @@ export function HeroBanner() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="hidden lg:flex items-center justify-center"
+            className="hidden lg:flex items-center justify-center relative"
             aria-hidden="true"
           >
-            <div className="relative w-[460px] h-[460px]">
-              {/* Background radial */}
-              <div
-                className="absolute inset-[8%] rounded-full"
+            {/* Floating elements animation wrapper */}
+            <motion.div
+              animate={prefersReduced ? {} : { y: [-12, 12, -12] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative w-[400px] h-[480px] flex items-center justify-center"
+            >
+              
+              {/* Back Ticket (Blue) */}
+              <motion.div 
+                className="absolute inset-0 rounded-[2rem]"
                 style={{
-                  background: 'radial-gradient(circle at 40% 40%, rgba(30, 63, 143, 0.08) 0%, rgba(169, 201, 236, 0.06) 50%, transparent 100%)',
+                  background: 'linear-gradient(135deg, var(--color-denso-blue) 0%, var(--color-denso-blue-dark) 100%)',
+                  transform: 'rotate(8deg) translateX(24px) translateY(12px)',
+                  boxShadow: '0 20px 40px rgba(30,63,143,0.2)'
                 }}
               />
-
-              <svg viewBox="0 0 460 460" fill="none" className="absolute inset-0 w-full h-full">
-                {/* Outer dashed ring */}
-                <circle cx="230" cy="230" r="210" stroke="var(--color-denso-sky)" strokeWidth="1" strokeOpacity="0.3" strokeDasharray="6 10" />
-
-                {/* Large blue arc — 270° sweep */}
-                <motion.path
-                  d="M230 24 A206 206 0 1 1 24 230"
-                  stroke="var(--color-denso-blue)"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  fill="none"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.5 }}
-                />
-
-                {/* Mid red arc — 200° sweep */}
-                <motion.path
-                  d="M230 68 A162 162 0 1 1 95 340"
-                  stroke="var(--color-denso-red)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  fill="none"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.7 }}
-                  transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.75 }}
-                />
-
-                {/* Inner sky blue arc — 160° sweep */}
-                <motion.path
-                  d="M230 115 A115 115 0 1 1 125 325"
-                  stroke="var(--color-denso-sky)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  fill="none"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.5 }}
-                  transition={{ duration: 1.0, ease: [0.25, 0.46, 0.45, 0.94], delay: 1.0 }}
-                />
-
-                {/* Inner ring */}
-                <motion.circle
-                  cx="230" cy="230" r="58"
-                  stroke="var(--color-denso-sky)"
-                  strokeWidth="1.5"
-                  strokeOpacity="0.25"
-                  fill="none"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 1.3 }}
-                  style={{ transformOrigin: '230px 230px' }}
-                />
-
-                {/* Center dot — blue */}
-                <motion.circle
-                  cx="230" cy="230" r="10"
-                  fill="var(--color-denso-blue)"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 1.5 }}
-                  style={{ transformOrigin: '230px 230px' }}
-                />
-
-                {/* Arc endpoint dots */}
-                <motion.circle cx="230" cy="24" r="6" fill="var(--color-denso-blue)"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }} />
-                <motion.circle cx="24" cy="230" r="5" fill="var(--color-denso-red)" fillOpacity="0.5"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.9 }} />
-              </svg>
-
-              {/* Center badge */}
-              <motion.div
-                className="absolute inset-0 flex flex-col items-center justify-center text-center gap-1"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 1.6 }}
+              
+              {/* Front Ticket (White) */}
+              <div 
+                className="relative bg-white rounded-[2rem] overflow-hidden flex flex-col z-10 w-[340px] h-[450px]"
+                style={{
+                  boxShadow: '0 25px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(30,63,143,0.05)',
+                  transform: 'rotate(-4deg)'
+                }}
               >
-                <span
-                  className="font-display font-extrabold tabular-nums"
-                  style={{ fontSize: '3.75rem', lineHeight: 1, color: 'var(--color-denso-blue)' }}
+                {/* Ticket Header */}
+                <div 
+                  className="h-[140px] relative overflow-hidden flex items-center justify-center shrink-0"
+                  style={{ background: 'var(--color-denso-red)' }}
                 >
-                  15K
-                </span>
-                <span
-                  className="font-sans font-medium uppercase tracking-wide text-xs"
-                  style={{ color: 'var(--color-denso-slate-mid)' }}
+                  <div className="absolute -right-4 -bottom-4 opacity-20" aria-hidden="true">
+                    <svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+                  </div>
+                  <h3 className="text-white font-display font-extrabold text-3xl tracking-[0.2em] uppercase relative z-10 pl-2">
+                    VIP PASS
+                  </h3>
+                </div>
+                
+                {/* Ticket Body */}
+                <div 
+                  className="p-8 flex-1 flex flex-col relative bg-white"
+                  style={{
+                    backgroundImage: 'radial-gradient(circle, var(--color-denso-slate-pale) 1.5px, transparent 1.5px)',
+                    backgroundSize: '16px 16px'
+                  }}
                 >
-                  Karyawan &amp; Keluarga
-                </span>
-              </motion.div>
-            </div>
+                  <div className="mb-auto">
+                    <p className="text-[11px] font-bold tracking-widest uppercase mb-1" style={{ color: 'var(--color-denso-slate-soft)' }}>Event</p>
+                    <p className="font-display font-extrabold text-[26px] leading-[1.1]" style={{ color: 'var(--color-denso-slate-dark)' }}>
+                      DENSOnesia<br/>Bazzar
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4 mb-8">
+                     <div className="flex items-center gap-3.5">
+                       <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-denso-blue-pale)' }}>
+                         <Calendar className="w-5 h-5" style={{ color: 'var(--color-denso-blue)' }} />
+                       </div>
+                       <div>
+                         <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--color-denso-slate-soft)' }}>Tanggal</p>
+                         <p className="font-bold text-sm" style={{ color: 'var(--color-denso-slate-dark)' }}>13 Sept 2026</p>
+                       </div>
+                     </div>
+                     <div className="flex items-center gap-3.5">
+                       <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-denso-red-pale)' }}>
+                         <MapPin className="w-5 h-5" style={{ color: 'var(--color-denso-red)' }} />
+                       </div>
+                       <div>
+                         <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--color-denso-slate-soft)' }}>Lokasi</p>
+                         <p className="font-bold text-sm line-clamp-1" style={{ color: 'var(--color-denso-slate-dark)' }}>Buperta Cibubur</p>
+                       </div>
+                     </div>
+                  </div>
+                  
+                  {/* Barcode line */}
+                  <div className="pt-6 flex justify-between items-center border-t-[2.5px] border-dashed" style={{ borderColor: 'var(--color-denso-slate-mist)' }}>
+                     <div className="flex gap-[4px] h-10 opacity-70">
+                        <div className="w-1 h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[3px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[7px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-1 h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[6px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[2px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[5px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[3px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-[8px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                        <div className="w-1 h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
+                     </div>
+                     <p className="font-mono text-xs font-bold tracking-widest" style={{ color: 'var(--color-denso-slate-soft)' }}>#DENSO-26</p>
+                  </div>
+                </div>
+                
+                {/* Side cutouts (the ticket perforations) */}
+                <div 
+                  className="absolute left-0 top-[140px] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow-inner" 
+                  style={{ background: 'var(--color-denso-sky-light)' }} 
+                />
+                <div 
+                  className="absolute right-0 top-[140px] translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow-inner" 
+                  style={{ background: 'var(--color-denso-sky-light)' }} 
+                />
+              </div>
+
+              {/* Decorative floating shapes around the ticket */}
+              <motion.div 
+                className="absolute -top-6 -right-10 w-24 h-24 rounded-full blur-[40px] opacity-60 z-0"
+                style={{ background: 'var(--color-denso-red)' }}
+                animate={prefersReduced ? {} : { scale: [1, 1.2, 1], opacity: [0.5, 0.7, 0.5] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+              <motion.div 
+                className="absolute -bottom-10 -left-6 w-32 h-32 rounded-full blur-[50px] opacity-50 z-0"
+                style={{ background: 'var(--color-denso-blue)' }}
+                animate={prefersReduced ? {} : { scale: [1, 1.3, 1], opacity: [0.4, 0.6, 0.4] }}
+                transition={{ duration: 5, repeat: Infinity, delay: 1 }}
+              />
+              
+            </motion.div>
           </motion.div>
         </div>
       </div>
