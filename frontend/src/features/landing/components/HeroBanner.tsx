@@ -274,6 +274,46 @@ export function HeroBanner() {
                   <circle cx="80" cy="100" r="6" fill="var(--color-denso-blue-pale)" />
                   <circle cx="320" cy="120" r="4" fill="var(--color-denso-blue-pale)" />
                   <circle cx="340" cy="280" r="8" fill="var(--color-denso-blue-pale)" />
+
+                  {/* --- Festival & Food Hints --- */}
+
+                  {/* Balloon 1 (Red) */}
+                  <path d="M45 160 Q60 135 75 160 Q75 190 60 200 Q45 190 45 160 Z" fill="var(--color-denso-red)" />
+                  <path d="M60 200 L56 206 L64 206 Z" fill="var(--color-denso-red)" />
+                  <path d="M60 206 Q65 240 50 270" fill="none" stroke="var(--color-denso-slate-mid)" strokeWidth="1.5" />
+
+                  {/* Balloon 2 (Blue) */}
+                  <path d="M330 130 Q345 105 360 130 Q360 160 345 170 Q330 160 330 130 Z" fill="var(--color-denso-blue)" />
+                  <path d="M345 170 L341 176 L349 176 Z" fill="var(--color-denso-blue)" />
+                  <path d="M345 176 Q340 210 355 240" fill="none" stroke="var(--color-denso-slate-mid)" strokeWidth="1.5" />
+
+                  {/* Cotton Candy (Left Foreground) */}
+                  <g transform="translate(30, 260)">
+                    {/* Stick */}
+                    <rect x="23" y="45" width="4" height="40" fill="var(--color-denso-slate)" rx="2" />
+                    {/* Fluff Base */}
+                    <circle cx="25" cy="25" r="22" fill="var(--color-denso-sky-dark)" opacity="0.9" />
+                    {/* Fluff Bumps */}
+                    <circle cx="12" cy="20" r="14" fill="var(--color-denso-sky)" />
+                    <circle cx="38" cy="20" r="14" fill="var(--color-denso-sky)" />
+                    <circle cx="25" cy="8" r="16" fill="var(--color-denso-sky-light)" />
+                    {/* Highlight */}
+                    <path d="M15 12 Q25 0 35 12" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+                  </g>
+
+                  {/* Drink Cup (Right Foreground) */}
+                  <g transform="translate(310, 270)">
+                    {/* Straw */}
+                    <path d="M25 5 L25 20" stroke="var(--color-denso-red)" strokeWidth="4" strokeLinecap="round" />
+                    <path d="M25 5 L12 -2" stroke="var(--color-denso-red)" strokeWidth="4" strokeLinecap="round" />
+                    {/* Cup Body */}
+                    <path d="M10 20 L40 20 L32 60 L18 60 Z" fill="var(--color-denso-white)" stroke="var(--color-denso-slate)" strokeWidth="1.5" />
+                    <path d="M10 20 L40 20 L32 60 L18 60 Z" fill="var(--color-denso-blue)" fillOpacity="0.1" />
+                    {/* Cup Lid */}
+                    <ellipse cx="25" cy="20" rx="17" ry="6" fill="var(--color-denso-sky-light)" stroke="var(--color-denso-slate)" strokeWidth="1.5" />
+                    {/* Cup Logo */}
+                    <circle cx="25" cy="40" r="6" fill="var(--color-denso-blue)" />
+                  </g>
                 </svg>
               </div>
 
