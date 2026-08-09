@@ -4,10 +4,10 @@ import { WaveDivider } from '../../../components/atoms/WaveDivider';
 import { EVENT_CONFIG } from '../../../constants/event';
 
 const FACILITIES = [
-  { icon: Car,      label: 'Parkir Gratis',    desc: '2.000+ tempat parkir', accent: 'red' as const },
+  { icon: Car,      label: 'Parkir Luas',      desc: 'Akses parkir mudah & memadai', accent: 'red' as const },
   { icon: Clock,    label: 'Full Day Event',    desc: '07.00 – 16.00 WIB', accent: 'blue' as const },
   { icon: Utensils, label: 'Makan Siang',       desc: 'Menu ramah keluarga', accent: 'red' as const },
-  { icon: MapPin,   label: 'Mudah Dijangkau',   desc: 'Bus antar-jemput tersedia', accent: 'blue' as const },
+  { icon: MapPin,   label: 'Mudah Dijangkau',   desc: 'Dekat dengan Pintu Tol Cibubur', accent: 'blue' as const },
 ] as const;
 
 const containerVariants = {
