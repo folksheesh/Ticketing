@@ -4,7 +4,7 @@ import type { Employee, Ticket, TicketStatus } from '../types';
 // ── Seed mock data ─────────────────────────────────────────────────────────
 const makeTickets = (prefix: string, withIcecream = false): Ticket[] => {
   const base: Ticket[] = [
-    { id: `REG-${prefix}1`, type: 'entry',    label: 'Tiket Masuk & Souvenir', status: 'active' },
+    { id: `REG-${prefix}1`, type: 'entry',    label: 'Tiket Masuk', status: 'active' },
     { id: `SNK-${prefix}2`, type: 'snack',    label: 'Kupon Snack Pagi',        status: 'active' },
     { id: `LNC-${prefix}3`, type: 'lunch',    label: 'Kupon Makan Siang',       status: 'active' },
   ];

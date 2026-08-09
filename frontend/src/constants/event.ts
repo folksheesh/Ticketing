@@ -51,7 +51,7 @@ export const SCHEDULE = [
   { time: '13.00 – 13.30', title: 'Grand Prize & Pengumuman Pemenang Employee Contest', description: 'Pengumuman grand prize dan pemenang employee contest', icon: 'Gift' },
   { time: '13.30 – 13.55', title: 'UMKM Karyawan Showcase', description: 'Pameran UMKM karyawan', icon: 'Package' },
   { time: '14.00 – 14.45', title: 'Special Guest Performance', description: 'Penampilan tamu istimewa', icon: 'Music' },
-  { time: '14.45 – 16.00', title: 'Penutupan & Pengambilan Souvenir', description: 'Acara penutupan dan pengambilan souvenir', icon: 'PartyPopper' },
+  { time: '14.45 – 16.00', title: 'Penutupan Acara', description: 'Acara penutupan', icon: 'PartyPopper' },
 ] as const;
 
 export const FAQ_ITEMS = [
@@ -61,15 +61,15 @@ export const FAQ_ITEMS = [
   },
   {
     question: 'How do I register for the event?',
-    answer: 'Click the "Register Now" button on this page, fill in your employee ID and personal details, then add your family members if applicable. You\'ll receive a confirmation email with your QR codes for entry, lunch, and souvenir collection.',
+    answer: 'Click the "Register Now" button on this page, fill in your employee ID and personal details, then add your family members if applicable. You\'ll receive a confirmation email with your QR codes for entry and lunch.',
   },
   {
     question: 'What should I bring on event day?',
-    answer: 'Please bring your digital or printed QR code tickets for registration, lunch, and souvenir collection. We recommend wearing comfortable clothing and shoes suitable for outdoor activities.',
+    answer: 'Please bring your digital or printed QR code tickets for registration and lunch. We recommend wearing comfortable clothing and shoes suitable for outdoor activities.',
   },
   {
     question: 'Is there parking available?',
-    answer: 'Yes, ample parking is available at the venue. We also provide shuttle buses from designated pick-up points. Details will be shared via email closer to the event date.',
+    answer: 'Yes, ample parking is available at the venue with easy access from the Cibubur toll exit.',
   },
   {
     question: 'Can I update my registration after submitting?',

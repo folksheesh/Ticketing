@@ -39,17 +39,13 @@ interface TicketInfo {
 function buildPDFHtml(
   tickets: TicketInfo[],
   iceCreamTickets: TicketInfo[],
-  souvenirTicket: TicketInfo | null,
-  goodieBagTickets: TicketInfo[],
   personal: PersonalData,
   family: FamilyData,
   qrMap: Record<string, string>,  // ticketId → data URI
 ) {
   const allTickets = [
     ...tickets,
-    ...(souvenirTicket ? [souvenirTicket] : []),
     ...iceCreamTickets,
-    ...goodieBagTickets,
   ];
   const PW = 794; // A4 width px @ 96dpi
   const PAD = 36; // page padding
@@ -58,9 +54,7 @@ function buildPDFHtml(
     if (t.icon === Ticket)          return 'Tiket Registrasi';
     if (t.icon === Coffee)          return 'Kupon Snack Pagi';
     if (t.icon === UtensilsCrossed) return 'Kupon Makan Siang';
-    if (t.icon === Package)         return 'Souvenir Karyawan';
     if (t.icon === IceCream2)       return 'Kupon Es Krim';
-    if (t.icon === Gift)            return 'Goodie Bag Anak';
     return 'Tiket';
   };
 
@@ -68,9 +62,7 @@ function buildPDFHtml(
     if (t.icon === Ticket)          return 'TIKET REGISTRASI';
     if (t.icon === Coffee)          return 'FOOD & BEVERAGE';
     if (t.icon === UtensilsCrossed) return 'FOOD & BEVERAGE';
-    if (t.icon === Package)         return 'SOUVENIR';
     if (t.icon === IceCream2)       return 'KIDS SPECIAL';
-    if (t.icon === Gift)            return 'GOODIE BAG';
     return 'TIKET';
   };
 
@@ -363,8 +355,6 @@ export function TicketResultStep() {
   const [isGenerating, setIsGenerating] = useState(true);
   const [tickets, setTickets] = useState<TicketInfo[]>([]);
   const [iceCreamTickets, setIceCreamTickets] = useState<TicketInfo[]>([]);
-  const [souvenirTicket, setSouvenirTicket] = useState<TicketInfo | null>(null);
-  const [goodieBagTickets, setGoodieBagTickets] = useState<TicketInfo[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const ticketRef = useRef<HTMLDivElement>(null);
   const registerEmployee = useAdminStore(s => s.registerEmployee);
@@ -403,13 +393,6 @@ export function TicketResultStep() {
       },
     ];
 
-    const souvenirT: TicketInfo = {
-      title: 'Souvenir Karyawan',
-      id: generateMockTicketId('SOU'),
-      color: '#0077CC',
-      icon: Package,
-    };
-
     let iceTickets: TicketInfo[] = [];
     if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
       const kids = familyData.children.filter(c => c.age <= 12);
@@ -418,17 +401,6 @@ export function TicketResultStep() {
         id: generateMockTicketId('ICE'),
         color: '#9D174D',
         icon: IceCream2,
-        ownerName: personalData.fullName,
-      }));
-    }
-
-    let goodieBagT: TicketInfo[] = [];
-    if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
-      goodieBagT = familyData.children.map(() => ({
-        title: 'Goodie Bag Anak',
-        id: generateMockTicketId('GOD'),
-        color: '#7C3AED',
-        icon: Gift,
         ownerName: personalData.fullName,
       }));
     }
@@ -456,10 +428,7 @@ export function TicketResultStep() {
 
     const timer = setTimeout(() => {
       if (!isMounted) return;
-      setTickets(mainTickets);
-      setSouvenirTicket(souvenirT);
       setIceCreamTickets(iceTickets);
-      setGoodieBagTickets(goodieBagT);
       setIsGenerating(false);
     }, 1800);
 
@@ -473,9 +442,7 @@ export function TicketResultStep() {
   const buildQRMap = async (): Promise<Record<string, string>> => {
     const allTickets = [
       ...tickets, 
-      ...(souvenirTicket ? [souvenirTicket] : []),
       ...iceCreamTickets,
-      ...goodieBagTickets,
     ];
     const entries = await Promise.all(
       allTickets.map(async t => {
@@ -489,7 +456,7 @@ export function TicketResultStep() {
   // ── Preview: open in new window, content centered ──
   const handlePreview = async () => {
     const qrMap = await buildQRMap();
-    const html = buildPDFHtml(tickets, iceCreamTickets, souvenirTicket, goodieBagTickets, personalData, familyData, qrMap);
+    const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrMap);
 
     const pw = window.open('', '_blank');
     if (!pw) return;
@@ -552,7 +519,7 @@ export function TicketResultStep() {
       const qrMap = await buildQRMap();
 
       // 2. Build HTML
-      const html = buildPDFHtml(tickets, iceCreamTickets, souvenirTicket, goodieBagTickets, personalData, familyData, qrMap);
+      const html = buildPDFHtml(tickets, iceCreamTickets, personalData, familyData, qrMap);
 
       // 3. Load libraries
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
@@ -661,9 +628,7 @@ export function TicketResultStep() {
 
   const allTickets = [
     ...tickets, 
-    ...(souvenirTicket ? [souvenirTicket] : []), 
-    ...iceCreamTickets, 
-    ...goodieBagTickets
+    ...iceCreamTickets,
   ];
 
   return (

@@ -17,7 +17,7 @@ const STEPS = [
   {
     icon: QrCode,
     title: 'Ambil Tiket QR',
-    description: 'Terima QR code unik untuk masuk, makan siang, dan pengambilan souvenir.',
+    description: 'Terima QR code unik untuk masuk dan makan siang.',
     accent: 'blue' as const,
   },
   {
