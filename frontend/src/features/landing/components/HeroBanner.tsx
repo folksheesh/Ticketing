@@ -237,46 +237,49 @@ export function HeroBanner() {
               {/* Circus Tent SVG */}
               <div className="relative z-10 w-[400px] h-[400px]">
                 <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-2xl">
-                  {/* Base Shadow */}
-                  <ellipse cx="200" cy="350" rx="140" ry="15" fill="var(--color-denso-blue)" fillOpacity="0.1" />
-                  
-                  {/* Main Tent Body (White) */}
-                  <path d="M70 200 L330 200 L310 340 L90 340 Z" fill="white" />
-                  
-                  {/* Red Stripes on Body */}
-                  <path d="M110 200 L140 200 L130 340 L100 340 Z" fill="var(--color-denso-red)" />
-                  <path d="M190 200 L210 200 L205 340 L195 340 Z" fill="var(--color-denso-red)" />
-                  <path d="M260 200 L290 200 L300 340 L270 340 Z" fill="var(--color-denso-red)" />
-                  
-                  {/* Entrance Dark Triangle */}
-                  <path d="M160 340 L200 240 L240 340 Z" fill="var(--color-denso-slate-dark)" />
-                  
-                  {/* Roof Base (Red) */}
-                  <path d="M200 50 L350 200 L50 200 Z" fill="var(--color-denso-red)" />
-                  
-                  {/* White Stripes on Roof */}
-                  <path d="M200 50 L250 200 L150 200 Z" fill="white" />
-                  <path d="M200 50 L310 200 L280 200 Z" fill="white" />
-                  <path d="M200 50 L120 200 L90 200 Z" fill="white" />
-                  
-                  {/* Roof Scalloped Awning - Red */}
-                  <path d="M50 200 Q75 220 100 200 Q125 220 150 200 Q175 220 200 200 Q225 220 250 200 Q275 220 300 200 Q325 220 350 200" fill="var(--color-denso-red)" stroke="var(--color-denso-red)" strokeWidth="2" strokeLinejoin="round" />
-                  {/* Roof Scalloped Awning - White Overlay where appropriate */}
-                  <path d="M90 200 Q105 215 120 200" fill="white" stroke="white" strokeWidth="2" />
-                  <path d="M150 200 Q175 220 200 200 Q225 220 250 200" fill="white" stroke="white" strokeWidth="2" />
-                  <path d="M280 200 Q295 215 310 200" fill="white" stroke="white" strokeWidth="2" />
+                  <defs>
+                    <g id="circus-tent">
+                      {/* Base Shadow */}
+                      <ellipse cx="200" cy="350" rx="140" ry="15" fill="var(--color-denso-blue)" fillOpacity="0.1" />
+                      
+                      {/* Main Tent Body (White) */}
+                      <path d="M70 200 L330 200 L310 340 L90 340 Z" fill="white" />
+                      
+                      {/* Red Stripes on Body */}
+                      <path d="M110 200 L140 200 L130 340 L100 340 Z" fill="var(--color-denso-red)" />
+                      <path d="M190 200 L210 200 L205 340 L195 340 Z" fill="var(--color-denso-red)" />
+                      <path d="M260 200 L290 200 L300 340 L270 340 Z" fill="var(--color-denso-red)" />
+                      
+                      {/* Entrance Dark Triangle */}
+                      <path d="M160 340 L200 240 L240 340 Z" fill="var(--color-denso-slate-dark)" />
+                      
+                      {/* Roof Base (Red) */}
+                      <path d="M200 50 L350 200 L50 200 Z" fill="var(--color-denso-red)" />
+                      
+                      {/* White Stripes on Roof */}
+                      <path d="M200 50 L250 200 L150 200 Z" fill="white" />
+                      <path d="M200 50 L310 200 L280 200 Z" fill="white" />
+                      <path d="M200 50 L120 200 L90 200 Z" fill="white" />
+                      
+                      {/* Roof Scalloped Awning - Red */}
+                      <path d="M50 200 Q75 220 100 200 Q125 220 150 200 Q175 220 200 200 Q225 220 250 200 Q275 220 300 200 Q325 220 350 200" fill="var(--color-denso-red)" stroke="var(--color-denso-red)" strokeWidth="2" strokeLinejoin="round" />
+                      {/* Roof Scalloped Awning - White Overlay where appropriate */}
+                      <path d="M90 200 Q105 215 120 200" fill="white" stroke="white" strokeWidth="2" />
+                      <path d="M150 200 Q175 220 200 200 Q225 220 250 200" fill="white" stroke="white" strokeWidth="2" />
+                      <path d="M280 200 Q295 215 310 200" fill="white" stroke="white" strokeWidth="2" />
 
-                  {/* Top Pole and Flag */}
-                  <rect x="198" y="20" width="4" height="40" fill="var(--color-denso-slate)" />
-                  <path d="M202 25 L250 35 L202 45 Z" fill="var(--color-denso-blue)" />
-                  
+                      {/* Top Pole and Flag */}
+                      <rect x="198" y="20" width="4" height="40" fill="var(--color-denso-slate)" />
+                      <path d="M202 25 L250 35 L202 45 Z" fill="var(--color-denso-blue)" />
+                    </g>
+                  </defs>
+
                   {/* Decorative Stars / Buntings around */}
                   <circle cx="80" cy="100" r="6" fill="var(--color-denso-blue-pale)" />
                   <circle cx="320" cy="120" r="4" fill="var(--color-denso-blue-pale)" />
                   <circle cx="340" cy="280" r="8" fill="var(--color-denso-blue-pale)" />
 
-                  {/* --- Festival & Food Hints --- */}
-
+                  {/* --- Festival Balloons (Background) --- */}
                   {/* Balloon 1 (Red) */}
                   <path d="M45 160 Q60 135 75 160 Q75 190 60 200 Q45 190 45 160 Z" fill="var(--color-denso-red)" />
                   <path d="M60 200 L56 206 L64 206 Z" fill="var(--color-denso-red)" />
@@ -287,8 +290,19 @@ export function HeroBanner() {
                   <path d="M345 170 L341 176 L349 176 Z" fill="var(--color-denso-blue)" />
                   <path d="M345 176 Q340 210 355 240" fill="none" stroke="var(--color-denso-slate-mid)" strokeWidth="1.5" />
 
+                  {/* --- The Tents --- */}
+                  {/* Left Back Tent */}
+                  <use href="#circus-tent" transform="translate(90, 310) scale(0.6) translate(-200, -350)" opacity="0.9" />
+                  
+                  {/* Right Back Tent */}
+                  <use href="#circus-tent" transform="translate(300, 325) scale(0.65) translate(-200, -350)" opacity="0.95" />
+                  
+                  {/* Main Front Tent */}
+                  <use href="#circus-tent" />
+
+                  {/* --- Festival Food (Foreground) --- */}
                   {/* Cotton Candy (Left Foreground) */}
-                  <g transform="translate(30, 260)">
+                  <g transform="translate(25, 260)">
                     {/* Stick */}
                     <rect x="23" y="45" width="4" height="40" fill="var(--color-denso-slate)" rx="2" />
                     {/* Fluff Base */}
@@ -302,7 +316,7 @@ export function HeroBanner() {
                   </g>
 
                   {/* Drink Cup (Right Foreground) */}
-                  <g transform="translate(310, 270)">
+                  <g transform="translate(315, 270)">
                     {/* Straw */}
                     <path d="M25 5 L25 20" stroke="var(--color-denso-red)" strokeWidth="4" strokeLinecap="round" />
                     <path d="M25 5 L12 -2" stroke="var(--color-denso-red)" strokeWidth="4" strokeLinecap="round" />
