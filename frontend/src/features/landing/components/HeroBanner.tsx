@@ -229,118 +229,65 @@ export function HeroBanner() {
           >
             {/* Floating elements animation wrapper */}
             <motion.div
-              animate={prefersReduced ? {} : { y: [-12, 12, -12] }}
+              animate={prefersReduced ? {} : { y: [-10, 10, -10] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative w-[400px] h-[480px] flex items-center justify-center"
+              className="relative w-[440px] h-[440px] flex items-center justify-center"
             >
               
-              {/* Back Ticket (Blue) */}
-              <motion.div 
-                className="absolute inset-0 rounded-[2rem]"
-                style={{
-                  background: 'linear-gradient(135deg, var(--color-denso-blue) 0%, var(--color-denso-blue-dark) 100%)',
-                  transform: 'rotate(8deg) translateX(24px) translateY(12px)',
-                  boxShadow: '0 20px 40px rgba(30,63,143,0.2)'
-                }}
-              />
-              
-              {/* Front Ticket (White) */}
-              <div 
-                className="relative bg-white rounded-[2rem] overflow-hidden flex flex-col z-10 w-[340px] h-[450px]"
-                style={{
-                  boxShadow: '0 25px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(30,63,143,0.05)',
-                  transform: 'rotate(-4deg)'
-                }}
-              >
-                {/* Ticket Header */}
-                <div 
-                  className="h-[140px] relative overflow-hidden flex items-center justify-center shrink-0"
-                  style={{ background: 'var(--color-denso-red)' }}
-                >
-                  <div className="absolute -right-4 -bottom-4 opacity-20" aria-hidden="true">
-                    <svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-                  </div>
-                  <h3 className="text-white font-display font-extrabold text-3xl tracking-[0.2em] uppercase relative z-10 pl-2">
-                    VIP PASS
-                  </h3>
-                </div>
-                
-                {/* Ticket Body */}
-                <div 
-                  className="p-8 flex-1 flex flex-col relative bg-white"
-                  style={{
-                    backgroundImage: 'radial-gradient(circle, var(--color-denso-slate-pale) 1.5px, transparent 1.5px)',
-                    backgroundSize: '16px 16px'
-                  }}
-                >
-                  <div className="mb-auto">
-                    <p className="text-[11px] font-bold tracking-widest uppercase mb-1" style={{ color: 'var(--color-denso-slate-soft)' }}>Event</p>
-                    <p className="font-display font-extrabold text-[26px] leading-[1.1]" style={{ color: 'var(--color-denso-slate-dark)' }}>
-                      DENSOnesia<br/>Bazzar
-                    </p>
-                  </div>
+              {/* Circus Tent SVG */}
+              <div className="relative z-10 w-[400px] h-[400px]">
+                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-2xl">
+                  {/* Base Shadow */}
+                  <ellipse cx="200" cy="350" rx="140" ry="15" fill="var(--color-denso-blue)" fillOpacity="0.1" />
                   
-                  <div className="space-y-4 mb-8">
-                     <div className="flex items-center gap-3.5">
-                       <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-denso-blue-pale)' }}>
-                         <Calendar className="w-5 h-5" style={{ color: 'var(--color-denso-blue)' }} />
-                       </div>
-                       <div>
-                         <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--color-denso-slate-soft)' }}>Tanggal</p>
-                         <p className="font-bold text-sm" style={{ color: 'var(--color-denso-slate-dark)' }}>13 Sept 2026</p>
-                       </div>
-                     </div>
-                     <div className="flex items-center gap-3.5">
-                       <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-denso-red-pale)' }}>
-                         <MapPin className="w-5 h-5" style={{ color: 'var(--color-denso-red)' }} />
-                       </div>
-                       <div>
-                         <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'var(--color-denso-slate-soft)' }}>Lokasi</p>
-                         <p className="font-bold text-sm line-clamp-1" style={{ color: 'var(--color-denso-slate-dark)' }}>Buperta Cibubur</p>
-                       </div>
-                     </div>
-                  </div>
+                  {/* Main Tent Body (White) */}
+                  <path d="M70 200 L330 200 L310 340 L90 340 Z" fill="white" />
                   
-                  {/* Barcode line */}
-                  <div className="pt-6 flex justify-between items-center border-t-[2.5px] border-dashed" style={{ borderColor: 'var(--color-denso-slate-mist)' }}>
-                     <div className="flex gap-[4px] h-10 opacity-70">
-                        <div className="w-1 h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[3px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[7px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-1 h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[6px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[2px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[5px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[3px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-[8px] h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                        <div className="w-1 h-full rounded-full" style={{ background: 'var(--color-denso-slate-dark)' }} />
-                     </div>
-                     <p className="font-mono text-xs font-bold tracking-widest" style={{ color: 'var(--color-denso-slate-soft)' }}>#DENSO-26</p>
-                  </div>
-                </div>
-                
-                {/* Side cutouts (the ticket perforations) */}
-                <div 
-                  className="absolute left-0 top-[140px] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow-inner" 
-                  style={{ background: 'var(--color-denso-sky-light)' }} 
-                />
-                <div 
-                  className="absolute right-0 top-[140px] translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full shadow-inner" 
-                  style={{ background: 'var(--color-denso-sky-light)' }} 
-                />
+                  {/* Red Stripes on Body */}
+                  <path d="M110 200 L140 200 L130 340 L100 340 Z" fill="var(--color-denso-red)" />
+                  <path d="M190 200 L210 200 L205 340 L195 340 Z" fill="var(--color-denso-red)" />
+                  <path d="M260 200 L290 200 L300 340 L270 340 Z" fill="var(--color-denso-red)" />
+                  
+                  {/* Entrance Dark Triangle */}
+                  <path d="M160 340 L200 240 L240 340 Z" fill="var(--color-denso-slate-dark)" />
+                  
+                  {/* Roof Base (Red) */}
+                  <path d="M200 50 L350 200 L50 200 Z" fill="var(--color-denso-red)" />
+                  
+                  {/* White Stripes on Roof */}
+                  <path d="M200 50 L250 200 L150 200 Z" fill="white" />
+                  <path d="M200 50 L310 200 L280 200 Z" fill="white" />
+                  <path d="M200 50 L120 200 L90 200 Z" fill="white" />
+                  
+                  {/* Roof Scalloped Awning - Red */}
+                  <path d="M50 200 Q75 220 100 200 Q125 220 150 200 Q175 220 200 200 Q225 220 250 200 Q275 220 300 200 Q325 220 350 200" fill="var(--color-denso-red)" stroke="var(--color-denso-red)" strokeWidth="2" strokeLinejoin="round" />
+                  {/* Roof Scalloped Awning - White Overlay where appropriate */}
+                  <path d="M90 200 Q105 215 120 200" fill="white" stroke="white" strokeWidth="2" />
+                  <path d="M150 200 Q175 220 200 200 Q225 220 250 200" fill="white" stroke="white" strokeWidth="2" />
+                  <path d="M280 200 Q295 215 310 200" fill="white" stroke="white" strokeWidth="2" />
+
+                  {/* Top Pole and Flag */}
+                  <rect x="198" y="20" width="4" height="40" fill="var(--color-denso-slate)" />
+                  <path d="M202 25 L250 35 L202 45 Z" fill="var(--color-denso-blue)" />
+                  
+                  {/* Decorative Stars / Buntings around */}
+                  <circle cx="80" cy="100" r="6" fill="var(--color-denso-blue-pale)" />
+                  <circle cx="320" cy="120" r="4" fill="var(--color-denso-blue-pale)" />
+                  <circle cx="340" cy="280" r="8" fill="var(--color-denso-blue-pale)" />
+                </svg>
               </div>
 
-              {/* Decorative floating shapes around the ticket */}
+              {/* Decorative floating shapes around the tent */}
               <motion.div 
-                className="absolute -top-6 -right-10 w-24 h-24 rounded-full blur-[40px] opacity-60 z-0"
+                className="absolute -top-6 -right-10 w-32 h-32 rounded-full blur-[45px] opacity-50 z-0"
                 style={{ background: 'var(--color-denso-red)' }}
-                animate={prefersReduced ? {} : { scale: [1, 1.2, 1], opacity: [0.5, 0.7, 0.5] }}
+                animate={prefersReduced ? {} : { scale: [1, 1.2, 1], opacity: [0.4, 0.6, 0.4] }}
                 transition={{ duration: 4, repeat: Infinity }}
               />
               <motion.div 
-                className="absolute -bottom-10 -left-6 w-32 h-32 rounded-full blur-[50px] opacity-50 z-0"
+                className="absolute -bottom-10 -left-6 w-40 h-40 rounded-full blur-[55px] opacity-40 z-0"
                 style={{ background: 'var(--color-denso-blue)' }}
-                animate={prefersReduced ? {} : { scale: [1, 1.3, 1], opacity: [0.4, 0.6, 0.4] }}
+                animate={prefersReduced ? {} : { scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
                 transition={{ duration: 5, repeat: Infinity, delay: 1 }}
               />
               
