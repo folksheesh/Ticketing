@@ -53,17 +53,14 @@ export function Logo({ className, size = 'md', onDark = false }: LogoProps) {
         style={{ display: 'block' }}
       >
         {/*
-          DENSO — bold condensed italic.
-          Nunito Black Italic (loaded via Google Fonts) is the closest
-          free match to the real typeface's rounded strokes and weight.
-          Falls back to Impact / Arial Narrow for users without web fonts.
+          DENSO — Accia Piano Bold Italic (or fallback fonts).
         */}
         <text
           x="0"
           y="36"
           fill={color}
-          fontFamily="'Nunito', 'Franklin Gothic Heavy', Impact, 'Arial Narrow', sans-serif"
-          fontWeight="900"
+          fontFamily="'Accia Piano', 'Nunito', 'Franklin Gothic Heavy', Impact, 'Arial Narrow', sans-serif"
+          fontWeight="700"
           fontStyle="italic"
           fontSize="40"
           letterSpacing="-0.5"

@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Nunito:ital,wght@1,900&family=Archivo+Black&family=Caveat:wght@400;500;600;700&display=swap');
 
+/* ── Accia Piano Local & WebFont ── */
+@font-face {
+  font-family: 'Accia Piano';
+  src: url('./assets/fonts/AcciaPiano-SemiBold.ttf') format('truetype');
+  font-display: swap;
+}
+
 /* ===================================================
    DENSOnesia Bazzar Design System — Tricolor
    Red        : #E4211F  (Denso Red — logo, CTA, accent)
@@ -67,6 +74,7 @@
   --color-denso-info:    #1E3F8F;
 
   /* ── Typography ── */
+  --font-logo:    'Accia Piano', 'Nunito', 'Franklin Gothic Heavy', Impact, 'Arial Narrow', sans-serif;
   --font-hero:    'Archivo Black', 'Impact', 'Arial Black', sans-serif;
   --font-script:  'Caveat', 'Segoe Script', cursive;
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -413,6 +421,13 @@ body {
 }
 .panel-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--color-denso-slate-soft);
+}
+
+/* ── Logo Font Utility ── */
+.font-logo, .font-accia-piano {
+  font-family: var(--font-logo);
+  font-weight: 700;
+  font-style: italic;
 }
 
 /* ── Reduced Motion ── */

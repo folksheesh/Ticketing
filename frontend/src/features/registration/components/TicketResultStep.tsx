@@ -96,7 +96,7 @@ function buildPDFHtml(
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td>
-              <div style="font-size:34px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-2px;line-height:1;">DENSO</div>
+              <div style="font-size:34px;font-weight:700;font-style:italic;font-family:'Accia Piano','Nunito',sans-serif;color:#FFFFFF;letter-spacing:-2px;line-height:1;">DENSO</div>
               <div style="font-size:9px;color:rgba(255,255,255,0.65);font-weight:600;text-transform:uppercase;letter-spacing:3px;margin-top:3px;">Crafting the Core</div>
             </td>
             <td style="text-align:right;vertical-align:top;">
@@ -237,7 +237,7 @@ function buildPDFHtml(
       <td style="padding:18px 24px;">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td>
-            <div style="font-size:26px;font-weight:900;font-style:italic;color:#FFFFFF;letter-spacing:-1.5px;line-height:1;">DENSO</div>
+            <div style="font-size:26px;font-weight:700;font-style:italic;font-family:'Accia Piano','Nunito',sans-serif;color:#FFFFFF;letter-spacing:-1.5px;line-height:1;">DENSO</div>
             <div style="font-size:8px;color:rgba(255,255,255,0.55);font-weight:600;text-transform:uppercase;letter-spacing:2.5px;margin-top:2px;">Family Gathering 2026</div>
           </td>
           <td style="text-align:right;vertical-align:middle;">

@@ -87,12 +87,13 @@ export function StringLights({
             r={6}
             fill="#FFF7E0"
             opacity={0.3}
+            style={{ transformOrigin: `${bulb.x}px ${bulb.y}px` }}
             animate={
               prefersReduced
                 ? {}
                 : {
                     opacity: [0.15, 0.35, 0.15],
-                    r: [5, 7, 5] as unknown as number,
+                    scale: [0.85, 1.15, 0.85],
                   }
             }
             transition={{
