@@ -274,7 +274,7 @@ function buildPDFHtml(
       <td width="230" style="background:#F8F9FB;border-radius:12px;padding:20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.07);border:2px solid #E5E7EB;">
         <div style="font-size:9px;font-weight:700;color:#8896A8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Scan QR Code</div>
         <div style="display:inline-block;background:#FFFFFF;padding:8px;border-radius:10px;border:3px solid ${t.color};">
-          <img src="${qrDataURI}" width="170" height="170" style="display:block;border-radius:4px;" alt="QR Code ${t.id}"/>
+          <div style="width:170px;height:170px;background-image:url('${qrDataURI}');background-size:contain;background-repeat:no-repeat;background-position:center;"></div>
         </div>
         <div style="font-size:8px;color:#9AAAB3;font-weight:500;margin-top:12px;line-height:1.6;">Tunjukkan QR kepada petugas<br/>Berlaku sekali pakai</div>
         <div style="font-size:8px;font-family:monospace;color:${t.color};font-weight:700;margin-top:6px;letter-spacing:0.5px;">${t.id}</div>
@@ -395,12 +395,12 @@ export function TicketResultStep() {
 
     let iceTickets: TicketInfo[] = [];
     if (personalData.maritalStatus === 'Family' && familyData.hasChildren) {
-      iceTickets = familyData.children.map(() => ({
+      iceTickets = familyData.children.map((child) => ({
         title: 'Kupon Es Krim',
         id: generateMockTicketId('ICE'),
         color: '#9D174D',
         icon: IceCream2,
-        ownerName: personalData.fullName,
+        ownerName: child.name,
       }));
     }
 
@@ -533,7 +533,7 @@ export function TicketResultStep() {
       iframe.style.cssText = `
         position:fixed;top:-99999px;left:-99999px;
         width:${PW}px;height:1200px;
-        border:none;visibility:hidden;pointer-events:none;
+        border:none;z-index:-9999;pointer-events:none;
       `;
       document.body.appendChild(iframe);
 
@@ -545,23 +545,27 @@ export function TicketResultStep() {
       // 5. Wait for fonts to be ready
       await iDoc.fonts.ready;
 
-      // 6. Wait for all images — since all src are data URIs, this is nearly instant
+      // 6. Wait for all images and force decode
       await new Promise<void>(resolve => {
         const imgs = Array.from(iDoc.querySelectorAll('img')) as HTMLImageElement[];
         if (imgs.length === 0) { resolve(); return; }
         let done = 0;
         const check = () => { if (++done >= imgs.length) resolve(); };
         imgs.forEach(img => {
-          if (img.complete && img.naturalWidth > 0) { check(); }
+          const forceDecode = async () => {
+            try { if (img.decode) await img.decode(); } catch (e) {}
+            check();
+          };
+          if (img.complete && img.naturalWidth > 0) { forceDecode(); }
           else {
-            img.onload = check;
+            img.onload = forceDecode;
             img.onerror = check; // still proceed even if one fails
           }
         });
       });
 
       // 7. Small settle time for layout stabilisation
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 500));
 
       // 8. Render each .pdf-page into its own PDF page
       const pages = Array.from(iDoc.querySelectorAll('.pdf-page')) as HTMLElement[];
@@ -578,15 +582,14 @@ export function TicketResultStep() {
 
         const canvas = await html2canvas(pageEl, {
           scale: 3,            // 3× for crisp text & QR
-          useCORS: false,      // all images are data URIs — no CORS needed
-          allowTaint: false,
+          useCORS: true,       // enable CORS
+          allowTaint: true,    // allow taint for data URIs
           backgroundColor: '#F0F2F5',
           width: PW,
           windowWidth: PW,
           scrollX: 0,
           scrollY: 0,
           logging: false,
-          imageTimeout: 0,     // disable timeout — data URIs always instant
           removeContainer: true,
         });
 

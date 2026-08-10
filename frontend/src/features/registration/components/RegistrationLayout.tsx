@@ -145,33 +145,37 @@ export function RegistrationLayout() {
                 const active  = currentStep === step.id;
                 const skipped = step.id === 2 && isSingle;
                 return (
-                  <div key={step.id} className="relative z-10 flex flex-col items-center gap-2" style={{ opacity: skipped ? 0.35 : 1 }}>
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-sm transition-all duration-300"
-                      style={{
-                        background: done
-                          ? 'var(--color-denso-blue)'
-                          : 'var(--color-denso-white)',
-                        border: done
-                          ? 'none'
-                          : active
-                            ? '2.5px solid var(--color-denso-red)'
-                            : '2px solid var(--color-denso-slate-pale)',
-                        color: done
-                          ? 'var(--color-denso-white)'
-                          : active
-                            ? 'var(--color-denso-red)'
-                            : 'var(--color-denso-slate-soft)',
-                        boxShadow: active
-                          ? '0 0 0 4px rgba(228, 33, 31, 0.12)'
-                          : 'none',
-                      }}
-                    >
-                      {done ? <Check style={{ width: 18, height: 18 }} /> : step.id}
+                  <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="rounded-full" style={{ background: 'var(--color-denso-paper)' }}>
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-sm transition-all duration-300"
+                        style={{
+                          opacity: skipped ? 0.35 : 1,
+                          background: done
+                            ? 'var(--color-denso-blue)'
+                            : 'var(--color-denso-white)',
+                          border: done
+                            ? 'none'
+                            : active
+                              ? '2.5px solid var(--color-denso-red)'
+                              : '2px solid var(--color-denso-slate-pale)',
+                          color: done
+                            ? 'var(--color-denso-white)'
+                            : active
+                              ? 'var(--color-denso-red)'
+                              : 'var(--color-denso-slate-soft)',
+                          boxShadow: active
+                            ? '0 0 0 4px rgba(228, 33, 31, 0.12)'
+                            : 'none',
+                        }}
+                      >
+                        {done ? <Check style={{ width: 18, height: 18 }} /> : step.id}
+                      </div>
                     </div>
                     <span
                       className="font-sans text-[11px] font-semibold uppercase tracking-wider text-center whitespace-nowrap"
                       style={{
+                        opacity: skipped ? 0.35 : 1,
                         color: active
                           ? 'var(--color-denso-red)'
                           : done
